@@ -10,6 +10,7 @@ interface ImageProps {
   width?: number;
   height?: number;
   layout?: "intrinsic" | "responsive" | "fill";
+  caption?: string;
 }
 
 const LightboxImage = (props: ImageProps) => {
@@ -65,11 +66,10 @@ const LightboxImage = (props: ImageProps) => {
             style={{
               lineHeight: "1.5",
               paddingTop: "10px",
-              fontSize: "14px",
-              color: "#6b7280",
             }}
+            className="text-sm text-gray-500 text-center text-medium w-full"
           >
-            {props.alt}
+            {props.caption}
           </figcaption>
         </div>
         <Dialog.Portal>

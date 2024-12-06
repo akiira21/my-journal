@@ -10,6 +10,7 @@ import {
   TypographyH2,
   TypographyH3,
   TypographyH4,
+  TypographyInlineCode,
   TypographyMono,
   TypographyMuted,
   TypographyP,
@@ -23,6 +24,26 @@ import {
   XAnchor,
 } from "@/custom_components/anchor";
 import LightboxImage from "@/custom_components/Image";
+import { OrderedList, UnorderedList } from "@/custom_components/list";
+import { Slider } from "@/components/ui/slider";
+import {
+  BaseCard,
+  DepthCard,
+  HeaderCard,
+  TitleCard,
+} from "@/custom_components/card";
+import {
+  DangerPill,
+  InfoPill,
+  SuccessPill,
+  WarningPill,
+} from "@/custom_components/pills";
+import {
+  Callout,
+  DangerCallout,
+  InfoCallout,
+} from "@/custom_components/callouts";
+import CodeBlock from "@/custom_components/code-block";
 
 const DesignPage = () => {
   return (
@@ -101,16 +122,98 @@ const DesignPage = () => {
             <GitHubAnchor />
 
             <ForwardAnchor
-              text="Check out my this my github"
+              text="Check out my github"
               href="https://github.com/Arun-kumar21"
             />
 
             <PageAnchor text="Design Page" href="/design" />
 
-            <TypographyH2 text="Image" className="mt-4" />
+            <TypographyH3 text="Lists" className="my-4" />
+            <div className="flex justify-between max-w-lg">
+              <UnorderedList items={["First", "Second", "Third"]} />
+
+              <OrderedList items={["First", "Second", "Third"]} />
+            </div>
+
+            <TypographyH3 text="Slider" className="my-4" />
+            <div className="flex justify-between max-w-lg gap-x-12">
+              <Slider defaultValue={[65]} max={100} step={1} />
+
+              <Slider disabled defaultValue={[12]} max={100} />
+            </div>
+
+            <div className="my-4 flex flex-col gap-y-4">
+              <TypographyH3 text="Cards" className="my-4" />
+
+              <BaseCard>Base Card</BaseCard>
+              <TitleCard title="Title for the card">
+                Card with <TypographyInlineCode text="title" /> prop
+              </TitleCard>
+
+              <HeaderCard
+                header={<p className="text-sm">Some Custom Header</p>}
+              >
+                Card with Custom Header
+              </HeaderCard>
+
+              <DepthCard depth={1}>
+                Card <TypographyInlineCode text="depth = 1" />
+              </DepthCard>
+
+              <DepthCard depth={2}>
+                Card <TypographyInlineCode text="depth = 2" />
+              </DepthCard>
+
+              <DepthCard depth={3}>
+                Card <TypographyInlineCode text="depth = 3" />
+              </DepthCard>
+            </div>
+
+            <div className="flex flex-col gap-y-4 items-start">
+              <TypographyH3 text="Pill" className="my-4" />
+
+              <InfoPill>Info Pill</InfoPill>
+              <SuccessPill>Success Pill</SuccessPill>
+              <WarningPill>Warning Pill</WarningPill>
+              <DangerPill>Danger Pill</DangerPill>
+            </div>
+
+            <div className="flex flex-col my-4">
+              <TypographyH3 text="Callouts" className="my-4" />
+
+              <InfoCallout>
+                <TypographyP text="This is an info callout" />
+              </InfoCallout>
+
+              <Callout variant="info" actionText="Learn More">
+                <TypographyP text="Info callout" />
+              </Callout>
+
+              <DangerCallout>
+                <TypographyP text="This is a danger callout" />
+              </DangerCallout>
+            </div>
+
+            <div className="flex flex-col items-start">
+              <TypographyH3 text="Inline Code" className="my-4" />
+              <TypographyInlineCode text="const foo = function() {}" />
+            </div>
+
+            <TypographyH3 text="Code Block" className="my-4" />
+
+            <CodeBlock
+              codeString="const foo = function() { 
+                let name = 'John Doe';
+              }"
+              language="javascript"
+              title="Code snippet title"
+            />
+
+            <TypographyH3 text="Image" className="my-4" />
             <LightboxImage
               src="https://images.unsplash.com/photo-1603705072970-6bc8755ae6a8?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
               alt="image"
+              caption="This image is from unsplash and is used for demo purpose"
               width={600}
               height={400}
               layout="intrinsic"
