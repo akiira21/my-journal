@@ -10,7 +10,7 @@ interface CustomTooltipProps {
   content: string;
 }
 
-const CustomTooltip = ({ target, content }: CustomTooltipProps) => {
+const ToolTip = ({ target, content }: CustomTooltipProps) => {
   return (
     <TooltipProvider>
       <Tooltip>
@@ -23,4 +23,4 @@ const CustomTooltip = ({ target, content }: CustomTooltipProps) => {
   );
 };
 
-export default CustomTooltip;
+export default ToolTip;

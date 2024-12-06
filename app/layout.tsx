@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${roboto.className} selection:bg-[#F0F5FE] selection:text-[#3579F6]`}
+        className={`${roboto.className} selection:bg-[#F0F5FE] selection:text-[#3579F6] dark:selection:bg-[#0E121F] dark:selection:text-[#5B86F4]`}
       >
         <ThemeProvider
           attribute="class"

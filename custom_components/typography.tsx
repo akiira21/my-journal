@@ -58,7 +58,7 @@ const TypographyInlineCode = ({ text, className }: TypographyProps) => {
   return (
     <code
       className={cn(
-        "relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold",
+        "relative rounded-md border bg-muted font-mono text-sm px-2 py-1 text-[#3E69F4] bg-[#F6F9FE]",
         className
       )}
     >
