@@ -44,6 +44,8 @@ import {
   InfoCallout,
 } from "@/custom_components/callouts";
 import CodeBlock from "@/custom_components/code-block";
+import CollapsibleSummary from "@/custom_components/summary";
+import CommandMenu from "@/custom_components/command-menu";
 
 const DesignPage = () => {
   return (
@@ -211,6 +213,17 @@ const DesignPage = () => {
               title="Code snippet title"
               highlightedLines={[3, 4, 5]}
             />
+
+            <TypographyH3 text="Details/Summary" className="my-4" />
+            <CollapsibleSummary
+              summary="Summary: Some short text"
+              content="Content: Some long text nested inside the component. Useful to avoid long, optional content. It can take some simple strings or some other custom React components. As you want!"
+            />
+
+            <TypographyH3 text="Command Menu" className="mt-4" />
+            <div>
+              <CommandMenu />
+            </div>
 
             <TypographyH3 text="Image" className="my-4" />
             <LightboxImage

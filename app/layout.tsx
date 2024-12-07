@@ -3,6 +3,7 @@ import { Roboto } from "next/font/google";
 import "./globals.css";
 
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import Footer from "@/custom_components/footer";
 
 const roboto = Roboto({
   weight: ["100", "300", "400", "500", "700", "900"],
@@ -32,6 +33,8 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+
+          <Footer />
         </ThemeProvider>
       </body>
     </html>

@@ -15,6 +15,7 @@
     "@radix-ui/react-tooltip": "^1.1.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.0.0",
     "framer-motion": "^11.13.1",
     "lucide-react": "^0.464.0",
     "next": "14.2.19",

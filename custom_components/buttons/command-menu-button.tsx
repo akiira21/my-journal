@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 
-const CommandCenterButton = () => {
-  const [isToggled, setIsToggled] = useState(false);
+const CommandMenuButton = ({ open }: { open: boolean }) => {
+  const [isToggled, setIsToggled] = useState(open);
   const duration = 0.7;
 
   const pathVariants = {
@@ -26,7 +26,7 @@ const CommandCenterButton = () => {
         viewBox="0 0 25 25"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        animate={isToggled ? "checked" : "unchecked"}
+        animate={open ? "checked" : "unchecked"}
         initial="unchecked"
         transition={{ duration }}
       >
@@ -43,4 +43,4 @@ const CommandCenterButton = () => {
   );
 };
 
-export default CommandCenterButton;
+export default CommandMenuButton;

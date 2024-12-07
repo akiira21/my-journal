@@ -8,8 +8,8 @@ const Logo = ({ className, width, height }: LogoProps) => {
   return (
     <div className="logo">
       <svg
-        width="69"
-        height="75"
+        width={width || 69}
+        height={height || 75}
         viewBox="0 0 69 75"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
