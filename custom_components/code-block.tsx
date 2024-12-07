@@ -1,16 +1,17 @@
 "use client";
 
-import React from "react";
-import { Highlight, Prism, themes } from "prism-react-renderer";
-import { cn } from "@/lib/utils";
-import { IconButton } from "./buttons/buttons";
+import React, { useState } from "react";
+import { Highlight, Prism } from "prism-react-renderer";
 import { Check, Copy } from "lucide-react";
+
+import { IconButton } from "./buttons/buttons";
 
 interface CodeBlockProps {
   codeString: string;
   language: string;
   metastring?: string;
   title?: string;
+  highlightedLines?: number[]; // New prop for highlighted lines
 }
 
 const calculateLinesToHighlight = (meta?: string) => {
@@ -37,9 +38,15 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   language,
   metastring,
   title,
+  highlightedLines = [], // Default to empty array
 }) => {
   const [copied, setCopied] = React.useState(false);
-  const highlightLine = calculateLinesToHighlight(metastring);
+  const [hoveredLine, setHoveredLine] = useState<number | null>(null);
+  const metaHighlight = calculateLinesToHighlight(metastring);
+
+  const isLineHighlighted = (index: number) => {
+    return metaHighlight(index) || highlightedLines.includes(index + 1);
+  };
 
   const copyToClipboard = async () => {
     try {
@@ -58,12 +65,12 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   };
 
   return (
-    <div className="w-full border rounded-md">
+    <div className="w-full border rounded-lg">
       {title && (
         <div className="flex items-center justify-between rounded-t-lg border border-b bg-[#f6f9fe] px-4 py-2">
           <h3 className="text-sm font-medium text-gray-900">{title}</h3>
           <button onClick={handleClick}>
-            <IconButton className="hover:shadow-[0_0_16px_rgba(59,130,246,0.6)]">
+            <IconButton className="hover:shadow-[0_0_16px_rgba(59,130,246,0.5)]">
               {copied ? (
                 <Check
                   size={16}
@@ -77,44 +84,132 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         </div>
       )}
       <Highlight
-        theme={themes.vsLight}
+        theme={{
+          plain: {
+            color: "#1a1a1a",
+            backgroundColor: "#f6f9fe",
+          },
+          styles: [
+            {
+              types: ["prolog", "doctype", "cdata", "punctuation"],
+              style: {
+                color: "#4A72F4",
+              },
+            },
+            {
+              types: ["comment"],
+              style: {
+                color: "#6A737D",
+              },
+            },
+            {
+              types: ["namespace"],
+              style: {
+                opacity: 0.7,
+              },
+            },
+            {
+              types: ["string", "attr-value"],
+              style: {
+                color: "#4A72F4",
+              },
+            },
+            {
+              types: ["entity", "url"],
+              style: {
+                color: "#0550ae",
+              },
+            },
+            {
+              types: [
+                "symbol",
+                "number",
+                "boolean",
+                "variable",
+                "constant",
+                "property",
+                "regex",
+                "inserted",
+              ],
+              style: {
+                color: "#116329",
+              },
+            },
+            {
+              types: ["atrule", "keyword", "attr-name"],
+              style: {
+                color: "#4A72F4",
+              },
+            },
+            {
+              types: ["function", "deleted", "tag"],
+              style: {
+                color: "#CF0082",
+              },
+            },
+            {
+              types: ["function-variable"],
+              style: {
+                color: "#953800",
+              },
+            },
+            {
+              types: ["tag", "selector"],
+              style: {
+                color: "#116329",
+              },
+            },
+          ],
+        }}
         prism={Prism}
         code={codeString}
         language={language}
       >
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
-          <pre
-            className={cn(
-              "overflow-x-auto p-4 bg-[#f6f9fe] font-mono text-sm",
-              !title && "rounded-lg",
-              title && "rounded-b-lg",
-              className
-            )}
-            style={style}
-          >
-            {tokens.map((line, i) => {
-              const isHighlighted = highlightLine(i);
-              return (
-                <div
-                  key={i}
-                  {...getLineProps({ line, key: i })}
-                  className={cn(
-                    "flex",
-                    isHighlighted && "bg-blue-100 -mx-4 px-4"
-                  )}
-                >
-                  <span className="mr-4 select-none text-gray-400">
-                    {String(i + 1).padStart(2, " ")}
-                  </span>
-                  <span>
-                    {line.map((token, key) => (
-                      <span key={key} {...getTokenProps({ token, key })} />
-                    ))}
-                  </span>
-                </div>
-              );
-            })}
-          </pre>
+          <div className="relative">
+            <pre
+              className={`overflow-x-auto py-2 bg-white font-mono text-sm ${
+                !title ? "rounded-lg" : "rounded-b-lg"
+              }`}
+              style={style}
+            >
+              {tokens.map((line, i) => {
+                const isHighlighted = isLineHighlighted(i);
+                const isHovered = hoveredLine === i;
+                return (
+                  <div
+                    key={i}
+                    {...getLineProps({ line, key: i })}
+                    onMouseEnter={() => setHoveredLine(i)}
+                    onMouseLeave={() => setHoveredLine(null)}
+                    className="relative"
+                  >
+                    {/* Background div for full-width highlighting */}
+                    <div
+                      className={`absolute left-0 right-0 transition-colors duration-150 h-full ${
+                        isHighlighted
+                          ? "bg-[#ECF1FD] border-l-2 border-[#3B82F6]"
+                          : isHovered
+                          ? "bg-[#ECF1FD]"
+                          : ""
+                      }`}
+                    />
+                    {/* Content div */}
+                    <div className="flex relative z-10 h-6">
+                      <span className="select-none mr-2 text-gray-600 text-right px-4">
+                        {String(i + 1)}
+                      </span>
+                      <span>
+                        {line.map((token, key) => (
+                          <span key={key} {...getTokenProps({ token, key })} />
+                        ))}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </pre>
+          </div>
         )}
       </Highlight>
     </div>

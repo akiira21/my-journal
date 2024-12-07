@@ -199,14 +199,17 @@ const DesignPage = () => {
               <TypographyInlineCode text="const foo = function() {}" />
             </div>
 
-            <TypographyH3 text="Code Block" className="my-4" />
+            <TypographyH3 text="Code Blocks" className="my-4" />
 
+            <TypographyP text="Basic" className="mt-4" />
+            <CodeBlock codeString={exampleCodeString} language="javascript" />
+
+            <TypographyP text="With title and highlighting" className="mt-4" />
             <CodeBlock
-              codeString="const foo = function() { 
-                let name = 'John Doe';
-              }"
+              codeString={exampleCodeString}
               language="javascript"
               title="Code snippet title"
+              highlightedLines={[3, 4, 5]}
             />
 
             <TypographyH3 text="Image" className="my-4" />
@@ -226,3 +229,13 @@ const DesignPage = () => {
 };
 
 export default DesignPage;
+
+let exampleCodeString = `console.log("Hello World");
+
+function multiplyBy2( num ) {
+  return num * 2;
+}
+  
+let res = multiplyBy2(5);
+
+console.log("Result of 5 * 2 :",res);`;
