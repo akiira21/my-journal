@@ -1,8 +1,6 @@
 import React from "react";
 import { Info, AlertCircle } from "lucide-react";
 
-type CalloutVariant = "info" | "danger";
-
 interface BaseCalloutProps {
   children: React.ReactNode;
   className?: string;
@@ -44,7 +42,7 @@ export const Callout: React.FC<CalloutProps> = ({
 
   return (
     <div
-      className={`relative rounded-lg p-4 my-2 border ${styles.container} ${className}`}
+      className={`relative rounded-lg max-w-2xl p-4 my-2 border ${styles.container} ${className}`}
     >
       <div className="flex">
         {!actionText && (

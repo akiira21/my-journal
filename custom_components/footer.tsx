@@ -4,7 +4,7 @@ import Logo from "./logo";
 export default function Footer() {
   return (
     <footer className="border-t">
-      <div className="mx-auto max-w-7xl px-12 py-12">
+      <div className="px-12 py-12 max-w-5xl mx-auto">
         <div className="grid grid-cols-3 gap-8 md:gap-16">
           <div className="flex flex-col space-y-4 items-start">
             <Link
@@ -50,7 +50,7 @@ export default function Footer() {
           <div className="flex items-center space-x-2 text-sm text-neutral-800 font-semibold">
             <span>© 2025 Arun Kumar</span>
           </div>
-          <Logo width={36} height={36} />
+          <Logo width={28} height={28} />
         </div>
       </div>
     </footer>

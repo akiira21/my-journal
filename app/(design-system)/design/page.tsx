@@ -49,10 +49,10 @@ import CommandMenu from "@/custom_components/command-menu";
 
 const DesignPage = () => {
   return (
-    <div className="w-full h-full pt-12 px-8 max-w-5xl mx-auto bg-primary-blue">
+    <div className="w-full h-full pt-12 px-8 max-w-5xl mx-auto bg-[#f6f9fe]">
       <TypographyH2 text="Design System" className="border-b pb-2" />
 
-      <div className="my-12 flex flex-col gap-y-4 items-start">
+      <div className="my-12 flex flex-col gap-y-4">
         <div className="flex flex-col">
           <TypographyH3 text="Logo" />
           <div className="ms-4">
@@ -98,12 +98,14 @@ const DesignPage = () => {
           <TypographyMuted text="Design is the silent ambassador of your brand." />
         </div>
 
-        <div className="my-4 flex flex-col items-start">
+        <div className="my-4">
           <TypographyH3 text="Buttons" />
 
           <SimpleButton className="my-2">Button</SimpleButton>
 
-          <GradientButton className="my-2">Button</GradientButton>
+          <div>
+            <GradientButton className="my-2">Button</GradientButton>
+          </div>
 
           <IconButton className="my-2">
             <Sun size={18} />
@@ -117,7 +119,7 @@ const DesignPage = () => {
             <Sun size={18} />
           </IconButton>
 
-          <div className="mt-8 flex flex-col gap-y-2">
+          <div className="mt-8 flex flex-col gap-y-2 w-full">
             <TypographyH3 text="Anchor" />
             <XAnchor />
 
@@ -196,23 +198,28 @@ const DesignPage = () => {
               </DangerCallout>
             </div>
 
-            <div className="flex flex-col items-start">
+            <div>
               <TypographyH3 text="Inline Code" className="my-4" />
               <TypographyInlineCode text="const foo = function() {}" />
             </div>
 
-            <TypographyH3 text="Code Blocks" className="my-4" />
+            <div className="max-w-2xl">
+              <TypographyH3 text="Code Blocks" className="my-4" />
 
-            <TypographyP text="Basic" className="mt-4" />
-            <CodeBlock codeString={exampleCodeString} language="javascript" />
+              <TypographyP text="Basic" className="mt-4" />
+              <CodeBlock codeString={exampleCodeString} language="javascript" />
 
-            <TypographyP text="With title and highlighting" className="mt-4" />
-            <CodeBlock
-              codeString={exampleCodeString}
-              language="javascript"
-              title="Code snippet title"
-              highlightedLines={[3, 4, 5]}
-            />
+              <TypographyP
+                text="With title and highlighting"
+                className="mt-4"
+              />
+              <CodeBlock
+                codeString={exampleCodeString}
+                language="javascript"
+                title="Code snippet title"
+                highlightedLines={[3, 4, 5]}
+              />
+            </div>
 
             <TypographyH3 text="Details/Summary" className="my-4" />
             <CollapsibleSummary
@@ -232,7 +239,6 @@ const DesignPage = () => {
               caption="This image is from unsplash and is used for demo purpose"
               width={600}
               height={400}
-              layout="intrinsic"
             />
           </div>
         </div>

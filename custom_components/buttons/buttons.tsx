@@ -29,17 +29,16 @@ const SimpleButton = ({
 );
 
 const GradientButton = ({ className, children, onClick }: ButtonProps) => (
-  <div
-    className={cn(
-      "relative group text-sm py-2 px-4 rounded-md bg-[#F0F5FE] text-[#3E69F4] font-medium",
-      className
-    )}
-  >
-    <div className="absolute inset-0 transition-all duration-50 opacity-0 group-hover:opacity-100 -z-10">
-      <div className="absolute inset-0 blur-md rounded-lg bg-gradient-to-r from-fuchsia-300 to-blue-400"></div>
-    </div>
+  <div className="relative group inline-block">
+    <div className="absolute -inset-0.5 bg-gradient-to-r from-fuchsia-300 to-blue-400 rounded-lg blur opacity-0 group-hover:opacity-25 transition duration-300 group-hover:duration-200 animate-tilt"></div>
     <button
-      className="relative transition-all duration-300 ease-in-out"
+      className={cn(
+        "relative text-sm py-2 px-4 bg-white rounded-md text-[#3E69F4] font-medium",
+        "transition-all duration-300 ease-in-out",
+        "group-hover:translate-y-[-1px]",
+        "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
+        className
+      )}
       onClick={onClick}
     >
       {children}

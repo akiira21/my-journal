@@ -9,7 +9,6 @@ interface ImageProps {
   alt: string;
   width?: number;
   height?: number;
-  layout?: "intrinsic" | "responsive" | "fill";
   caption?: string;
 }
 
@@ -36,7 +35,8 @@ const LightboxImage = (props: ImageProps) => {
         <div
           style={{
             margin: "0",
-            width: "100%",
+            width: `${props.width}px`,
+            height: `${props.height}px`,
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-start",
@@ -55,8 +55,8 @@ const LightboxImage = (props: ImageProps) => {
                 {...props}
                 style={{
                   borderRadius: "8px",
-                  width: "100%",
-                  height: "auto",
+                  width: `${props.width}px`,
+                  height: `${props.height}px`,
                   objectFit: "cover",
                 }}
               />
@@ -105,10 +105,9 @@ const LightboxImage = (props: ImageProps) => {
               >
                 <Image
                   {...props}
-                  layout="intrinsic"
                   style={{
                     borderRadius: "8px",
-                    maxWidth: "60vw",
+                    maxWidth: "80vw",
                     maxHeight: "50vh",
                     objectFit: "contain",
                   }}
