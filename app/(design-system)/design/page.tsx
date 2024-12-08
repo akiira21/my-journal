@@ -18,6 +18,7 @@ import {
 } from "@/custom_components/typography";
 import { Sun } from "lucide-react";
 import {
+  BackwardAnchor,
   ForwardAnchor,
   GitHubAnchor,
   PageAnchor,
@@ -46,10 +47,11 @@ import {
 import CodeBlock from "@/custom_components/code-block";
 import CollapsibleSummary from "@/custom_components/summary";
 import CommandMenu from "@/custom_components/command-menu";
+import ThemeSwitcher from "@/custom_components/buttons/theme-switcher";
 
 const DesignPage = () => {
   return (
-    <div className="w-full h-full pt-12 px-8 max-w-5xl mx-auto bg-[#f6f9fe]">
+    <div className="w-full h-full pt-12 px-8 max-w-5xl mx-auto">
       <TypographyH2 text="Design System" className="border-b pb-2" />
 
       <div className="my-12 flex flex-col gap-y-4">
@@ -111,6 +113,7 @@ const DesignPage = () => {
             <Sun size={18} />
           </IconButton>
 
+          <ThemeSwitcher />
           <SimpleButton className="my-2" disabled>
             Button
           </SimpleButton>
@@ -119,18 +122,22 @@ const DesignPage = () => {
             <Sun size={18} />
           </IconButton>
 
-          <div className="mt-8 flex flex-col gap-y-2 w-full">
-            <TypographyH3 text="Anchor" />
-            <XAnchor />
+          <div className="mt-8 flex flex-col gap-y-2">
+            <div className="flex flex-col gap-y-4">
+              <TypographyH3 text="Anchor" />
+              <XAnchor />
 
-            <GitHubAnchor />
+              <GitHubAnchor />
 
-            <ForwardAnchor
-              text="Check out my github"
-              href="https://github.com/Arun-kumar21"
-            />
+              <BackwardAnchor text="Home" href="/" />
 
-            <PageAnchor text="Design Page" href="/design" />
+              <ForwardAnchor
+                text="Check out my github"
+                href="https://github.com/Arun-kumar21"
+              />
+
+              <PageAnchor text="Design Page" href="/design" />
+            </div>
 
             <TypographyH3 text="Lists" className="my-4" />
             <div className="flex justify-between max-w-lg">
@@ -254,7 +261,7 @@ let exampleCodeString = `console.log("Hello World");
 function multiplyBy2( num ) {
   return num * 2;
 }
-  
+
 let res = multiplyBy2(5);
 
 console.log("Result of 5 * 2 :",res);`;

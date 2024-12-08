@@ -67,8 +67,8 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   return (
     <div className="w-full border rounded-lg">
       {title && (
-        <div className="flex items-center justify-between rounded-t-lg border border-b bg-[#f6f9fe] px-4 py-2">
-          <h3 className="text-sm font-medium text-gray-900">{title}</h3>
+        <div className="flex items-center justify-between rounded-t-lg border border-b bg-background px-4 py-2">
+          <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
           <button onClick={handleClick}>
             <IconButton className="hover:shadow-[0_0_16px_rgba(59,130,246,0.5)]">
               {copied ? (
@@ -85,10 +85,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       )}
       <Highlight
         theme={{
-          plain: {
-            color: "#1a1a1a",
-            backgroundColor: "#f6f9fe",
-          },
+          plain: {},
           styles: [
             {
               types: ["prolog", "doctype", "cdata", "punctuation"],
@@ -168,7 +165,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <div className="relative">
             <pre
-              className={`overflow-x-auto py-2 bg-white font-mono text-sm ${
+              className={`overflow-x-auto bg-[#f6f9fe] dark:bg-[#0f1117] py-2 font-mono text-sm ${
                 !title ? "rounded-lg" : "rounded-b-lg"
               }`}
               style={style}
@@ -188,9 +185,9 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                     <div
                       className={`absolute left-0 right-0 transition-colors duration-150 h-full ${
                         isHighlighted
-                          ? "bg-[#ECF1FD] border-l-2 border-[#3B82F6]"
+                          ? "bg-[#ECF1FD] dark:bg-[#141926] border-l-2 border-[#3B82F6]"
                           : isHovered
-                          ? "bg-[#ECF1FD]"
+                          ? "bg-[#ECF1FD] dark:bg-[#141926] "
                           : ""
                       }`}
                     />

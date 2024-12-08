@@ -16,7 +16,7 @@ const Slider = React.forwardRef<
       ref={ref}
       className={cn(
         "relative flex w-full touch-none select-none items-center",
-        className
+        className,
       )}
       {...props}
     >
@@ -24,15 +24,15 @@ const Slider = React.forwardRef<
         <SliderPrimitive.Range
           className={cn(
             "absolute h-full bg-[#3E69F4]",
-            disabled && "bg-neutral-400"
+            disabled && "bg-neutral-400",
           )}
         />
       </SliderPrimitive.Track>
       <SliderPrimitive.Thumb
         className={cn(
-          "block h-5 w-5 rounded-full border shadow-lg hover:shadow-[0_0_32px_rgba(59,130,246,1.0)] hover:border-[#3E69F4] bg-background transition-all duration-300 ease-in-out focus-visible:outline-none",
+          "block h-5 w-5 rounded-full border shadow-lg hover:shadow-[0_0_32px_rgba(59,130,246,1.0)] hover:border-[#3E69F4] bg-[#f6f9fe] transition-all duration-300 ease-in-out focus-visible:outline-none",
           disabled &&
-            "cursor-not-allowed hover:border-neutral-200 hover:shadow-md"
+            "cursor-not-allowed hover:border-neutral-200 hover:shadow-md",
         )}
       />
     </SliderPrimitive.Root>

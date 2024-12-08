@@ -37,13 +37,13 @@ const CommandMenu = () => {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Tools">
-            <CommandItem className="flex items-center justify-between bg-[#f0f5fe] text-[#4A72F4] cursor-pointer">
+            <CommandItem className="flex items-center justify-between bg-[#f0f5fe] dark:bg-[#0e121f] text-[#4A72F4] cursor-pointer">
               <div className="flex items-center gap-x-4">
                 <Sparkles />
                 <span>Ask me anything</span>
               </div>
 
-              <span className="text-emerald-500 text-xs font-medium bg-emerald-100 p-1 rounded">
+              <span className="text-emerald-500 text-xs font-medium p-1 rounded">
                 Experimental
               </span>
             </CommandItem>

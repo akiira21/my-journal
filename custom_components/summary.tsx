@@ -33,7 +33,9 @@ const CollapsibleSummary = ({ summary, content }: CollapsibleSummaryProps) => {
             )}
           </AnimatePresence>
 
-          <div className="text-gray-700 ml-2">{summary}</div>
+          <div className="text-gray-700 dark:text-neutral-300 ml-2">
+            {summary}
+          </div>
           <motion.button
             onClick={() => setIsOpen(!isOpen)}
             className="flex items-center justify-centerhover:text-gray-700 transition-colors"
@@ -55,7 +57,7 @@ const CollapsibleSummary = ({ summary, content }: CollapsibleSummaryProps) => {
               transition={{ duration: 0.3, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              <div className="p-4 text-neutral-600 font-medium text-sm max-w-xl">
+              <div className="p-4 text-neutral-600 dark:text-neutral-400 font-medium text-sm max-w-xl">
                 {content}
               </div>
             </motion.div>

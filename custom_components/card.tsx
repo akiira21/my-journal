@@ -11,7 +11,7 @@ interface CardProps {
 export const BaseCard = ({ children, className }: CardProps) => {
   return (
     <div
-      className={`rounded-lg max-w-2xl bg-[#f6f9fe] p-4 border ${className}`}
+      className={`rounded-lg max-w-2xl bg-background p-4 border ${className}`}
     >
       {children}
     </div>
@@ -22,7 +22,7 @@ export const BaseCard = ({ children, className }: CardProps) => {
 export const TitleCard = ({ title, children, className }: CardProps) => {
   return (
     <div
-      className={`rounded-lg max-w-2xl bg-[#f6f9fe] py-2 border ${className}`}
+      className={`rounded-lg max-w-2xl bg-background py-2 border ${className}`}
     >
       <p className="text-sm font-medium font-mono px-4">{title}</p>
       <hr className="my-2" />
@@ -34,8 +34,9 @@ export const TitleCard = ({ title, children, className }: CardProps) => {
 // Custom Header Card Component
 export const HeaderCard = ({ header, children, className }: CardProps) => {
   return (
-    <div className={`rounded-lg max-w-2xl bg-[#f6f9fe] border ${className}`}>
-      <div className="border-b border-gray-200 px-4 py-3">{header}</div>
+    <div className={`rounded-lg max-w-2xl bg-background border ${className}`}>
+      <div className="px-4 py-3">{header}</div>
+      <hr />
       <div className="p-4">{children}</div>
     </div>
   );
@@ -56,7 +57,7 @@ export const DepthCard = ({
 
   return (
     <div
-      className={`rounded-lg max-w-2xl bg-[#f6f9fe] px-4 py-5 border ${depthClasses[depth]} ${className}`}
+      className={`rounded-lg max-w-2xl bg-background px-4 py-5 border ${depthClasses[depth]} ${className}`}
     >
       {children}
     </div>

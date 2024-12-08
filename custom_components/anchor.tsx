@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 interface AnchorProps {
   href: string;
@@ -13,7 +13,7 @@ const XAnchor = () => (
   <div>
     <Link
       href={"https://x.com/meArun_Kumar_"}
-      className="flex items-center gap-x-2 text-[#3E69F4] hover:text-black"
+      className="inline-flex items-center gap-x-2 text-[#3E69F4] hover:text-primary"
       target="_blank"
     >
       <svg
@@ -40,7 +40,7 @@ const GitHubAnchor = () => (
   <div>
     <Link
       href={"https://github.com/Arun-Kumar21"}
-      className="flex items-center gap-x-2 text-[#3E69F4] hover:text-black"
+      className="inline-flex items-center gap-x-2 text-[#3E69F4] hover:text-primary"
       target="_blank"
     >
       <svg
@@ -65,28 +65,47 @@ const GitHubAnchor = () => (
 );
 
 const ForwardAnchor = ({ text, href }: AnchorProps) => (
-  <Link
-    href={href}
-    className="flex items-center gap-x-1 hover:text-[#3E69F4] text-[#969EB0] group font-medium"
-    target="_blank"
-  >
-    <span>{text}</span>
-    <ArrowRight
-      size={18}
-      className="group-hover:translate-x-1 transition-transform duration-300 ease-in-out"
-    />
-  </Link>
+  <div>
+    <Link
+      href={href}
+      className="inline-flex items-center gap-x-1 hover:text-[#3E69F4] text-[#969EB0] group font-medium"
+      target="_blank"
+    >
+      <span>{text}</span>
+      <ArrowRight
+        size={18}
+        className="group-hover:translate-x-1 transition-transform duration-300 ease-in-out"
+      />
+    </Link>
+  </div>
+);
+
+const BackwardAnchor = ({ text, href }: AnchorProps) => (
+  <div>
+    <Link
+      href={href}
+      className="inline-flex items-center gap-x-1 hover:text-[#3E69F4] text-[#969EB0] group font-medium"
+    >
+      <ArrowLeft
+        size={18}
+        className="group-hover:-translate-x-1 transition-transform duration-300 ease-in-out"
+      />
+      <span>{text}</span>
+    </Link>
+  </div>
 );
 
 const PageAnchor = ({ text, href }: AnchorProps) => (
-  <Link href={href}>
-    <Button
-      variant={"link"}
-      className="hover:text-[#3E69F4] text-[#969EB0] font-medium p-0"
-    >
-      {text}
-    </Button>
-  </Link>
+  <div>
+    <Link href={href} target="_blank">
+      <Button
+        variant={"link"}
+        className="hover:text-[#3E69F4] text-[#969EB0] font-medium p-0"
+      >
+        {text}
+      </Button>
+    </Link>
+  </div>
 );
 
-export { XAnchor, GitHubAnchor, ForwardAnchor, PageAnchor };
+export { XAnchor, GitHubAnchor, ForwardAnchor, BackwardAnchor, PageAnchor };

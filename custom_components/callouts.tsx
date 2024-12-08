@@ -20,12 +20,12 @@ type CalloutProps = InfoCalloutProps | DangerCalloutProps;
 
 const variantStyles = {
   info: {
-    container: "bg-blue-50",
+    container: "bg-blue-50 dark:text-black",
     icon: "text-blue-600",
     action: "bg-blue-600 text-white cursor-default",
   },
   danger: {
-    container: "bg-red-50",
+    container: "bg-red-50 dark:text-black",
     icon: "text-red-600",
     action: "bg-red-600 text-white",
   },
@@ -44,7 +44,7 @@ export const Callout: React.FC<CalloutProps> = ({
     <div
       className={`relative rounded-lg max-w-2xl p-4 my-2 border ${styles.container} ${className}`}
     >
-      <div className="flex">
+      <div className="flex items-center">
         {!actionText && (
           <div className="flex-shrink-0">
             <Icon className={`h-5 w-5 ${styles.icon}`} />

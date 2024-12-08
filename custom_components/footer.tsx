@@ -9,13 +9,13 @@ export default function Footer() {
           <div className="flex flex-col space-y-4 items-start">
             <Link
               href="/"
-              className="text-sm font-medium text-neutral-500 hover:text-neutral-700"
+              className="text-sm font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"
             >
               Home
             </Link>
             <Link
               href="/design"
-              className="text-sm font-medium text-neutral-500 hover:text-neutral-700"
+              className="text-sm font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"
             >
               Design
             </Link>
@@ -24,14 +24,14 @@ export default function Footer() {
             <Link
               href="https://x.com/meArun_Kumar_"
               target="_blank"
-              className="text-sm font-medium text-neutral-500 hover:text-neutral-700"
+              className="text-sm font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"
             >
               Twitter
             </Link>
             <Link
               href="https://github.com/Arun-Kumar21"
               target="_blank"
-              className="text-sm font-medium text-neutral-500 hover:text-neutral-700"
+              className="text-sm font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"
             >
               Github
             </Link>
@@ -40,14 +40,14 @@ export default function Footer() {
             <Link
               href="https://arun-kumar.vercel.app/"
               target="_blank"
-              className="text-sm font-medium text-neutral-500 hover:text-neutral-700"
+              className="text-sm font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"
             >
               Portfolio
             </Link>
           </div>
         </div>
         <div className="mt-8 flex items-center justify-between pe-6">
-          <div className="flex items-center space-x-2 text-sm text-neutral-800 font-semibold">
+          <div className="flex items-center space-x-2 text-sm text-neutral-800 font-semibold dark:text-neutral-200">
             <span>© 2025 Arun Kumar</span>
           </div>
           <Logo width={28} height={28} />
