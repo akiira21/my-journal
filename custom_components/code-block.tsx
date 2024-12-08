@@ -69,7 +69,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       {title && (
         <div className="flex items-center justify-between rounded-t-lg border border-b bg-background px-4 py-2">
           <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-          <button onClick={handleClick}>
+          <span onClick={handleClick}>
             <IconButton className="hover:shadow-[0_0_16px_rgba(59,130,246,0.5)]">
               {copied ? (
                 <Check
@@ -80,7 +80,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 <Copy size={16} />
               )}
             </IconButton>
-          </button>
+          </span>
         </div>
       )}
       <Highlight
@@ -162,7 +162,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         code={codeString}
         language={language}
       >
-        {({ className, style, tokens, getLineProps, getTokenProps }) => (
+        {({ style, tokens, getLineProps, getTokenProps }) => (
           <div className="relative">
             <pre
               className={`overflow-x-auto bg-[#f6f9fe] dark:bg-[#0f1117] py-2 font-mono text-sm ${
@@ -170,14 +170,21 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
               }`}
               style={style}
             >
-              {tokens.map((line, i) => {
-                const isHighlighted = isLineHighlighted(i);
-                const isHovered = hoveredLine === i;
+              {tokens.map((line, lineIndex) => {
+                const isHighlighted = isLineHighlighted(lineIndex);
+                const isHovered = hoveredLine === lineIndex;
+
+                // Get line props and destructure key
+                const { key, ...lineProps } = getLineProps({
+                  line,
+                  key: lineIndex,
+                });
+
                 return (
                   <div
-                    key={i}
-                    {...getLineProps({ line, key: i })}
-                    onMouseEnter={() => setHoveredLine(i)}
+                    key={`line-${lineIndex}`} // Explicitly pass the key
+                    {...lineProps} // Spread the remaining props
+                    onMouseEnter={() => setHoveredLine(lineIndex)}
                     onMouseLeave={() => setHoveredLine(null)}
                     className="relative"
                   >
@@ -187,19 +194,29 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                         isHighlighted
                           ? "bg-[#ECF1FD] dark:bg-[#141926] border-l-2 border-[#3B82F6]"
                           : isHovered
-                          ? "bg-[#ECF1FD] dark:bg-[#141926] "
+                          ? "bg-[#ECF1FD] dark:bg-[#141926]"
                           : ""
                       }`}
                     />
                     {/* Content div */}
                     <div className="flex relative z-10 h-6">
                       <span className="select-none mr-2 text-gray-600 text-right px-4">
-                        {String(i + 1)}
+                        {String(lineIndex + 1)}
                       </span>
                       <span>
-                        {line.map((token, key) => (
-                          <span key={key} {...getTokenProps({ token, key })} />
-                        ))}
+                        {line.map((token, tokenIndex) => {
+                          const { key: tokenKey, ...tokenProps } =
+                            getTokenProps({
+                              token,
+                              key: tokenIndex,
+                            }); // Destructure token key
+                          return (
+                            <span
+                              key={`token-${lineIndex}-${tokenIndex}`} // Explicitly pass token key
+                              {...tokenProps}
+                            />
+                          );
+                        })}
                       </span>
                     </div>
                   </div>

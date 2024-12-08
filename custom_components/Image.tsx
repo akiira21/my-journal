@@ -35,8 +35,9 @@ const LightboxImage = (props: ImageProps) => {
         <div
           style={{
             margin: "0",
-            width: `${props.width}px`,
-            height: `${props.height}px`,
+            width: "100%",
+            maxWidth: `min(${props.width}px, 100%)`,
+            maxHeight: `min(${props.height}px, 100vh)`,
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-start",
@@ -49,14 +50,16 @@ const LightboxImage = (props: ImageProps) => {
               whileTap={{ scale: 0.95 }}
               role="button"
               tabIndex={0}
-              style={{ cursor: "zoom-in" }}
+              style={{ cursor: "zoom-in", width: "100%" }}
             >
               <Image
                 {...props}
                 style={{
                   borderRadius: "8px",
-                  width: `${props.width}px`,
-                  height: `${props.height}px`,
+                  width: "100%",
+                  height: "auto",
+                  maxWidth: `min(${props.width}px, 100%)`,
+                  maxHeight: `min(${props.height}px, 100vh)`,
                   objectFit: "cover",
                 }}
               />
@@ -83,6 +86,7 @@ const LightboxImage = (props: ImageProps) => {
           />
           <Dialog.Content
             asChild
+            onClick={handleDialogClose} // Added click handler to close on background click
             style={{
               position: "fixed",
               inset: 0,
@@ -90,6 +94,8 @@ const LightboxImage = (props: ImageProps) => {
               justifyContent: "center",
               alignItems: "center",
               zIndex: 1010,
+              padding: "16px",
+              cursor: "pointer", // Added cursor pointer to indicate clickable area
             }}
           >
             <motion.div>
@@ -99,16 +105,20 @@ const LightboxImage = (props: ImageProps) => {
                 whileTap={{ scale: 0.98 }}
                 style={{
                   outline: "none",
-                  cursor: "zoom-out",
+                  cursor: "default",
                 }}
-                onClick={handleDialogClose}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent background click from triggering
+                }}
               >
                 <Image
                   {...props}
                   style={{
                     borderRadius: "8px",
-                    maxWidth: "80vw",
-                    maxHeight: "50vh",
+                    width: "auto",
+                    height: "auto",
+                    maxWidth: "min(90vw, 1200px)",
+                    maxHeight: "min(80vh, 800px)",
                     objectFit: "contain",
                   }}
                 />

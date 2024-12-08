@@ -48,6 +48,7 @@ import CodeBlock from "@/custom_components/code-block";
 import CollapsibleSummary from "@/custom_components/summary";
 import CommandMenu from "@/custom_components/command-menu";
 import ThemeSwitcher from "@/custom_components/buttons/theme-switcher";
+import Sandpack from "@/custom_components/sandpack/sandpack";
 
 const DesignPage = () => {
   return (
@@ -228,6 +229,10 @@ const DesignPage = () => {
               />
             </div>
 
+            <div className="my-4">
+              <Sandpack files={files} template="react" autorun />
+            </div>
+
             <TypographyH3 text="Details/Summary" className="my-4" />
             <CollapsibleSummary
               summary="Summary: Some short text"
@@ -235,9 +240,7 @@ const DesignPage = () => {
             />
 
             <TypographyH3 text="Command Menu" className="mt-4" />
-            <div>
-              <CommandMenu />
-            </div>
+            <CommandMenu />
 
             <TypographyH3 text="Image" className="my-4" />
             <LightboxImage
@@ -265,3 +268,5 @@ function multiplyBy2( num ) {
 let res = multiplyBy2(5);
 
 console.log("Result of 5 * 2 :",res);`;
+
+const files = {};

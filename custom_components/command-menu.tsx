@@ -28,10 +28,10 @@ const CommandMenu = () => {
   }, []);
 
   return (
-    <>
-      <button onClick={() => setOpen(!open)}>
+    <div className="flex">
+      <span onClick={() => setOpen(!open)}>
         <CommandMenuButton open={open} />
-      </button>
+      </span>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
@@ -78,7 +78,7 @@ const CommandMenu = () => {
           </CommandGroup>
         </CommandList>
       </CommandDialog>
-    </>
+    </div>
   );
 };
 
