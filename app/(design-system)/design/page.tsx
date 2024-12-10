@@ -49,6 +49,7 @@ import CollapsibleSummary from "@/custom_components/summary";
 import CommandMenu from "@/custom_components/command-menu";
 import ThemeSwitcher from "@/custom_components/buttons/theme-switcher";
 import Sandpack from "@/custom_components/sandpack/sandpack";
+import FeatureBlogs from "@/custom_components/feature-card";
 
 const DesignPage = () => {
   return (
@@ -179,6 +180,11 @@ const DesignPage = () => {
               <DepthCard depth={3}>
                 Card <TypographyInlineCode text="depth = 3" />
               </DepthCard>
+            </div>
+
+            <div className="my-4">
+              <TypographyH3 text="Feature cards" className="mb-4" />
+              <FeatureBlogs />
             </div>
 
             <div className="flex flex-col gap-y-4 items-start">

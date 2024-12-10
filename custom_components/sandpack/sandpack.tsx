@@ -161,7 +161,7 @@ const SandpackFilesTab = () => {
           className={`text-sm font-medium ${
             sandpack.activeFile === filename
               ? "text-[#3579F6]"
-              : "text-muted-foreground"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           {filename.split("/").pop()}
