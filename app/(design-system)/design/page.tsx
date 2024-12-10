@@ -230,7 +230,7 @@ const DesignPage = () => {
             </div>
 
             <div className="my-4">
-              <Sandpack files={files} template="react" autorun />
+              <Sandpack files={files} template="vanilla" autorun />
             </div>
 
             <TypographyH3 text="Details/Summary" className="my-4" />

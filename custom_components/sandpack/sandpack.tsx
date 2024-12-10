@@ -7,16 +7,14 @@ import {
   SandpackLayout,
   SandpackPredefinedTemplate,
   SandpackConsole,
+  useSandpack,
 } from "@codesandbox/sandpack-react";
 
 import React from "react";
 import setupFiles from "./sandpack-setup-files";
 import { useTheme } from "next-themes";
-import { IconButton } from "../buttons/buttons";
-import { Layers } from "lucide-react";
-import SandpackTabs from "./sandpack-tabs";
-import ToolTip from "../custom-tooltip";
 import SandpackButtons from "./sandpack-buttons";
+import { useSandpackTabsHook } from "./useSandpackTabsHook";
 
 type SandpackTabsType = "preview" | "console";
 
@@ -31,6 +29,7 @@ interface SandpackProps {
   files: Record<string, any>;
   dependencies?: Record<string, string>;
   autorun?: boolean;
+  defaultTab?: SandpackTabsType;
 }
 
 const defaultEditorOptions = {
@@ -66,10 +65,15 @@ const defaultFilesByTemplate: Record<SandpackPredefinedTemplate, any> = {
 };
 
 const Sandpack = (props: SandpackProps) => {
-  const { template, files, dependencies, autorun = true, options } = props;
+  const {
+    template,
+    files,
+    dependencies,
+    autorun = true,
+    options,
+    defaultTab,
+  } = props;
   const { theme } = useTheme();
-
-  const [activeTab, setActiveTab] = React.useState<SandpackTabsType>("preview");
 
   return (
     <SandpackProvider
@@ -86,43 +90,84 @@ const Sandpack = (props: SandpackProps) => {
         autorun,
       }}
     >
-      <SandpackLayout className="h-full">
-        <div className="flex flex-1">
-          <div className="flex flex-col w-full">
-            <div className="flex items-center dark:bg-[#0f1117] bg-background justify-between h-[40px]">
-              <SandpackTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-
-              <SandpackButtons />
-            </div>
-            {activeTab === "preview" ? (
-              <SandpackPreview
-                showNavigator={false}
-                showRefreshButton={false}
-                showOpenInCodeSandbox={false}
-                style={{ height: defaultEditorOptions.editorheight - 40 }}
-              />
-            ) : (
-              <SandpackConsole
-                showResetConsoleButton={false}
-                style={{
-                  height: defaultEditorOptions.editorheight - 40,
-                  width: "100%",
-                }}
-              />
-            )}
-          </div>
+      <SandpackLayout className="flex">
+        <SandpackTabs />
+        <div className="w-1/2 flex flex-col">
+          <SandpackFilesTab />
           <SandpackCodeEditor
             {...defaultEditorOptions}
+            showInlineErrors
+            closableTabs
             showRunButton={false}
+            showTabs={false}
             style={{
-              height: defaultEditorOptions.editorheight,
-              borderLeft: "1px solid #e5e7eb",
+              height: defaultEditorOptions.editorheight - 40,
             }}
+            className="border-l"
             wrapContent
           />
         </div>
       </SandpackLayout>
     </SandpackProvider>
+  );
+};
+
+const SandpackTabs = () => {
+  const consoleRef = React.useRef(null);
+  const { SandpackTabs, activeTab } = useSandpackTabsHook();
+
+  return (
+    <div className="flex flex-col flex-1">
+      <div className="flex items-center dark:bg-[#0f1117] bg-background justify-between h-[40px]">
+        <SandpackTabs />
+
+        <SandpackButtons consoleRef={consoleRef} />
+      </div>
+      <SandpackPreview
+        showNavigator={false}
+        showRefreshButton={false}
+        showOpenInCodeSandbox={false}
+        style={{
+          height: defaultEditorOptions.editorheight - 40,
+          display: activeTab === "preview" ? "flex" : "none",
+        }}
+      />
+      <SandpackConsole
+        showResetConsoleButton={false}
+        ref={consoleRef}
+        style={{
+          height: defaultEditorOptions.editorheight - 40,
+          width: "100%",
+          display: activeTab === "console" ? "flex" : "none",
+        }}
+      />
+    </div>
+  );
+};
+
+const SandpackFilesTab = () => {
+  const { sandpack } = useSandpack();
+
+  const handleOpenFile = (file: string) => {
+    sandpack.openFile(file);
+  };
+
+  return (
+    <div className="flex gap-4 h-[40px] bg-background dark:bg-[#0f1117] border px-4">
+      {Object.keys(sandpack.files).map((filename) => (
+        <button
+          key={filename}
+          onClick={() => handleOpenFile(filename)}
+          className={`text-sm font-medium ${
+            sandpack.activeFile === filename
+              ? "text-[#3579F6]"
+              : "text-muted-foreground"
+          }`}
+        >
+          {filename.split("/").pop()}
+        </button>
+      ))}
+    </div>
   );
 };
 
