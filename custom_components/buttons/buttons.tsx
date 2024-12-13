@@ -33,7 +33,7 @@ const GradientButton = ({ className, children, onClick }: ButtonProps) => (
     <div className="absolute -inset-0.5 bg-gradient-to-r from-fuchsia-300 to-blue-400 rounded-lg blur opacity-0 group-hover:opacity-50 transition duration-300 group-hover:duration-200"></div>
     <button
       className={cn(
-        "relative text-sm py-2 px-4 bg-white rounded-md text-[#3E69F4] font-medium",
+        "relative text-sm py-2 px-4 bg-[#f0f5fe] dark:bg-[#0e121f] rounded-md text-[#3E69F4] font-medium",
         "transition-all duration-300 ease-in-out",
         className
       )}

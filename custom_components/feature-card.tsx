@@ -10,6 +10,12 @@ interface BlogCardProps {
   gradientClass: string;
 }
 
+type ArticlesType = {
+  title: string;
+  description: string;
+  gradientClass: "gradient-1" | "gradient-2" | "gradient-3";
+}[];
+
 function BlogCard({ title, description, gradientClass }: BlogCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -29,7 +35,7 @@ function BlogCard({ title, description, gradientClass }: BlogCardProps) {
         }}
         transition={{ duration: 0.3 }}
       />
-      <Card className="relative border-1 px-4 py-6 transition-all duration-500 hover:shadow-lg bg-white dark:bg-gray-800 bg-background rounded-lg hover:scale-[101%]">
+      <Card className="relative border-1 px-4 py-6 transition-all duration-500 hover:shadow-lg bg-white bg-background dark:bg-[#0f1117] rounded-lg hover:scale-[101%]">
         <h2 className="font-semibold mb-2 bg-gradient-to-r from-blue-400 via-pink-300 to-orange-300 bg-clip-text text-transparent w-fit">
           {title}
         </h2>
@@ -42,26 +48,7 @@ function BlogCard({ title, description, gradientClass }: BlogCardProps) {
 }
 
 export default function BlogList() {
-  const articles = [
-    {
-      title: "Real-time dreamy Cloudscapes with Volumetric Raymarching",
-      description:
-        "This article is a deep dive into my experimentations with Volumetric rendering and how to leverage it to render beautiful raymarched cloudscapes in React Three Fiber and WebGL.",
-      gradientClass: "gradient-1",
-    },
-    {
-      title: "Refraction, dispersion, and other shader light effects",
-      description:
-        "A guide on how to reproduce a chromatic dispersion effect for your React Three Fiber and shader projects with FBO, refraction, chromatic aberration, specular, and other tricks through 9 interactive code playgrounds.",
-      gradientClass: "gradient-2",
-    },
-    {
-      title: "The Study of Shaders with React Three Fiber",
-      description:
-        "A complete guide on how to use shaders with React Three Fiber, work with uniforms and varyings, and build dynamic, interactive and composable materials with them through 8 unique 3D scenes.",
-      gradientClass: "gradient-3",
-    },
-  ];
+  const articles: ArticlesType = [];
 
   return (
     <div className="max-w-3xl space-y-6">

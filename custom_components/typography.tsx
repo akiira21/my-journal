@@ -1,11 +1,12 @@
 import { cn } from "@/lib/utils";
+import React from "react";
 
 interface TypographyProps {
-  text: String;
+  children: React.ReactNode;
   className?: string;
 }
 
-const TypographyH1 = ({ text, className }: TypographyProps) => {
+const TypographyH1 = ({ children, className }: TypographyProps) => {
   return (
     <h1
       className={cn(
@@ -13,48 +14,48 @@ const TypographyH1 = ({ text, className }: TypographyProps) => {
         className
       )}
     >
-      {text}
+      {children}
     </h1>
   );
 };
 
-const TypographyH2 = ({ text, className }: TypographyProps) => {
+const TypographyH2 = ({ children, className }: TypographyProps) => {
   return (
     <h2 className={cn("scroll-m-20 pb-2 text-3xl tracking-tight", className)}>
-      {text}
+      {children}
     </h2>
   );
 };
 
-const TypographyH3 = ({ text, className }: TypographyProps) => {
+const TypographyH3 = ({ children, className }: TypographyProps) => {
   return (
     <h3 className={cn("scroll-m-20 text-2xl tracking-tight", className)}>
-      {text}
+      {children}
     </h3>
   );
 };
 
-const TypographyH4 = ({ text, className }: TypographyProps) => {
+const TypographyH4 = ({ children, className }: TypographyProps) => {
   return (
     <h4 className={cn("scroll-m-20 text-xl tracking-tight", className)}>
-      {text}
+      {children}
     </h4>
   );
 };
 
-const TypographyP = ({ text, className }: TypographyProps) => {
-  return <p className={cn("leading-7", className)}>{text}</p>;
+const TypographyP = ({ children, className }: TypographyProps) => {
+  return <p className={cn("leading-7", className)}>{children}</p>;
 };
 
-const TypographyBlockquote = ({ text, className }: TypographyProps) => {
+const TypographyBlockquote = ({ children, className }: TypographyProps) => {
   return (
     <blockquote className={cn("mt-6 border-l-2 pl-4 italic", className)}>
-      {text}
+      {children}
     </blockquote>
   );
 };
 
-const TypographyInlineCode = ({ text, className }: TypographyProps) => {
+const TypographyInlineCode = ({ children, className }: TypographyProps) => {
   return (
     <code
       className={cn(
@@ -62,32 +63,34 @@ const TypographyInlineCode = ({ text, className }: TypographyProps) => {
         className
       )}
     >
-      {text}
+      {children}
     </code>
   );
 };
 
-const TypographyMono = ({ text, className }: TypographyProps) => {
-  return <p className={cn("font-mono", className)}>{text}</p>;
+const TypographyMono = ({ children, className }: TypographyProps) => {
+  return <p className={cn("font-mono", className)}>{children}</p>;
 };
 
-const TypographyLarge = ({ className, text }: TypographyProps) => {
-  return <p className={cn("text-lg font-semibold", className)}>{text}</p>;
+const TypographyLarge = ({ className, children }: TypographyProps) => {
+  return <p className={cn("text-lg font-semibold", className)}>{children}</p>;
 };
 
-const TypographySmall = ({ className, text }: TypographyProps) => {
+const TypographySmall = ({ className, children }: TypographyProps) => {
   return (
-    <p className={cn("text-sm font-medium leading-none", className)}>{text}</p>
+    <p className={cn("text-sm font-medium leading-none", className)}>
+      {children}
+    </p>
   );
 };
 
-const TypographyMuted = ({ text, className }: TypographyProps) => {
+const TypographyMuted = ({ children, className }: TypographyProps) => {
   return (
-    <p className={cn("text-sm text-muted-foreground", className)}>{text}</p>
+    <p className={cn("text-sm text-muted-foreground", className)}>{children}</p>
   );
 };
 
-const TypographyTextGradient = ({ text, className }: TypographyProps) => {
+const TypographyTextGradient = ({ children, className }: TypographyProps) => {
   return (
     <p
       className={cn(
@@ -95,7 +98,7 @@ const TypographyTextGradient = ({ text, className }: TypographyProps) => {
         className
       )}
     >
-      {text}
+      {children}
     </p>
   );
 };

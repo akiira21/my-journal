@@ -92,7 +92,7 @@ const Sandpack = (props: SandpackProps) => {
     >
       <SandpackLayout className="flex">
         <SandpackTabs />
-        <div className="w-1/2 flex flex-col">
+        <div className="w-1/2 flex flex-col flex-1">
           <SandpackFilesTab />
           <SandpackCodeEditor
             {...defaultEditorOptions}
