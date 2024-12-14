@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AnchorProps {
   href: string;
   text: string;
+  className?: string;
 }
 
 const XAnchor = () => (
@@ -64,11 +66,14 @@ const GitHubAnchor = () => (
   </div>
 );
 
-const ForwardAnchor = ({ text, href }: AnchorProps) => (
+const ForwardAnchor = ({ text, href, className }: AnchorProps) => (
   <div>
     <Link
       href={href}
-      className="inline-flex items-center gap-x-1 hover:text-[#3E69F4] text-[#969EB0] group font-medium"
+      className={cn(
+        "inline-flex items-center gap-x-1 hover:text-[#3E69F4] text-[#969EB0] group font-medium",
+        className
+      )}
       target="_blank"
     >
       <span>{text}</span>
@@ -80,14 +85,17 @@ const ForwardAnchor = ({ text, href }: AnchorProps) => (
   </div>
 );
 
-const BackwardAnchor = ({ text, href }: AnchorProps) => (
+const BackwardAnchor = ({ text, href, className }: AnchorProps) => (
   <div>
     <Link
       href={href}
-      className="inline-flex items-center gap-x-1 hover:text-[#3E69F4] text-[#969EB0] group font-medium"
+      className={cn(
+        "inline-flex items-center gap-x-1 hover:text-[#3E69F4] dark:hover:text-[#3E69F4] text-[#969EB0] group font-medium",
+        className
+      )}
     >
       <ArrowLeft
-        size={18}
+        size={14}
         className="group-hover:-translate-x-1 transition-transform duration-300 ease-in-out"
       />
       <span>{text}</span>
@@ -95,12 +103,15 @@ const BackwardAnchor = ({ text, href }: AnchorProps) => (
   </div>
 );
 
-const PageAnchor = ({ text, href }: AnchorProps) => (
+const PageAnchor = ({ text, href, className }: AnchorProps) => (
   <div>
     <Link href={href} target="_blank">
       <Button
         variant={"link"}
-        className="hover:text-[#3E69F4] text-[#969EB0] font-medium p-0"
+        className={cn(
+          "hover:text-[#3E69F4] text-[#969EB0] font-medium p-0",
+          className
+        )}
       >
         {text}
       </Button>

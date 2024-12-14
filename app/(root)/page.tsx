@@ -2,6 +2,7 @@ import { GradientButton } from "@/custom_components/buttons/buttons";
 import { TypographyH2 } from "@/custom_components/typography";
 import { MoveUpRight } from "lucide-react";
 import Link from "next/link";
+import LatestPosts from "./_components/latest-posts";
 
 export default function HomePage() {
   return (
@@ -27,6 +28,10 @@ export default function HomePage() {
             <MoveUpRight size={12} />
           </Link>
         </GradientButton>
+
+        <div className="mt-12 max-w-xl">
+          <LatestPosts />
+        </div>
       </div>
     </div>
   );
