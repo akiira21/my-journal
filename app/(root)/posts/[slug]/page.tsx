@@ -1,20 +1,19 @@
-import CustomMdx from "@/components/mdx";
 import { BackwardAnchor } from "@/custom_components/anchor";
 import {
   TypographyBlockquote,
   TypographyH2,
   TypographyP,
 } from "@/custom_components/typography";
-import { calculateReadingTime, formatDate, getBlogPost } from "@/lib/mdx";
+import { calculateReadingTime, formatDate, getPostBySlug } from "@/lib/mdx";
 
 export default async function PostPage({
   params,
 }: {
   params: { slug: string };
 }) {
-  const post = getBlogPost(params.slug);
+  const post = await getPostBySlug(params.slug);
   if (!post) return <div>Loading</div>;
-  const readTime = calculateReadingTime(post.content);
+  const readTime = post.readTime;
 
   return (
     <div className="mt-[25vh] max-w-2xl mx-auto">
@@ -26,7 +25,7 @@ export default async function PostPage({
 
       <header className="my-4">
         <div id="post-header">
-          <TypographyH2>{post.metadata.title}</TypographyH2>
+          <TypographyH2 className="italic">{post.metadata.title}</TypographyH2>
         </div>
         <div className="flex items-center gap-x-2">
           <TypographyP className="text-xs my-2 font-medium text-neutral-500 dark:text-zinc-400">
@@ -44,9 +43,7 @@ export default async function PostPage({
         </div>
       </header>
 
-      <article className="prose dark:prose-dark">
-        <CustomMdx source={post.content} />
-      </article>
+      <article className="prose dark:prose-dark">{post.content}</article>
     </div>
   );
 }

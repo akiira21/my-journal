@@ -30,7 +30,7 @@ const SimpleButton = ({
 
 const GradientButton = ({ className, children, onClick }: ButtonProps) => (
   <div className="relative group inline-block">
-    <div className="absolute -inset-0.5 bg-gradient-to-r from-fuchsia-300 to-blue-400 rounded-lg blur opacity-0 group-hover:opacity-50 transition duration-300 group-hover:duration-200"></div>
+    <div className="absolute -inset-1 bg-gradient-to-r from-fuchsia-300 to-blue-400 rounded-lg blur opacity-0 group-hover:opacity-50 transition-all duration-500 group-hover:duration-500"></div>
     <button
       className={cn(
         "relative text-sm py-2 px-4 bg-[#f0f5fe] dark:bg-[#0e121f] rounded-md text-[#3E69F4] font-medium",

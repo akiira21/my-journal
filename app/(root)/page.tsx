@@ -22,10 +22,13 @@ export default function HomePage() {
           <Link
             href="https://arun-kumar.vercel.app/"
             target="_blank"
-            className="flex gap-x-2 items-center"
+            className="flex gap-x-2 items-center group"
           >
             About me
-            <MoveUpRight size={12} />
+            <MoveUpRight
+              size={12}
+              className="group-hover:rotate-45 transition-all duration-500"
+            />
           </Link>
         </GradientButton>
 

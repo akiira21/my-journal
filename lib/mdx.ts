@@ -1,7 +1,10 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { serialize } from "next-mdx-remote/serialize";
+import { remarkMeta } from "./remark-meta";
+import { compileMDX } from "next-mdx-remote/rsc";
+
+import { mdxComponents } from "./mdx-components";
 
 // Get all the mdx files from content dir
 function getMdxFiles(dir: string) {
@@ -35,8 +38,36 @@ export function getBlogPosts() {
   return getMdxData(path.join(process.cwd(), "content"));
 }
 
-export function getBlogPost(slug: string) {
-  return getBlogPosts().find((post) => post.slug === slug);
+export async function getPostBySlug(slug: string) {
+  const filePath = path.join(process.cwd(), "content", `${slug}.mdx`);
+
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+
+  const source = fs.readFileSync(filePath, "utf-8");
+  const { data, content } = matter(source);
+
+  // Use compileMDX instead of serialize for RSC
+  const { content: mdxContent } = await compileMDX({
+    source: content,
+    options: {
+      parseFrontmatter: true,
+      mdxOptions: {
+        rehypePlugins: [remarkMeta],
+      },
+    },
+    // @ts-ignore
+    components: {
+      ...mdxComponents,
+    },
+  });
+
+  return {
+    metadata: data,
+    content: mdxContent,
+    readTime: calculateReadingTime(content),
+  };
 }
 
 export function calculateReadingTime(content: string) {
