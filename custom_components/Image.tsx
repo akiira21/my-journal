@@ -16,6 +16,14 @@ const LightboxImage = (props: ImageProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const uniqueId = useId();
 
+  if (!props.width) {
+    props.width = 800;
+  }
+
+  if (!props.height) {
+    props.height = 600;
+  }
+
   const handleDialogClose = () => setIsDialogOpen(false);
 
   const handlePressEnter = (e: React.KeyboardEvent) => {

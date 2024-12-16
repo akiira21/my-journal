@@ -17,7 +17,7 @@ const CommandMenuButton = ({ open }: { open: boolean }) => {
   return (
     <motion.button
       onClick={handleClick}
-      className="flex items-center justify-center w-9 h-9 rounded-md border transition-colors text-neutral-600 dark:text-neutral-300 duration-50 hover:border-[rgba(59,87,246,0.81)] hover:border-2 hover:text-[rgba(59,87,246,0.81)] ease-in-out hover:shadow-[0_0_32px_rgba(59,130,246,0.6)] hover:rounded-xl"
+      className="flex bg-background items-center justify-center w-9 h-9 rounded-md border transition-colors text-neutral-600 dark:text-neutral-300 duration-50 hover:border-[rgba(59,87,246,0.81)] hover:border-2 hover:text-[rgba(59,87,246,0.81)] ease-in-out hover:shadow-[0_0_32px_rgba(59,130,246,0.6)] hover:rounded-xl"
       aria-label="Command Center"
     >
       <motion.svg

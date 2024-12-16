@@ -68,16 +68,16 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     <div className="w-full border rounded-lg">
       {title && (
         <div className="flex items-center justify-between rounded-t-lg border border-b bg-background px-4 py-2">
-          <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+          <h3 className="text-sm text-zinc-700 dark:text-zinc-400">{title}</h3>
           <span onClick={handleClick}>
-            <IconButton className="hover:shadow-[0_0_16px_rgba(59,130,246,0.5)]">
+            <IconButton className="hover:shadow-[0_0_16px_rgba(59,130,246,0.5)] w-8 h-8 hover:rounded-lg">
               {copied ? (
                 <Check
-                  size={16}
+                  size={14}
                   className="text-green-500 transition-all duration-300"
                 />
               ) : (
-                <Copy size={16} />
+                <Copy size={14} />
               )}
             </IconButton>
           </span>

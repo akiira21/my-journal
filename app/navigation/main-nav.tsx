@@ -6,10 +6,13 @@ import ThemeSwitcher from "@/custom_components/buttons/theme-switcher";
 import CommandMenu from "@/custom_components/command-menu";
 import Logo from "@/custom_components/logo";
 import { TypographyH4 } from "@/custom_components/typography";
+import Link from "next/link";
 
 const MainNav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [navTitle, setNavTitle] = useState<any>("");
+
+  const activePage = window.location.pathname;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,7 +22,7 @@ const MainNav = () => {
     const header = document.getElementById("post-header");
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting) {
+        if (!entry.isIntersecting && activePage.startsWith("/posts")) {
           setNavTitle(header?.textContent);
         } else {
           setNavTitle("");
@@ -36,14 +39,15 @@ const MainNav = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
       observer.disconnect();
+      setNavTitle("");
     };
-  }, []);
+  }, [activePage]);
 
   return (
     <nav
       className={`
-        fixed top-0 left-0 right-0 w-full backdrop-blur-md 
-        transition-all duration-300 ease-in-out z-50
+        fixed top-0 left-0 right-0 w-full backdrop-blur-md
+        transition-all duration-300 ease-in-out z-50 bg-[#f6f9fe9a] dark:bg-[#090a0f9a]
         ${isScrolled ? "border-b h-14" : "h-20"}
       `}
     >
@@ -59,7 +63,9 @@ const MainNav = () => {
               damping: 20,
             }}
           >
-            <Logo width={32} height={32} />
+            <Link href={"/"}>
+              <Logo width={32} height={32} />
+            </Link>
           </motion.div>
 
           <AnimatePresence mode="wait">

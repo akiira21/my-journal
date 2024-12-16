@@ -1,5 +1,10 @@
 import CodeBlock from "@/custom_components/code-block";
-import { TypographyH4, TypographyP } from "@/custom_components/typography";
+import LightboxImage from "@/custom_components/Image";
+import {
+  TypographyBlockquote,
+  TypographyH4,
+  TypographyP,
+} from "@/custom_components/typography";
 import { ReactNode } from "react";
 
 interface CodeProps {
@@ -65,16 +70,32 @@ const CodeBlockWrapper: React.FC<CodeProps> = ({
   );
 };
 
-const Heading: React.FC<{ children: ReactNode }> = ({ children }) => (
-  <TypographyH4 className="text-lg my-6 text-zinc-800 dark:text-zinc-300 content-heading">
-    {children}
-  </TypographyH4>
-);
+const Heading: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const id = children
+    ?.toString()
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .replace(/-+/g, "-") // Remove consecutive hyphens
+    .trim();
+  return (
+    <TypographyH4
+      id={id}
+      className="text-lg my-4 text-zinc-800 dark:text-zinc-300 content-heading"
+    >
+      {children}
+    </TypographyH4>
+  );
+};
 
 const Paragraph: React.FC<{ children: ReactNode }> = ({ children }) => (
-  <TypographyP className="text-sm my-1 text-zinc-700 leading-relaxed tracking-wide dark:text-zinc-400">
+  <TypographyP className="text-sm my-2 text-zinc-700 leading-relaxed tracking-wide dark:text-zinc-400">
     {children}
   </TypographyP>
+);
+
+const Blockquote: React.FC<{ children: ReactNode }> = ({ children }) => (
+  <TypographyBlockquote className="my-2">{children}</TypographyBlockquote>
 );
 
 const Code = ({ children }: { children: any }) => {
@@ -88,9 +109,24 @@ const Code = ({ children }: { children: any }) => {
   );
 };
 
+const MdxImage = (props: any) => {
+  return (
+    <div className="my-4">
+      <LightboxImage
+        src={props.src}
+        alt={props.alt}
+        width={props.width}
+        height={props.height}
+      />
+    </div>
+  );
+};
+
 // MDX components mapping
 export const mdxComponents = {
   h1: Heading,
   p: Paragraph,
   pre: Code,
+  img: MdxImage,
+  blockquote: Blockquote,
 };

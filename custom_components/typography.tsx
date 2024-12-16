@@ -4,6 +4,7 @@ import React from "react";
 interface TypographyProps {
   children: React.ReactNode;
   className?: string;
+  id?: string;
 }
 
 const TypographyH1 = ({ children, className }: TypographyProps) => {
@@ -35,9 +36,9 @@ const TypographyH3 = ({ children, className }: TypographyProps) => {
   );
 };
 
-const TypographyH4 = ({ children, className }: TypographyProps) => {
+const TypographyH4 = ({ children, className, id }: TypographyProps) => {
   return (
-    <h4 className={cn("scroll-m-20 text-xl tracking-tight", className)}>
+    <h4 className={cn("scroll-m-20 text-xl tracking-tight", className)} id={id}>
       {children}
     </h4>
   );

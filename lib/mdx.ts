@@ -63,10 +63,13 @@ export async function getPostBySlug(slug: string) {
     },
   });
 
+  const sections = extractMDXSections(content);
+  
   return {
     metadata: data,
     content: mdxContent,
     readTime: calculateReadingTime(content),
+    sections,
   };
 }
 
@@ -75,6 +78,95 @@ export function calculateReadingTime(content: string) {
   let textLength = content.split(" ").length;
 
   return Math.ceil(textLength / wordsPerMinute);
+}
+export function extractMDXSections(content: string) {
+  const patterns = {
+    // Matches standard markdown headings (# Heading)
+    markdownHeading: /^(#{1,6})\s+(.+)$/gm,
+
+    // Matches JSX section components (<Section>)
+    jsxSection: /<Section[^>]*>[\s\S]*?<\/Section>/g,
+
+    // Matches HTML heading tags (<h1>-<h6>)
+    htmlHeading: /<h[1-6][^>]*>(.*?)<\/h[1-6]>/g,
+
+    // Matches custom heading components
+    customHeading: /<Heading[^>]*>(.*?)<\/Heading>/g,
+  };
+
+  const sections = [];
+
+  // Function to convert text to ID format
+  const generateId = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Remove consecutive hyphens
+      .trim();
+  };
+
+  // Extract markdown headings
+  let match;
+  while ((match = patterns.markdownHeading.exec(content)) !== null) {
+    const [, level, title] = match;
+    sections.push({
+      type: "markdown",
+      level: level.length,
+      title: title.trim(),
+      id: generateId(title),
+      position: match.index,
+    });
+  }
+
+  // Extract JSX sections
+  while ((match = patterns.jsxSection.exec(content)) !== null) {
+    const section = match[0];
+    // Extract id from section props
+    const idMatch = section.match(/id=["']([^"']+)["']/);
+    // Extract title from section props
+    const titleMatch = section.match(/title=["']([^"']+)["']/);
+
+    sections.push({
+      type: "jsx",
+      title: titleMatch ? titleMatch[1] : null,
+      id: idMatch ? idMatch[1] : generateId(titleMatch ? titleMatch[1] : ""),
+      position: match.index,
+      rawContent: section,
+    });
+  }
+
+  // Extract HTML headings
+  while ((match = patterns.htmlHeading.exec(content)) !== null) {
+    const title = match[1].replace(/<[^>]+>/g, "").trim(); // Remove any nested HTML tags
+    sections.push({
+      type: "html",
+      title: title,
+      id: generateId(title),
+      position: match.index,
+    });
+  }
+
+  // Extract custom heading components
+  while ((match = patterns.customHeading.exec(content)) !== null) {
+    const heading = match[0];
+    const idMatch = heading.match(/id=["']([^"']+)["']/);
+    const titleMatch = heading.match(/title=["']([^"']+)["']/);
+
+    sections.push({
+      type: "custom",
+      title: titleMatch ? titleMatch[1] : match[1],
+      id: idMatch
+        ? idMatch[1]
+        : generateId(titleMatch ? titleMatch[1] : match[1]),
+      position: match.index,
+    });
+  }
+
+  // Sort sections by their position in the document
+  sections.sort((a, b) => a.position - b.position);
+
+  return sections;
 }
 
 export function formatDate(

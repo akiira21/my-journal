@@ -1,10 +1,11 @@
+import TableOfContent from "@/app/navigation/table-of-content";
 import { BackwardAnchor } from "@/custom_components/anchor";
 import {
   TypographyBlockquote,
   TypographyH2,
   TypographyP,
 } from "@/custom_components/typography";
-import { calculateReadingTime, formatDate, getPostBySlug } from "@/lib/mdx";
+import { formatDate, getPostBySlug } from "@/lib/mdx";
 
 export default async function PostPage({
   params,
@@ -43,7 +44,8 @@ export default async function PostPage({
         </div>
       </header>
 
-      <article className="prose dark:prose-dark">{post.content}</article>
+      <TableOfContent sections={post.sections} />
+      <article className="w-full h-full">{post.content}</article>
     </div>
   );
 }
