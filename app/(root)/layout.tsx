@@ -8,7 +8,7 @@ export default function PagesLayout({
   return (
     <>
       <MainNav />
-      <div className="mt-20 min-h-[calc(100vh-13rem)] h-full w-full px-4 max-w-3xl mx-auto">
+      <div className="mt-20 min-h-[calc(100vh-13rem)] h-full w-full relative">
         {children}
       </div>
     </>

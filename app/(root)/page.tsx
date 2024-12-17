@@ -6,7 +6,7 @@ import LatestPosts from "./_components/latest-posts";
 
 export default function HomePage() {
   return (
-    <div className="pt-[15vh]">
+    <div className="pt-[15vh] max-w-3xl mx-auto px-4">
       <div>
         <TypographyH2 className="leading-normal font-medium inline">
           Hi 👋🏻 I'm Arun Kumar, and this is my journal.

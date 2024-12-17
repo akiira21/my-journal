@@ -64,7 +64,7 @@ export async function getPostBySlug(slug: string) {
   });
 
   const sections = extractMDXSections(content);
-  
+
   return {
     metadata: data,
     content: mdxContent,
@@ -74,7 +74,7 @@ export async function getPostBySlug(slug: string) {
 }
 
 export function calculateReadingTime(content: string) {
-  let wordsPerMinute = 200;
+  let wordsPerMinute = 100;
   let textLength = content.split(" ").length;
 
   return Math.ceil(textLength / wordsPerMinute);

@@ -2,14 +2,7 @@
 
 import Link from "next/link";
 import React from "react";
-
-interface Section {
-  type: string;
-  level?: number | null;
-  title: string;
-  id: string;
-  position: number;
-}
+import { motion } from "framer-motion";
 
 interface TableOfContentProps {
   sections: any[];
@@ -19,40 +12,89 @@ export default function TableOfContent({ sections }: TableOfContentProps) {
   const [activeSection, setActiveSection] = React.useState<string>("");
 
   React.useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
+    // Function to find the section closest to top of viewport
+    const findActiveSection = () => {
+      let closestSection = { id: "", distance: Infinity };
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const buffer = windowHeight * 0.1; // 10% of viewport height as buffer
+
+      sections.forEach((section) => {
+        const element = document.getElementById(section.id);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const absoluteTop = rect.top + scrollTop;
+          const distance = Math.abs(scrollTop - absoluteTop + buffer);
+
+          if (distance < closestSection.distance) {
+            closestSection = { id: section.id, distance };
           }
-        });
-      },
-      { rootMargin: "-50% 0px -50% 0px" }
-    );
+        }
+      });
 
-    // Find all heading elements (h1, h2, h3, etc.)
-    sections.forEach((section) => {
-      const element = document.getElementById(section.id);
-      if (element) {
-        observer.observe(element);
-      }
-    });
-
-    return () => {
-      observer.disconnect();
+      return closestSection.id;
     };
-  }, [sections]);
+
+    // Handle scroll event
+    const handleScroll = () => {
+      const newActiveSection = findActiveSection();
+      if (newActiveSection !== activeSection) {
+        setActiveSection(newActiveSection);
+      }
+    };
+
+    // Initial check
+    handleScroll();
+
+    // Add scroll listener
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [sections, activeSection]);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+      const offset = window.innerHeight * 0.1; // Same buffer as in findActiveSection
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
     }
   };
 
   return (
-    <div className={`top-1/2 -translate-y-1/2 bg-red-500 w-64 sticky z-50`}>
-      heloo word
-    </div>
+    <motion.div
+      initial={{ opacity: 0, x: -100 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5 }}
+      className="fixed z-50 top-1/3 left-2 -translate-y-1/3 lg:block hidden"
+    >
+      <nav aria-label="Table of contents">
+        <ul className="space-y-1">
+          {sections.map((section) => (
+            <li key={section.id}>
+              <Link
+                href={`#${section.id}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToSection(section.id);
+                }}
+                className={`block py-1 px-2 text-sm rounded transition-colors font-medium ${
+                  activeSection === section.id
+                    ? "text-[#4A72F4]"
+                    : "hover:text-zinc-900 dark:hover:text-zinc-200 text-zinc-600 dark:text-zinc-400"
+                }`}
+              >
+                {section.title}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </motion.div>
   );
 }

@@ -17,35 +17,39 @@ export default async function PostPage({
   const readTime = post.readTime;
 
   return (
-    <div className="mt-[25vh] max-w-2xl mx-auto">
-      <BackwardAnchor
-        text="Home"
-        href="/"
-        className="text-xs text-neutral-600 dark:text-zinc-400"
-      />
-
-      <header className="my-4">
-        <div id="post-header">
-          <TypographyH2 className="italic">{post.metadata.title}</TypographyH2>
-        </div>
-        <div className="flex items-center gap-x-2">
-          <TypographyP className="text-xs my-2 font-medium text-neutral-500 dark:text-zinc-400">
-            {formatDate(post.metadata.createdAt, false, true)}
-          </TypographyP>
-          /
-          <TypographyP className="text-xs my-2 font-medium text-neutral-500 dark:text-zinc-400">
-            {readTime} min read
-          </TypographyP>
-          {post.metadata.updatedAt && (
-            <TypographyBlockquote className="text-xs my-2 px-2 text-[#3E69F4]">
-              Last Updated: {formatDate(post.metadata.updatedAt, false, true)}
-            </TypographyBlockquote>
-          )}
-        </div>
-      </header>
-
+    <div>
       <TableOfContent sections={post.sections} />
-      <article className="w-full h-full">{post.content}</article>
+      <div className="mt-[25vh] max-w-2xl mx-auto">
+        <BackwardAnchor
+          text="Home"
+          href="/"
+          className="text-xs text-neutral-600 dark:text-zinc-400"
+        />
+
+        <header className="my-4">
+          <div id="post-header">
+            <TypographyH2 className="italic">
+              {post.metadata.title}
+            </TypographyH2>
+          </div>
+          <div className="flex items-center gap-x-2">
+            <TypographyP className="text-xs my-2 font-medium text-neutral-500 dark:text-zinc-400">
+              {formatDate(post.metadata.createdAt, false, true)}
+            </TypographyP>
+            /
+            <TypographyP className="text-xs my-2 font-medium text-neutral-500 dark:text-zinc-400">
+              {readTime} min read
+            </TypographyP>
+            {post.metadata.updatedAt && (
+              <TypographyBlockquote className="text-xs my-2 px-2 text-[#3E69F4]">
+                Last Updated: {formatDate(post.metadata.updatedAt, false, true)}
+              </TypographyBlockquote>
+            )}
+          </div>
+        </header>
+
+        <article className="w-full h-full">{post.content}</article>
+      </div>
     </div>
   );
 }
