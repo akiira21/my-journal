@@ -3,6 +3,7 @@
 import Link from "next/link";
 import React from "react";
 import { motion } from "framer-motion";
+import ProgressBar from "./progressbar";
 
 interface TableOfContentProps {
   sections: any[];
@@ -67,34 +68,37 @@ export default function TableOfContent({ sections }: TableOfContentProps) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -100 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.5 }}
-      className="fixed z-50 top-1/3 left-2 -translate-y-1/3 lg:block hidden"
-    >
-      <nav aria-label="Table of contents">
-        <ul className="space-y-1">
-          {sections.map((section) => (
-            <li key={section.id}>
-              <Link
-                href={`#${section.id}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  scrollToSection(section.id);
-                }}
-                className={`block py-1 px-2 text-sm rounded transition-colors font-medium ${
-                  activeSection === section.id
-                    ? "text-[#4A72F4]"
-                    : "hover:text-zinc-900 dark:hover:text-zinc-200 text-zinc-600 dark:text-zinc-400"
-                }`}
-              >
-                {section.title}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </motion.div>
+    <div className="relative">
+      <ProgressBar />
+      <motion.div
+        initial={{ opacity: 0, x: -100 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+        className="fixed z-50 top-1/3 left-3 -translate-y-1/3 lg:block hidden"
+      >
+        <nav aria-label="Table of contents">
+          <ul className="space-y-1">
+            {sections.map((section) => (
+              <li key={section.id}>
+                <Link
+                  href={`#${section.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToSection(section.id);
+                  }}
+                  className={`block py-1 px-2 text-sm rounded transition-colors font-medium ${
+                    activeSection === section.id
+                      ? "text-[#4A72F4]"
+                      : "hover:text-zinc-900 dark:hover:text-zinc-200 text-zinc-600 dark:text-zinc-400"
+                  }`}
+                >
+                  {section.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </motion.div>
+    </div>
   );
 }
