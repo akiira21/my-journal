@@ -94,7 +94,7 @@ const LightboxImage = (props: ImageProps) => {
           />
           <Dialog.Content
             asChild
-            onClick={handleDialogClose} // Added click handler to close on background click
+            onClick={handleDialogClose}
             style={{
               position: "fixed",
               inset: 0,

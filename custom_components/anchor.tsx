@@ -4,17 +4,19 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { GITHUB, XPROFILE } from "@/personal-links";
 
 interface AnchorProps {
   href: string;
   text: string;
   className?: string;
+  newPage?: boolean;
 }
 
 const XAnchor = () => (
   <div>
     <Link
-      href={"https://x.com/meArun_Kumar_"}
+      href={XPROFILE}
       className="inline-flex items-center gap-x-2 text-[#3E69F4] hover:text-primary"
       target="_blank"
     >
@@ -41,7 +43,7 @@ const XAnchor = () => (
 const GitHubAnchor = () => (
   <div>
     <Link
-      href={"https://github.com/Arun-Kumar21"}
+      href={GITHUB}
       className="inline-flex items-center gap-x-2 text-[#3E69F4] hover:text-primary"
       target="_blank"
     >
@@ -66,7 +68,7 @@ const GitHubAnchor = () => (
   </div>
 );
 
-const ForwardAnchor = ({ text, href, className }: AnchorProps) => (
+const ForwardAnchor = ({ text, href, className, newPage }: AnchorProps) => (
   <div>
     <Link
       href={href}
@@ -74,7 +76,7 @@ const ForwardAnchor = ({ text, href, className }: AnchorProps) => (
         "inline-flex items-center gap-x-1 hover:text-[#3E69F4] text-[#969EB0] group font-medium",
         className
       )}
-      target="_blank"
+      target={newPage ? "_blank" : "_self"}
     >
       <span>{text}</span>
       <ArrowRight
@@ -103,9 +105,9 @@ const BackwardAnchor = ({ text, href, className }: AnchorProps) => (
   </div>
 );
 
-const PageAnchor = ({ text, href, className }: AnchorProps) => (
+const PageAnchor = ({ text, href, className, newPage }: AnchorProps) => (
   <div>
-    <Link href={href} target="_blank">
+    <Link href={href} target={newPage ? "_blank" : "_self"}>
       <Button
         variant={"link"}
         className={cn(

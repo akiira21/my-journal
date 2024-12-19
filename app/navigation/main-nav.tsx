@@ -10,7 +10,7 @@ import Link from "next/link";
 
 const MainNav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [navTitle, setNavTitle] = useState<any>("");
+  const [navTitle, setNavTitle] = useState<string>("");
 
   const activePage = window.location.pathname;
 
@@ -23,7 +23,7 @@ const MainNav = () => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting && activePage.startsWith("/posts")) {
-          setNavTitle(header?.textContent);
+          setNavTitle(header?.textContent ?? "");
         } else {
           setNavTitle("");
         }

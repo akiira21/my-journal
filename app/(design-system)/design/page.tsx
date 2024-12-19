@@ -49,6 +49,7 @@ import CollapsibleSummary from "@/custom_components/summary";
 import CommandMenu from "@/custom_components/command-menu";
 import ThemeSwitcher from "@/custom_components/buttons/theme-switcher";
 import Sandpack from "@/custom_components/sandpack/sandpack";
+import { GITHUB } from "@/personal-links";
 
 const DesignPage = () => {
   return (
@@ -86,7 +87,9 @@ const DesignPage = () => {
             Design is the silent ambassador of your brand.
           </TypographyP>
           <TypographyP className="mt-4">Mono:</TypographyP>
-          <TypographyMono>console.log('Hello world')</TypographyMono>
+          <TypographyMono>
+            console.log(&apos;Hello world&apos;)
+          </TypographyMono>
           <TypographyP className="mt-4">Text gradient:</TypographyP>
           <TypographyTextGradient>
             Design is the silent ambassador of your brand.
@@ -148,10 +151,7 @@ const DesignPage = () => {
 
               <BackwardAnchor text="Home" href="/" />
 
-              <ForwardAnchor
-                text="Check out my github"
-                href="https://github.com/Arun-kumar21"
-              />
+              <ForwardAnchor text="Check out my github" href={GITHUB} />
 
               <PageAnchor text="Design Page" href="/design" />
             </div>
@@ -276,7 +276,7 @@ const DesignPage = () => {
 
 export default DesignPage;
 
-let exampleCodeString = `console.log("Hello World");
+const exampleCodeString = `console.log("Hello World");
 
 function multiplyBy2( num ) {
   return num * 2;

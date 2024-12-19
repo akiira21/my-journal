@@ -13,18 +13,18 @@ function getMdxFiles(dir: string) {
 
 // Read data from mdx files
 function readMdxFile(filepath: fs.PathOrFileDescriptor) {
-  let rawContent = fs.readFileSync(filepath, "utf-8");
+  const rawContent = fs.readFileSync(filepath, "utf-8");
 
   return matter(rawContent);
 }
 
 // Extract metadata and mdx data
 function getMdxData(dir: string) {
-  let mdxFiles = getMdxFiles(dir);
+  const mdxFiles = getMdxFiles(dir);
 
   return mdxFiles.map((file) => {
-    let { data: metadata, content } = readMdxFile(path.join(dir, file));
-    let slug = path.basename(file, path.extname(file));
+    const { data: metadata, content } = readMdxFile(path.join(dir, file));
+    const slug = path.basename(file, path.extname(file));
 
     return {
       metadata,
@@ -48,7 +48,6 @@ export async function getPostBySlug(slug: string) {
   const source = fs.readFileSync(filePath, "utf-8");
   const { data, content } = matter(source);
 
-  // Use compileMDX instead of serialize for RSC
   const { content: mdxContent } = await compileMDX({
     source: content,
     options: {
@@ -57,7 +56,8 @@ export async function getPostBySlug(slug: string) {
         rehypePlugins: [remarkMeta],
       },
     },
-    // @ts-ignore
+
+    //@ts-ignore
     components: {
       ...mdxComponents,
     },
@@ -73,9 +73,30 @@ export async function getPostBySlug(slug: string) {
   };
 }
 
+export function getCategories() {
+  const posts = getBlogPosts();
+
+  const categories: string[] = [];
+
+  posts.map((post) => {
+    post.metadata.categories.forEach((category: string) => {
+      if (categories.includes(category)) return;
+      else categories.push(category);
+    });
+  });
+
+  return categories;
+}
+
+export function getPostsByCategory(category: string) {
+  const posts = getBlogPosts();
+
+  return posts.filter((post) => post.metadata.categories.includes(category));
+}
+
 export function calculateReadingTime(content: string) {
-  let wordsPerMinute = 100;
-  let textLength = content.split(" ").length;
+  const wordsPerMinute = 100;
+  const textLength = content.split(" ").length;
 
   return Math.ceil(textLength / wordsPerMinute);
 }
@@ -174,17 +195,17 @@ export function formatDate(
   includeRelative = false,
   isYearIncluded = false
 ) {
-  let currentDate = new Date();
+  const currentDate = new Date();
 
   if (!date.includes("T")) {
     date = `${date}T00:00:00`;
   }
 
-  let targetDate = new Date(date);
+  const targetDate = new Date(date);
 
-  let yearsAgo = currentDate.getFullYear() - targetDate.getFullYear();
-  let monthsAgo = currentDate.getMonth() - targetDate.getMonth();
-  let daysAgo = currentDate.getDate() - targetDate.getDate();
+  const yearsAgo = currentDate.getFullYear() - targetDate.getFullYear();
+  const monthsAgo = currentDate.getMonth() - targetDate.getMonth();
+  const daysAgo = currentDate.getDate() - targetDate.getDate();
 
   let formattedDate = "";
 

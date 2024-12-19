@@ -12,6 +12,7 @@ import { Folder, MoveRight, Send, Sparkles } from "lucide-react";
 import React from "react";
 import CommandMenuButton from "./buttons/command-menu-button";
 import Link from "next/link";
+import { GITHUB, GMAIL, PORTFOLIO, XPROFILE } from "@/personal-links";
 
 const CommandMenu = () => {
   const [open, setOpen] = React.useState(false);
@@ -98,7 +99,7 @@ const navigationRoutes = [
 const socialRoutes = [
   {
     label: "Twitter",
-    path: "https://x.com/meArun_Kumar_",
+    path: XPROFILE,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -118,7 +119,7 @@ const socialRoutes = [
   },
   {
     label: "GitHub",
-    path: "https://github.com/Arun-Kumar21",
+    path: GITHUB,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -139,12 +140,12 @@ const socialRoutes = [
   },
   {
     label: "Contact",
-    path: "mailto:ak3930566@gmail.com",
+    path: GMAIL,
     icon: <Send />,
   },
   {
     label: "Work",
-    path: "https://arun-kumar.vercel.app",
+    path: PORTFOLIO,
     icon: <Folder />,
   },
 ];

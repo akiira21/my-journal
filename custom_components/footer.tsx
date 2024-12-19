@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "./logo";
+import { GITHUB, PORTFOLIO, XPROFILE } from "@/personal-links";
 
 export default function Footer() {
   return (
@@ -22,14 +23,14 @@ export default function Footer() {
           </div>
           <div className="flex flex-col space-y-4 items-start">
             <Link
-              href="https://x.com/meArun_Kumar_"
+              href={XPROFILE}
               target="_blank"
               className="text-sm font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"
             >
               Twitter
             </Link>
             <Link
-              href="https://github.com/Arun-Kumar21"
+              href={GITHUB}
               target="_blank"
               className="text-sm font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"
             >
@@ -38,7 +39,7 @@ export default function Footer() {
           </div>
           <div className="flex flex-col space-y-4 items-start">
             <Link
-              href="https://arun-kumar.vercel.app/"
+              href={PORTFOLIO}
               target="_blank"
               className="text-sm font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"
             >

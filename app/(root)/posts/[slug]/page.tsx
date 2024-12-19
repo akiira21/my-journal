@@ -5,7 +5,15 @@ import {
   TypographyH2,
   TypographyP,
 } from "@/custom_components/typography";
-import { formatDate, getPostBySlug } from "@/lib/mdx";
+import { formatDate, getBlogPosts, getPostBySlug } from "@/lib/mdx";
+
+export async function generateStaticParams() {
+  const posts = getBlogPosts();
+
+  return posts.map((post) => ({
+    slug: post.slug,
+  }));
+}
 
 export default async function PostPage({
   params,
@@ -17,7 +25,7 @@ export default async function PostPage({
   const readTime = post.readTime;
 
   return (
-    <div>
+    <>
       <TableOfContent sections={post.sections} />
       <div className="mt-[25vh] max-w-2xl mx-auto">
         <BackwardAnchor
@@ -50,6 +58,6 @@ export default async function PostPage({
 
         <article className="w-full h-full">{post.content}</article>
       </div>
-    </div>
+    </>
   );
 }

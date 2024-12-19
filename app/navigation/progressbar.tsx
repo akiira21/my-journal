@@ -4,8 +4,14 @@ import React, { useState, useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
 
 export default function AnimatedProgressBar() {
+  const [isMounted, setIsMounted] = useState(false);
+
   const [scrollYProgress, setScrollYProgress] = useState(0);
   const controls = useAnimation();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const calculateScrollYProgress = () => {
@@ -15,12 +21,14 @@ export default function AnimatedProgressBar() {
       const progress = (currentScroll / totalHeight) * 100;
       setScrollYProgress(Math.min(100, Math.max(0, progress)));
 
-      if (progress < 10) {
-        controls.start("hidden");
-      } else if (progress >= 10 && progress <= 95) {
-        controls.start("visible");
-      } else {
-        controls.start("exit");
+      if (isMounted) {
+        if (progress < 10) {
+          controls.start("hidden");
+        } else if (progress >= 10 && progress <= 95) {
+          controls.start("visible");
+        } else {
+          controls.start("exit");
+        }
       }
     };
 
@@ -29,6 +37,8 @@ export default function AnimatedProgressBar() {
 
     return () => window.removeEventListener("scroll", calculateScrollYProgress);
   }, [controls]);
+
+  if (!isMounted) return null;
 
   const variants = {
     hidden: { opacity: 0, y: -20 },

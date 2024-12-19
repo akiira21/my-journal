@@ -1,15 +1,33 @@
-import { TypographyH3 } from "@/custom_components/typography";
-import { formatDate, getBlogPosts } from "@/lib/mdx";
+import { TypographyH4, TypographyP } from "@/custom_components/typography";
+import { formatDate, getPostsByCategory } from "@/lib/mdx";
 import Link from "next/link";
 
-export default function LatestPosts() {
-  const latestPosts = getBlogPosts();
+interface CategoryPostsProps {
+  category: string;
+}
+
+export default function CategoryPosts({ category }: CategoryPostsProps) {
+  const posts = getPostsByCategory(category);
+
+  if (posts.length === 0) {
+    return (
+      <>
+        <TypographyH4>{category}</TypographyH4>
+
+        <div className="my-2">
+          <TypographyP>
+            No post found with {category} category
+          </TypographyP>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
-      <TypographyH3 className="font-medium">Recent</TypographyH3>
-      <div className="my-4">
-        {latestPosts
+      <TypographyH4>{category}</TypographyH4>
+      <div className="my-2">
+        {posts
           .sort((a, b) => {
             if (
               new Date(a.metadata.createdAt) > new Date(b.metadata.createdAt)

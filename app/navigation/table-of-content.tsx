@@ -56,7 +56,7 @@ export default function TableOfContent({ sections }: TableOfContentProps) {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const offset = window.innerHeight * 0.1; // Same buffer as in findActiveSection
+      const offset = window.innerHeight * 0.07;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
 

@@ -45,7 +45,7 @@ const TypographyH4 = ({ children, className, id }: TypographyProps) => {
 };
 
 const TypographyP = ({ children, className }: TypographyProps) => {
-  return <p className={cn("leading-7", className)}>{children}</p>;
+  return <div className={cn("leading-7", className)}>{children}</div>;
 };
 
 const TypographyBlockquote = ({ children, className }: TypographyProps) => {
