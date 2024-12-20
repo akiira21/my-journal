@@ -15,7 +15,7 @@ const ThemeSwitcher = () => {
   return (
     <button
       onClick={handleThemeToggle}
-      className="w-9 h-9 flex items-center justify-center rounded-md border transition-all duration-300 ease-in-out hover:shadow-[0_0_16px_rgba(59,130,246,0.6)] hover:rounded-xl group hover:border-[rgba(59,131,246,0.57)] hover:border-2 bg-background"
+      className="flex bg-background items-center justify-center w-9 h-9 rounded-md border transition-colors text-neutral-600 dark:text-neutral-300 duration-300 hover:border-[rgba(59,87,246,0.81)] hover:border-2 hover:text-[rgba(59,87,246,0.81)] ease-in-out hover:shadow-[0_0_32px_rgba(59,130,246,0.6)] hover:rounded-xl"
       aria-label="Toggle theme"
     >
       <motion.svg

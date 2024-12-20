@@ -8,6 +8,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { AnimatePresence, motion } from "framer-motion";
 import { Folder, MoveRight, Send, Sparkles } from "lucide-react";
 import React from "react";
 import CommandMenuButton from "./buttons/command-menu-button";
@@ -16,6 +17,7 @@ import { GITHUB, GMAIL, PORTFOLIO, XPROFILE } from "@/personal-links";
 
 const CommandMenu = () => {
   const [open, setOpen] = React.useState(false);
+  const [isLlmModelOpen, setIsLlmModelOpen] = React.useState(false);
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -28,58 +30,95 @@ const CommandMenu = () => {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
+  const handleLlmOpen = () => {
+    setIsLlmModelOpen(true);
+  };
+
   return (
-    <div className="flex">
+    <motion.div className="flex">
       <span onClick={() => setOpen(!open)}>
         <CommandMenuButton open={open} />
       </span>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Type a command or search..." />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Tools">
-            <CommandItem className="flex items-center justify-between bg-[#f0f5fe] dark:bg-[#0e121f] text-[#4A72F4] cursor-pointer">
-              <div className="flex items-center gap-x-4">
-                <Sparkles />
-                <span>Ask me anything</span>
-              </div>
+        <div className="overflow-hidden">
+          <AnimatePresence mode="wait">
+            {!isLlmModelOpen ? (
+              <motion.div
+                key="command-menu"
+                initial={{ height: "auto" }}
+                animate={{ height: "auto" }}
+                exit={{ height: 0 }}
+                transition={{
+                  height: { duration: 0.4, ease: [0.65, 0, 0.35, 1] },
+                }}
+              >
+                <CommandList>
+                  <CommandEmpty>No results found.</CommandEmpty>
+                  <CommandGroup heading="Tools">
+                    <CommandItem className="flex items-center justify-between bg-[#f0f5fe] dark:bg-[#0e121f] text-[#4A72F4] cursor-pointer">
+                      <button
+                        className="flex items-center justify-between w-full"
+                        onClick={handleLlmOpen}
+                      >
+                        <div className="flex items-center gap-x-4">
+                          <Sparkles />
+                          <span>Ask me anything</span>
+                        </div>
 
-              <span className="text-emerald-500 text-xs font-medium p-1 rounded">
-                Experimental
-              </span>
-            </CommandItem>
-          </CommandGroup>
-          <CommandGroup heading="Navigation">
-            {navigationRoutes.map((route) => (
-              <CommandItem key={route.label}>
-                <Link
-                  href={route.path}
-                  className="flex gap-x-4 items-center w-full"
-                >
-                  <MoveRight />
-                  <span>{route.label}</span>
-                </Link>
-              </CommandItem>
-            ))}
-          </CommandGroup>
+                        <span className="text-emerald-500 text-xs font-medium p-1 rounded">
+                          Experimental
+                        </span>
+                      </button>
+                    </CommandItem>
+                  </CommandGroup>
+                  <CommandGroup heading="Navigation">
+                    {navigationRoutes.map((route) => (
+                      <CommandItem key={route.label}>
+                        <Link
+                          href={route.path}
+                          className="flex gap-x-4 items-center w-full"
+                        >
+                          <MoveRight />
+                          <span>{route.label}</span>
+                        </Link>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
 
-          <CommandGroup heading="Links">
-            {socialRoutes.map((route) => (
-              <CommandItem key={route.label}>
-                <Link
-                  href={route.path}
-                  className="flex gap-x-4 items-center w-full"
-                  target="_blank"
-                >
-                  {route.icon}
-                  <span>{route.label}</span>
-                </Link>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
+                  <CommandGroup heading="Links">
+                    {socialRoutes.map((route) => (
+                      <CommandItem key={route.label}>
+                        <Link
+                          href={route.path}
+                          className="flex gap-x-4 items-center w-full"
+                          target="_blank"
+                        >
+                          {route.icon}
+                          <span>{route.label}</span>
+                        </Link>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="llm-model"
+                initial={{ height: 0 }}
+                animate={{ height: "auto" }}
+                exit={{ height: 0 }}
+                transition={{
+                  height: { duration: 0.4, ease: [0.65, 0, 0.35, 1] },
+                }}
+              >
+                I am LLM
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </CommandDialog>
-    </div>
+    </motion.div>
   );
 };
 
