@@ -3,6 +3,7 @@ import { BackwardAnchor } from "@/custom_components/anchor";
 import {
   TypographyBlockquote,
   TypographyH2,
+  TypographyH3,
   TypographyP,
 } from "@/custom_components/typography";
 import { formatDate, getBlogPosts, getPostBySlug } from "@/lib/mdx";
@@ -21,7 +22,17 @@ export default async function PostPage({
   params: { slug: string };
 }) {
   const post = await getPostBySlug(params.slug);
-  if (!post) return <div>Loading</div>;
+  if (!post)
+    return (
+      <div className="mt-[25vh] max-w-2xl mx-auto">
+        <BackwardAnchor
+          text="Home"
+          href="/"
+          className="text-xs text-neutral-600 dark:text-zinc-400"
+        />
+        <TypographyH3 className="my-4">No post found</TypographyH3>
+      </div>
+    );
   const readTime = post.readTime;
 
   return (

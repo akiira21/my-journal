@@ -40,7 +40,7 @@ const ThemeSwitcher = () => {
         <motion.circle
           cx="12"
           cy="12"
-          r="3" // Reduced the radius of the sun
+          r="4" // Reduced the radius of the sun
           // stroke="#90d5ff"
           fill="none"
           initial={false}
@@ -72,7 +72,7 @@ const ThemeSwitcher = () => {
             x2="12"
             y2="4"
             // stroke="#90d5ff"
-            strokeWidth="1.5"
+            strokeWidth="2"
             transform={`rotate(${angle} 12 12)`}
             initial={{ opacity: 0 }}
             animate={{ opacity: isDark ? 0 : 1 }} // Rays visible only in light theme

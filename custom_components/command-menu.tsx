@@ -1,5 +1,3 @@
-"use client";
-
 import {
   CommandDialog,
   CommandEmpty,
@@ -14,10 +12,12 @@ import React from "react";
 import CommandMenuButton from "./buttons/command-menu-button";
 import Link from "next/link";
 import { GITHUB, GMAIL, PORTFOLIO, XPROFILE } from "@/personal-links";
+import LLMSearch from "@/app/search/llm-search";
 
 const CommandMenu = () => {
   const [open, setOpen] = React.useState(false);
-  const [isLlmModelOpen, setIsLlmModelOpen] = React.useState(false);
+  const [isLlmMode, setIsLlmMode] = React.useState(false);
+  const [searchString, setSearchString] = React.useState("");
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -26,12 +26,44 @@ const CommandMenu = () => {
         setOpen((open) => !open);
       }
     };
+
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  const handleLlmOpen = () => {
-    setIsLlmModelOpen(true);
+  const handleLlmMode = () => {
+    setIsLlmMode(true);
+    setSearchString("");
+  };
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setTimeout(() => {
+        setIsLlmMode(false);
+        setSearchString("");
+      }, 200);
+    }
+  };
+
+  // Simplified animation variants
+  const containerVariants = {
+    hidden: {
+      height: 0,
+      opacity: 0,
+      transition: {
+        height: { duration: 0.3, ease: "easeInOut" },
+        opacity: { duration: 0.2 },
+      },
+    },
+    visible: {
+      height: "auto",
+      opacity: 1,
+      transition: {
+        height: { duration: 0.3, ease: "easeInOut" },
+        opacity: { duration: 0.2, delay: 0.1 },
+      },
+    },
   };
 
   return (
@@ -39,33 +71,34 @@ const CommandMenu = () => {
       <span onClick={() => setOpen(!open)}>
         <CommandMenuButton open={open} />
       </span>
-      <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Type a command or search..." />
+      <CommandDialog open={open} onOpenChange={handleOpenChange}>
         <div className="overflow-hidden">
-          <AnimatePresence mode="wait">
-            {!isLlmModelOpen ? (
+          <AnimatePresence mode="wait" initial={false}>
+            {!isLlmMode ? (
               <motion.div
                 key="command-menu"
-                initial={{ height: "auto" }}
-                animate={{ height: "auto" }}
-                exit={{ height: 0 }}
-                transition={{
-                  height: { duration: 0.4, ease: [0.65, 0, 0.35, 1] },
-                }}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                variants={containerVariants}
               >
+                <CommandInput
+                  placeholder="Type a keyword to search..."
+                  value={searchString}
+                  onValueChange={setSearchString}
+                />
                 <CommandList>
                   <CommandEmpty>No results found.</CommandEmpty>
                   <CommandGroup heading="Tools">
                     <CommandItem className="flex items-center justify-between bg-[#f0f5fe] dark:bg-[#0e121f] text-[#4A72F4] cursor-pointer">
                       <button
                         className="flex items-center justify-between w-full"
-                        onClick={handleLlmOpen}
+                        onClick={handleLlmMode}
                       >
                         <div className="flex items-center gap-x-4">
                           <Sparkles />
-                          <span>Ask me anything</span>
+                          <span>Switch to AI Search</span>
                         </div>
-
                         <span className="text-emerald-500 text-xs font-medium p-1 rounded">
                           Experimental
                         </span>
@@ -85,7 +118,6 @@ const CommandMenu = () => {
                       </CommandItem>
                     ))}
                   </CommandGroup>
-
                   <CommandGroup heading="Links">
                     {socialRoutes.map((route) => (
                       <CommandItem key={route.label}>
@@ -104,15 +136,13 @@ const CommandMenu = () => {
               </motion.div>
             ) : (
               <motion.div
-                key="llm-model"
-                initial={{ height: 0 }}
-                animate={{ height: "auto" }}
-                exit={{ height: 0 }}
-                transition={{
-                  height: { duration: 0.4, ease: [0.65, 0, 0.35, 1] },
-                }}
+                key="llm-search"
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                variants={containerVariants}
               >
-                I am LLM
+                <LLMSearch />
               </motion.div>
             )}
           </AnimatePresence>
