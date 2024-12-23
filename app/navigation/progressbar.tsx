@@ -74,9 +74,9 @@ export default function AnimatedProgressBar() {
       variants={variants}
       transition={{ duration: 0.3, ease: "easeOut" }}
     >
-      <div className="h-full w-[2px] bg-zinc-300 rounded-full overflow-hidden">
+      <div className="h-full w-[2px] bg-zinc-300 dark:bg-zinc-700 rounded-full overflow-hidden">
         <motion.div
-          className="w-full bg-zinc-700 dark:bg-zinc-200"
+          className="w-full bg-zinc-700 dark:bg-[#4A72F4]"
           style={{ height: `${scrollYProgress}%` }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         />
