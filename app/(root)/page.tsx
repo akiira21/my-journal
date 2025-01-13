@@ -10,7 +10,7 @@ export default function HomePage() {
     <div className="pt-[15vh] max-w-3xl mx-auto px-4">
       <div>
         <TypographyH2 className="leading-normal font-medium inline">
-          Hi 👋🏻 I&apos;m Arun Kumar, and this is my journal.
+          Hi 👋🏻 I&apos;m Arun Kumar, and this is my blog.
         </TypographyH2>
         <TypographyH2 className="leading-normal inline">
           {" "}

@@ -9,9 +9,9 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Arun Kumar's Journal",
+  title: "Arun Kumar's Blog",
   description:
-    "Welcome to Arun Kumar's personal journal where he shares insights, experiences, and stories about his journey in software development and beyond.",
+    "Welcome to Arun Kumar's personal blog where he shares insights, experiences, and stories about his journey in software development and beyond.",
 };
 
 export default function RootLayout({

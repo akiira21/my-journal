@@ -71,7 +71,7 @@ const CanvasLoadingBorder = ({
 
     resizeObserverRef.current.observe(container);
 
-    let startTime = performance.now();
+    const startTime = performance.now();
 
     const drawBeam = (time: number) => {
       if (!canvas || !loading) return;
@@ -90,7 +90,7 @@ const CanvasLoadingBorder = ({
       const totalLength = 2 * (width + height);
       const beamLength = width * 0.3;
 
-      let distance = progress * totalLength;
+      const distance = progress * totalLength;
       let x, y;
       let angle = 0;
 
