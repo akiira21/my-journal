@@ -20,12 +20,12 @@ type CalloutProps = InfoCalloutProps | DangerCalloutProps;
 
 const variantStyles = {
   info: {
-    container: "bg-blue-50 dark:text-black",
+    container: "bg-blue-50 text-zinc-800 dark:bg-[#0e121f] dark:text-zinc-300",
     icon: "text-blue-600",
     action: "bg-blue-600 text-white cursor-default",
   },
   danger: {
-    container: "bg-red-50 dark:text-black",
+    container: "bg-red-50 text-zinc-800 dark:bg-[#201015] dark:text-zinc-300",
     icon: "text-red-600",
     action: "bg-red-600 text-white",
   },

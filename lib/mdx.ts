@@ -2,6 +2,8 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 import { remarkMeta } from "./remark-meta";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import { compileMDX } from "next-mdx-remote/rsc";
 
 import { mdxComponents } from "./mdx-components";
@@ -53,7 +55,8 @@ export async function getPostBySlug(slug: string) {
     options: {
       parseFrontmatter: true,
       mdxOptions: {
-        rehypePlugins: [remarkMeta],
+        remarkPlugins: [remarkMath],
+        rehypePlugins: [remarkMeta, rehypeKatex],
       },
     },
 

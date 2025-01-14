@@ -1,10 +1,20 @@
+import {
+  BackwardAnchor,
+  ForwardAnchor,
+  PageAnchor,
+} from "@/custom_components/anchor";
+import { Callout } from "@/custom_components/callouts";
 import CodeBlock from "@/custom_components/code-block";
 import LightboxImage from "@/custom_components/Image";
+import { OrderedList, UnorderedList } from "@/custom_components/list";
+import NumericalTable from "@/custom_components/numerical-table";
 import {
   TypographyBlockquote,
   TypographyH4,
   TypographyP,
 } from "@/custom_components/typography";
+import Image from "next/image";
+import Link from "next/link";
 import { ReactNode } from "react";
 
 interface CodeProps {
@@ -115,8 +125,8 @@ const MdxImage = (props: any) => {
       <LightboxImage
         src={props.src}
         alt={props.alt}
-        width={props.width}
-        height={props.height}
+        width={props.width || 800}
+        height={props.height || 400}
       />
     </div>
   );
@@ -129,4 +139,13 @@ export const mdxComponents = {
   pre: Code,
   img: MdxImage,
   blockquote: Blockquote,
+  NumericalTable,
+  OrderedList,
+  UnorderedList,
+  Callout,
+  Link,
+  ForwardAnchor,
+  PageAnchor,
+  BackwardAnchor,
+  Image,
 };

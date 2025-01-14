@@ -1,0 +1,284 @@
+---
+title: "Linear Algebra for Machine Learning"
+description: "Linear algebra is a branch of mathematics that deals with vectors and matrices."
+categories: ["Linear Algebra", "Machine Learning"]
+featured: false
+createdAt: "2025-01-13T21:00:00Z"
+---
+
+# Introduction
+
+Imagine trying to solve a 1000 - piece jigsaw puzzle with no idea of final picture. That's what working with complex data feels without linear algebra! whether you reducing dimensions with PCA or understanding neural networks, linear algebra is toolkit that makes it all possible. In this blog, we'll explore the basics, real world applications, and even few vizualizations to bring these concepts to life.
+
+
+# Why Linear Algebra is Essential in Machine Learning?
+
+In machine learning, data is often represented as vectors or matrices. Image, text and even sounds can be transformed into numerical vectors. This transformation enables algorigthms to process, analyze and extract meaningful insights across different domains.
+
+For a clearer understanding, let's look an example of image classification:
+
+<div className="flex items-center w-full justify-center py-6 flex-col gap-y-3">
+  <a href="https://media-be.chewy.com/wp-content/uploads/2018/05/dog-like-cats7.jpg" target="_blank"><img src="https://media-be.chewy.com/wp-content/uploads/2018/05/dog-like-cats7.jpg" alt="Dog Image" width={512} className="rounded-md"/></a>
+  <p className="text-xs">Image of Dog or Cat</p>
+</div>
+
+Here's a picture of an animal. At first glance, you might wonder *"Is it a cat or dog?"*
+
+Take a moment to decide! Let me help you: focus on visible features such as fur, ears, and nose.
+
+*"So, which animal do you think it is?"*
+
+From my expert and totally unbiased opinion, it's a dog!😁
+
+But hey, let's not leave this life attering decision to me. Let's use machine to classify this image.
+
+Machines first convert the image into a numerical representation. Each pixel brightness is represented as a number between 0 (black) and 255 (white), forming a grid like this:
+
+<div className="mt-6 text-center text-xs">
+  Table: Image Intensity Matrix
+</div>
+
+<div className="pt-2 pb-8">
+  <NumericalTable data={[
+                        [10, 45, 129, 101, 70, 56, 12, 37],
+                        [9, 74, 143, 143, 110, 145, 117, 92],
+                        [9, 81, 150, 151, 148, 107, 147, 131],
+                        [9, 104, 166, 160, 200, 99, 129, 130],
+                        [10, 145, 165, 184, 202, 142, 124, 117],
+                        [55, 155, 202, 211, 224, 192, 154, 145],
+                        [113, 153, 213, 187, 181, 181, 141, 133],
+                        [115, 150, 181, 140, 130, 143, 137, 129]
+                        ]}/>
+</div>
+
+This grid is then flatterned into a long list of numbers, called a vector. Like this:
+
+<div className="mt-6 text-center text-xs">
+  Table: Image Intensity Vector
+</div>
+
+<div className="pt-2 pb-8">
+  <NumericalTable data={[[10.33333333, 45.33333333, 128.66666667, 101.0, 70.33333333, 55.66666667, 11.66666667, 37.33333333, 9.0, 74.33333333, 142.66666667, 143.33333333, 109.66666667, 145.33333333, 117.0, 91.66666667, 8.66666667, 80.66666667, 149.66666667, 151.0, 148.0, 107.33333333, 147.33333333, 131.33333333, 9.33333333, 104.0, 165.66666667, 160.33333333, 199.66666667, 99.33333333, 129.33333333, 129.66666667, 10.33333333, 145.0, 164.66666667, 184.0, 202.0, 142.0, 124.33333333, 117.33333333, 55.0, 155.33333333, 202.0, 211.0, 224.0, 191.66666667, 154.0, 145.0, 112.66666667, 152.66666667, 213.33333333, 187.0, 181.0, 181.0, 140.66666667, 133.0, 114.66666667, 150.0, 180.66666667, 139.66666667, 129.66666667, 142.66666667, 136.66666667, 129.0]
+]}/>
+</div>
+
+Machine take this vector and compare it with patterns it has learned from labeled examples of cats and dogs. By identifying key features like shape of ears or the fur's texture, the machine can predict whether the image is a cat or dog.
+
+After this much hardwork by machine, it's time to reveal the truth. 
+*"It predict the image: Dog!"*
+
+Well, it look like my highly scientific, totally un-biased prediction was correct! And of course, the machine agrees because it's always right...
+*"Just like me!"* 😉
+
+This step-by-step transformation of image to vector and then to prediction shows how machine learning bridges the gap between raw data and intelligent decision. At the core of this process is linear algebra; the matrix operations, vector transformations, and dot products that make it all possible.
+
+Here are some key areas where linear algebra is essential in machine learning:
+
+<OrderedList items={["Data Representation", "Feature Transformation", "Neural Network", "Optimization", "Linear Regression"]} />
+
+# Scalars, Vectors, Matrices and Tensors
+
+Linear algebra consist of several types of mathematical objects. They are:
+
+**Scalars:** A scalar is a single number. It can be an integer, real number, or complex number. It represent a quantity with no direction, only magnitude. 
+
+They are useful in machine learning for representing things like:
+
+<UnorderedList items={["A bias term in model", "The output of a function (i.e Loss function value)"]}/>
+
+For example: In the image classification, the brightness of a pixel is a scalar value.
+
+**Vectors:** A vector is an ordered list of numbers. It represent a quantity with both magnitude and direction. Vectors are used to represent features in machine learning.
+
+Mathemically a vector can be represented as:
+
+$$
+\begin{bmatrix}
+v_1 \\
+v_2 \\
+\vdots \\
+v_n
+\end{bmatrix}
+$$
+
+<p className="text-center text-xs text-zinc-700 dark:text-zinc-300 pb-2">Mathematical representation of vector</p>
+
+For example: In image classification, the pixel brightness values form a vector.
+
+
+**Matrices:** A matrix is a 2D array of numbers. It represent a collection of vectors. Matrices are used to represent datasets in machine learning.
+
+Mathemically a matrix can be represented as:
+
+$$
+\begin{bmatrix}
+a_{11} & a_{12} & \cdots & a_{1n} \\
+a_{21} & a_{22} & \cdots & a_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+a_{m1} & a_{m2} & \cdots & a_{mn}
+\end{bmatrix}
+$$
+
+<p className="text-center text-xs text-zinc-700 dark:text-zinc-300 pb-2">Mathematical representation of matrix</p>
+
+For example: In gray scale image, Each pixel in the image has brightness value ranging from 0 (black) to 255 (white). Instead of representing the brightness of single pixel (as in the scalar), a matrix will represent the brightness values of all pixels in the image.
+
+**Tensors:** A tensor is a multi-dimensional array of numbers. It represent a collection of matrices. Tensors are used to represent complex data structures in machine learning.
+
+Mathemically a tensor can be represented as:
+
+$$
+\begin{bmatrix}
+\begin{bmatrix}
+a_{11} & a_{12} & \cdots & a_{1n} \\
+a_{21} & a_{22} & \cdots & a_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+a_{m1} & a_{m2} & \cdots & a_{mn}
+\end{bmatrix} &
+\begin{bmatrix}
+b_{11} & b_{12} & \cdots & b_{1n} \\
+b_{21} & b_{22} & \cdots & b_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+b_{m1} & b_{m2} & \cdots & b_{mn}
+\end{bmatrix} \\
+\begin{bmatrix}
+c_{11} & c_{12} & \cdots & c_{1n} \\
+c_{21} & c_{22} & \cdots & c_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+c_{m1} & c_{m2} & \cdots & c_{mn}
+\end{bmatrix} &
+\begin{bmatrix}
+d_{11} & d_{12} & \cdots & d_{1n} \\
+d_{21} & d_{22} & \cdots & d_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+d_{m1} & d_{m2} & \cdots & d_{mn}
+\end{bmatrix}
+\end{bmatrix}
+$$
+
+<p className="text-center text-xs text-zinc-700 dark:text-zinc-300 pb-2">Mathematical representation of tensor</p>
+
+For example: In image classification, a tensor can represent a collection of images.
+
+<div className="py-2">
+<Callout variant="info">
+  <p className="text-sm">In deep learning frameworks like Tensorflow or Pytorch, tensors are the primary data structure for storing and processing data.</p>
+</Callout>
+</div>
+
+# Matrix Operations
+
+Matrix operations allows us to manipulate and transform data.
+
+Since matrix operations are basic concepts, you can easily understand them from 
+<a href="https://en.wikipedia.org/wiki/Matrix_(mathematics)" target="_blank">*"wikipedia"*</a> 
+blog. It cover all the basics in depth along with additional concepts.
+
+Here are some common matrix operations used in machine learning:
+
+<OrderedList items={["Addition", "Subtraction", "Multiplication", "Transpose", "Inverse", "Determinant"]} />
+
+# Linear Transformations
+
+Linear transformation allow us to manipulate the shape of data. It's a function that maps vectors from one space to another while preserving the vector addition and scalar multiplication properties.
+
+Mathematically, a linear transformation can be represented as:
+
+$$
+T(\mathbf{v}) = A\mathbf{v}
+$$
+
+Where:
+
+$T$ is the linear transformation
+
+$\mathbf{v}$ is the input vector
+
+$A$ is the transformation matrix
+
+In simple terms, if you imagine your data as an arrow (vector) in space, a linear transformation will rotate, scale, or shift the arrow, but it won't bend or break it.
+
+Let's consider an example for better understanding:
+
+Suppose we have a vector *"v"* and a transformation matrix *"A"* as:
+
+$$
+\mathbf{v} = \begin{bmatrix} 1 \\ 2 \end{bmatrix}
+$$
+
+$$
+A = \begin{bmatrix} 2 & 0 \\ 0 & 2 \end{bmatrix}
+$$
+
+The linear transformation of vector *"v"* using matrix *"A"* will be:
+
+$$
+T(\mathbf{v}) = A\mathbf{v} = \begin{bmatrix} 2 & 0 \\ 0 & 2 \end{bmatrix} \begin{bmatrix} 1 \\ 2 \end{bmatrix} = \begin{bmatrix} 2 \\ 4 \end{bmatrix}
+$$
+
+This transformation scales the vector by a factor of 2 along both dimensions.
+
+Well it is just a simple example, but linear transformations are used in machine learning for more complex operations like dimensionality reduction, feature extraction, and data augmentation. 
+
+A common machine learing usecase of linear transformation is image rotation. Imagine you a have an image and you want to rotate the image slightly (maybe because you think it look more majestic at an angle 😁). You can achieved this using a *rotation matrix* which written as :
+
+$$
+R = \begin{bmatrix} \cos(\theta) & -\sin(\theta) \\ \sin(\theta) & \cos(\theta) \end{bmatrix}
+$$
+
+Where:
+$\theta$ is the angle of rotation
+
+By multiplying the image vector with the rotation matrix, you can rotate the image by the desired angle.
+
+# Eigenvalues and Eigenvectors
+
+Eigenvalues and Eigenvectors are very useful in dimensionality reduction, feature extraction, and data compression.
+
+Let *A* be a square matrix, *v* be Eigenvector and *λ* be Eigenvalue. Then, the Eigenvalue-Eigenvector equation is:
+
+$$
+A\mathbf{v} = \lambda\mathbf{v}
+$$
+
+Eigenvector: The Eigenvector is a non-zero vector that doesn't change its direction after a linear transformation.
+
+Eigenvalue: The Eigenvalue is a scalar that represents the factor by which the Eigenvector is stretched or shrunk during the transformation.
+
+For calculating Eigenvalues of any square matrix, you can use the following equation:
+
+$$
+\text{det}(A - \lambda I) = 0
+$$
+
+Where:
+
+$A$ is the square matrix
+
+$\lambda$ is the Eigenvalue
+
+$I$ is the identity matrix
+
+After solving this equation you get the Eigenvalues of the matrix. Once you have the Eigenvalues, you can calculate the Eigenvectors using the following equation:
+
+$$
+(A - \lambda I)\mathbf{v} = 0
+$$
+
+Where:
+
+$v$ is the Eigenvector
+
+$0$ is the zero vector
+
+By solving this equation, you get the Eigenvectors of the matrix.
+
+Eigenvalues and Eigenvectors are used in machine learning for Principal Component Analysis (PCA), Singular Value Decomposition (SVD), and many other algorithms.
+
+# Conclusion
+
+Linear algebra is the foundation that supports much of machine learning. It's just the beginning - there's still a lot to explore. In future blogs, we'll dive deeper into advanced concepts like PCA, SVD, and neural networks. 😊
+
+I hope this blog has given you a good understanding of linear algebra and its importance in machine learning. If you have any questions or feedback, feel free to reach out to me. I'd love to hear from you!
+
+Happy learning! 🚀
