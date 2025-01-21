@@ -1,0 +1,222 @@
+---
+title: "Semantic Search using Transformer and FAISS"
+description: "In this article, we will build a semantic search engine using a transformer model and FAISS."
+categories: ["Natural Language Processing", "Machine Learning", "Python", "Transformer", "FAISS"]
+featured: false
+createdAt: "2025-01-21T18:00:00Z"
+---
+
+# Introduction
+
+Ever searched for something on google and wondered how it magically knows exactly what you mean? That's the power of semantic search. In this blog, we'll explore about semantic search, how it works, and how to build it using **Python**, 🤗 **Hugging face Transformers** and **FAISS (Facebook AI Similarity Search).**
+
+# What is Semantic Search?
+
+Imagine asking librarian, *"Can you find me books about space exploration?"* Instead of matching your exact words librarian understands your intent and bring you books related to astronauts, NASA, or even Elon Musk's Mars dreams. That's semantic search: Understanding the meaning behind a query rather than just matching keywords.
+
+So, key difference between traditional search and semantic search is :
+
+<UnorderedList
+  items={[
+    "Traditional search relies on keyword matching (eg. 'Cat' matches 'Cat' but not 'Kitten')",
+    "Semantic search understands the meaning behind the query (eg. 'Cat' matches 'Kitten' because they are related)",
+  ]} 
+/>
+
+<br/>
+
+*Your favourite movie platforms use semantic search to suggest. "If you liked action movie, you'll love triller with the same vibe."*
+
+# How does Semantic Search Work?
+
+Semantic search uses **Natural Language Processing (NLP)** to understand the meaning behind the query. It converts the query into a mathematical representation called **Embedding**. Then, it compares this embedding with embeddings of data in the database to find the most similar ones.
+
+**Embeddings:**
+
+Embeddings are numerical representations of words or sentences in a high dimensional space. Think of them as coordinates in a complex map where similar pieces of text are located close to each other.
+
+Consider following example for understanding embeddings:
+
+If you have five words ["**Cat**", "**Dog**", "**Animal**", "**Code**", "**Python**"], then embedding space look like this:
+
+<div className="py-6 flex flex-col items-center gap-y-3">
+<img src={"https://myjournalbucket-arun.s3.eu-north-1.amazonaws.com/Embedding+Visual.jpg"} alt={"visual for embedding"} width={800} height={600} className="rounded-md"/>
+
+<p className="text-center text-xs">Embedding Space for Given Words</p>
+</div>
+
+In this space, "**Cat**", "**Dog**" and "**Animal**" are close to each other because they are similar. Similarly, "**Code**" and "**Python**" are close to each other because they are related.
+
+Similarly for sentences, similar meaning sentences are close to each other in embedding space.
+
+Since embeddings are mathematical vectors consist of numerical values in n dimensions, we can easily calculate distance between embeddings for calculating similarity between them.
+
+For calculating distance between embeddings we uses two common methods:
+
+<OrderedList 
+  items={[`Euclidean Distance: Measures the straight line distance between two points in n-dimensional space.`, 
+    "Cosine Similarity: Measures the cosine of the angle between two vectors in n-dimensional space."]}
+/>
+
+# How Embeddings are Generated?
+
+Embeddings are generated using deep learning models like BERT, GPT, or Sentence Transformers. These models understand context by considering the surrounding words and create fixed size vectors that encapsulate the meaning of the text.
+
+For example, BERT model takes a sentence as input and generates a 768-dimensional vector as output. This vector represents the meaning of the sentence in a high dimensional space.
+
+<br/>
+
+*To summarize, embeddings are crucial because they allow us to:*
+
+<UnorderedList
+  items={[
+    "Measure similarity between text.",
+    "Perform clustering and classification.",
+    "And, also for building applications like recommendation systems, semantic search, etc.",
+  ]}
+/>
+
+# Implementation
+
+For implementing semantic search, I am using **Python** as a scripting Language, **🤗 Hugging Face Transformers** for generating embeddings, and **FAISS** for similarity search.
+
+First, What is **Hugging Face** and **Hugging Face Transformers**?
+
+**Hugging Face** is an AI company known for its NLP(Natural Language Processing) models and libraries. It provides an ecosystem of transformers models, datasets, and libraries that make it easier to build and deploy machine learning applications.
+
+**Hugging Face Transformers** is python libraries from Hugging Face that provides pre-trained transformer models like BERT, GPT and T5. These models can perform variety of NLP tasks like text classification, summarization, translation, etc. It simplifies complex deep learning processes, allowing developers to focus on building applications.
+
+What is **FAISS**?
+
+FAISS is a fast, efficient library for nearest neighbor search and clustering of dense vectors. It's optimized for high dimensional vectors and can perform similarity search on billions of vectors in milliseconds.
+
+In simple words, FAISS is the tool you need to find *similar things* in huge piles of data!
+
+For implementation, I recommend using Google Colab as it provides a ready-to-use Python environment without the need for any setup.
+
+Let's start by installing require libraries:
+
+```python
+!pip install transformers faiss-cpu sentence_transformers
+```
+
+We will use pre-trained transformer model, that's Sentence Transformers and ```all-MiniLM-L6-V2``` model for generating embeddings.
+It map sentences and paragraph to 384 dimensional dense vector space.
+
+Behind the scenes, generating embeddings requires various NLP processes such as **tokenization**, **stemming**, and **lemmatization**. However, the Sentence Transformers library handles all these processes for us.
+
+<div className="py-2">
+<Callout variant="info">
+  <p className="text-sm">If you are interested in studying NLP transformers in depth, you can refer to this 
+  <Link href="https://huggingface.co/learn/nlp-course/en/chapter1/1" target="_blank">**NLP**</Link> 
+  by Hugging Face.</p>
+</Callout>
+</div>
+
+Here is how you can use Sentence Transformers:
+
+```python
+from sentence_transformers import SentenceTransformer
+
+#Load a pre-trained model
+model = SentenceTransformer('all-MiniLM-L6-v2')
+```
+
+Now, let's generate embeddings for our data:
+
+```python title="Generate Embeddings"
+#Example dataset
+dataset = ["I like to play minecraft",
+            "React is a JavaScript library",
+            "Attack on Titan is Japanese anime",
+            "Single page applications can be built using React"
+          ]
+
+#Generate embeddings
+embeddings = model.encode(dataset)
+```
+
+You can use print statement to see how embeddings look like.
+
+In line 9, we cached model outputs in embeddings vairable for further processing.
+
+Now, let's setup FAISS for indexing for similarity search on embeddings:
+
+```python title="Setup FAISS Index"
+import faiss
+
+#Define the dimenionsality of the embeddings
+d = embeddings.shape[1]
+
+#Initialize FAISS index
+index = faiss.IndexFlatL2(d)
+
+#Add embeddings to index
+index.add(embeddings)
+```
+
+Here, first we get dimension of embeddings in line 4, that depend on which model you are using. In our case, we are using ```all-MiniLM-L6-v2``` model which generates 384 dimensional embeddings.
+
+Then, we create a index which actually a FAISS index i.e. how we will search for similar embeddings. As we discussed earlier, there are various methods (**Cosine Similarity**, **Euclidean Distance**) for calculating similarity. 
+
+FAISS also provide various methods for indexing, Few of them are:
+
+<UnorderedList 
+  items={[
+    "IndexFlatL2: L2 distance (Euclidean distance) based index.",
+    "IndexFlatIP: Inner product based index.",
+    "IndexIVFFlat: Inverted file based index.",
+  ]}
+/>
+
+You can read about them on <Link href="https://github.com/facebookresearch/faiss/wiki/Faiss-indexes">**FAISS index**</Link>
+
+For our case, we are using ```IndexFlatL2``` which is L2 distance based index.
+
+Mathemcatially, L2 distance is calculated as:
+
+$$
+\sqrt{\sum_{i=1}^{n} (x_i - y_i)^2}
+$$
+
+So, we have our model and index ready. Now, we just need to calculate similarity score for query embeddings and find similar embeddings in our dataset.
+
+```python title="Semantic Search"
+def semantic_search(query, top_k=2):
+    query_embedding = model.encode([query])
+    D, I = index.search(query_embedding, top_k)
+    return [(dataset[idx], D[0][i]) for i, idx in enumerate(I[0])]
+
+#Example query
+query = "Tell me about React"
+results = semantic_search(query)
+
+for sentence, score in results:
+    print(f"Similar sentence: {sentence} | Similarity Score: {score}")
+```
+
+So, First we created a function which take two paramters, query and top_k. Query is the sentence for which we want to find similar sentences and top_k is the number of top similar sentences we want to find <TypographyInlineCode>default=2</TypographyInlineCode>.
+
+Then, for searching query embeddings in the dataset embeddings, we used the <TypographyInlineCode>index.search()</TypographyInlineCode> method which returns the distances and indices of the similar embeddings.
+
+Distance is the similarity score between query embeddings and dataset embeddings. Lower the distance, higher the similarity. And indices are the index of similar embeddings in dataset.
+
+Finally, we print the similar sentences and similarity score.
+
+Output:
+
+```markdown
+Similar sentence: React is a library of JavaScript | Similarity Score: 0.6009531021118164
+Similar sentence: Single page applications can be built using React | Similarity Score: 0.8599852919578552
+```
+
+You can do one more thing to futher enhance the search results, that is use any **LLM model** from Hugging Face and pass the search results and query to that model as prompt, Then LLM return a human like response for the query.
+
+I am currently building a similar project, if you are interested in that, you can contribute to it on Github: <Link href="https://github.com/Arun-Kumar21/Vector-embedding-based-search" target="_blank">*@Arun-Kumar21/Vector-embedding-based-search*</Link>.
+
+# Conclusion
+
+This how you can build a semantic search system using python, Hugging Face Transformers and FAISS. Semantic search is a powerful tool that can help you build recommendation systems, chatbots, and more.
+
+I hope you found this blog helpful. Happy coding! 🚀
+

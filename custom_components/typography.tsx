@@ -60,7 +60,7 @@ const TypographyInlineCode = ({ children, className }: TypographyProps) => {
   return (
     <code
       className={cn(
-        "relative rounded-md inline-block border bg-[#f8f9fd] dark:bg-[#0f1117] font-mono mx-1 text-sm p-1 text-[#3E69F4]",
+        "relative rounded-md text-xs inline-block border bg-[#f8f9fd] dark:bg-[#0f1117] font-mono mx-1 p-1 text-[#3E69F4]",
         className
       )}
     >

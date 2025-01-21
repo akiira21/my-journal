@@ -16,6 +16,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { ReactNode } from "react";
+import { TypographyInlineCode } from "@/custom_components/typography";
 
 interface CodeProps {
   children: ReactNode;
@@ -148,4 +149,5 @@ export const mdxComponents = {
   PageAnchor,
   BackwardAnchor,
   Image,
+  TypographyInlineCode,
 };
