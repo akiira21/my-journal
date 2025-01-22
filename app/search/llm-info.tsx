@@ -10,10 +10,16 @@ export default function LLMInfo({
     <div className="bg-background flex flex-col gap-y-3 p-4 pb-8 text-sm mb-4 text-zinc-800 dark:text-zinc-300 max-h-96 overflow-y-auto">
       <TypographyP>Dear reader,</TypographyP>
 
+      <TypographyP className="text-red-500">
+        Note: The LLM functionality is currently under development. This is a
+        placeholder for the frontend component.
+      </TypographyP>
+
       <TypographyP>
         I built this AI-powered search tool to explore innovative ways for
-        readers to connect with my content. It&apos;s still in the early stages of
-        development, so I&apos;d love to hear your feedback on how I can improve it.
+        readers to connect with my content. It&apos;s still in the early stages
+        of development, so I&apos;d love to hear your feedback on how I can
+        improve it.
       </TypographyP>
 
       <TypographyP>
@@ -25,8 +31,8 @@ export default function LLMInfo({
       <FeaturedQueries setSearchQuery={setSearchQuery} />
 
       <TypographyP className="text-muted-foreground">
-        Results are sadly not guaranteed to be 100% accurate but I&apos;m working on
-        improving the quality of the search results.
+        Results are sadly not guaranteed to be 100% accurate but I&apos;m
+        working on improving the quality of the search results.
       </TypographyP>
 
       <TypographyP>

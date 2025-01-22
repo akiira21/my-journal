@@ -101,8 +101,8 @@ const CommandMenu = () => {
                           <Sparkles />
                           <span>Switch to AI Search</span>
                         </div>
-                        <span className="text-emerald-500 text-xs font-medium p-1 rounded">
-                          Experimental
+                        <span className="text-red-500 text-xs font-medium p-1 rounded">
+                          Underdevelopment
                         </span>
                       </button>
                     </CommandItem>
@@ -164,6 +164,10 @@ const navigationRoutes = [
   {
     label: "Design System",
     path: "/design",
+  },
+  {
+    label: "RSS",
+    path: "/rss",
   },
 ];
 

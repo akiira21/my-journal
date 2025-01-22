@@ -45,6 +45,13 @@ export default function Footer() {
             >
               Portfolio
             </Link>
+
+            <Link
+              href={"/rss"}
+              className="text-sm font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"
+            >
+              RSS
+            </Link>
           </div>
         </div>
         <div className="mt-8 flex items-center justify-between pe-8">
