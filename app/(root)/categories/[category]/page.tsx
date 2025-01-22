@@ -11,7 +11,7 @@ export async function generateStaticParams() {
 }
 
 export function generateMetadata({ params }: { params: { category: string } }) {
-  let category = params.category;
+  const category = params.category;
 
   return {
     title: category.toLocaleUpperCase(),

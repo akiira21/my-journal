@@ -12,12 +12,12 @@ export default function LLMInfo({
 
       <TypographyP>
         I built this AI-powered search tool to explore innovative ways for
-        readers to connect with my content. It's still in the early stages of
-        development, so I'd love to hear your feedback on how I can improve it.
+        readers to connect with my content. It&apos;s still in the early stages of
+        development, so I&apos;d love to hear your feedback on how I can improve it.
       </TypographyP>
 
       <TypographyP>
-        Feel free to ask me anything about my posts, and I'll do my best to
+        Feel free to ask me anything about my posts, and I&apos;ll do my best to
         provide you with relevant information. I hope you enjoy using this tool
         as much as I enjoyed building it!
       </TypographyP>
@@ -25,7 +25,7 @@ export default function LLMInfo({
       <FeaturedQueries setSearchQuery={setSearchQuery} />
 
       <TypographyP className="text-muted-foreground">
-        Results are sadly not guaranteed to be 100% accurate but I'm working on
+        Results are sadly not guaranteed to be 100% accurate but I&apos;m working on
         improving the quality of the search results.
       </TypographyP>
 
