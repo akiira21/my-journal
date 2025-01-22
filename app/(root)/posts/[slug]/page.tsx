@@ -35,7 +35,7 @@ export async function generateMetadata({
       description,
       type: "article",
       createdAt,
-      url: `https://www.blog.arun.space/posts/${params.slug}`,
+      url: `https://blog.arun.space/posts/${params.slug}`,
     },
     twitter: {
       card: "summary_large_image",

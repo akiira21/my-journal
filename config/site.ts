@@ -21,8 +21,8 @@ export const siteConfig: SiteConfig = {
   name: "Arun Kumar's Blog",
   description:
     "Hi I'm Arun Kumar, and this is my blog. I'm passionate about sharing my knowledge and learning in Mathematics, Machine Learning, React, and sometimes other topics that inspire me",
-  url: "https://www.blog.arun.space",
-  siteUrl: "https://www.blog.arun.space/",
+  url: "https://blog.arun.space",
+  siteUrl: "https://blog.arun.space/",
   siteLanguage: "en",
   logo: "assets/logo.png",
   ogImage: "",

@@ -1,7 +1,7 @@
 import { POSTS } from "@/lib/constants";
 import { getBlogPosts } from "@/lib/mdx";
 
-export const baseUrl = "https://www.blog.arun.space";
+export const baseUrl = "https://blog.arun.space";
 
 export default async function sitemap() {
   const blogs = getBlogPosts().map((post) => ({
