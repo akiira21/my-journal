@@ -16,7 +16,7 @@ export default function CategoriesPage() {
       <TypographyH3 className="my-4">Categories</TypographyH3>
 
       {categories.map((category, index) => (
-        <div key={category + index.toString} className="max-w-xl">
+        <div key={category + index.toString} className="max-w-xl my-6">
           <CategoryPosts category={category} />
         </div>
       ))}

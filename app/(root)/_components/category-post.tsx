@@ -15,9 +15,7 @@ export default function CategoryPosts({ category }: CategoryPostsProps) {
         <TypographyH4>{category}</TypographyH4>
 
         <div className="my-2">
-          <TypographyP>
-            No post found with {category} category
-          </TypographyP>
+          <TypographyP>No post found with {category} category</TypographyP>
         </div>
       </>
     );
@@ -25,7 +23,9 @@ export default function CategoryPosts({ category }: CategoryPostsProps) {
 
   return (
     <>
-      <TypographyH4>{category}</TypographyH4>
+      <TypographyH4 className="text-lg my-4 text-zinc-800 dark:text-zinc-300 content-heading">
+        {category}
+      </TypographyH4>
       <div className="my-2">
         {posts
           .sort((a, b) => {

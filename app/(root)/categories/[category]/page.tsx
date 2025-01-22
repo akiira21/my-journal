@@ -10,6 +10,15 @@ export async function generateStaticParams() {
   }));
 }
 
+export function generateMetadata({ params }: { params: { category: string } }) {
+  let category = params.category;
+
+  return {
+    title: category.toLocaleUpperCase(),
+    description: `All posts related to ${category}`,
+  };
+}
+
 export default function CategoryPage({
   params,
 }: {

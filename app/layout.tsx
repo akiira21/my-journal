@@ -4,15 +4,36 @@ import "./globals.css";
 import "katex/dist/katex.min.css";
 
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { siteConfig } from "@/config/site";
 const roboto = Roboto({
   weight: ["100", "300", "400", "500", "700", "900"],
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Arun Kumar's Blog",
-  description:
-    "Welcome to Arun Kumar's personal blog where he shares insights, experiences, and stories about his journey in software development and beyond.",
+  title: {
+    default: siteConfig.name,
+    template: `%s | ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
+  keywords: siteConfig.keywords,
+  authors: siteConfig.authors,
+  creator: siteConfig.authors[0].name,
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteConfig.url,
+    title: siteConfig.name,
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.name,
+    description: siteConfig.description,
+    images: [`${siteConfig.url}/og`],
+    creator: siteConfig.authors[0].name,
+  },
 };
 
 export default function RootLayout({
