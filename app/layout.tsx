@@ -48,6 +48,7 @@ export default function RootLayout({
       <head>
         {/* Google Analytics Script */}
         <Script
+          id="google-analytics-src"
           src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS}`}
           strategy="afterInteractive"
         />
