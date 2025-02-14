@@ -11,4 +11,10 @@ export const POSTS: { title: string; href: string; description: string }[] = [
     description:
       "Learn how to build a semantic search engine using transformers and FAISS.",
   },
+  {
+    title: "Implementation of Perceptron using Numpy",
+    href: "/posts/implementation-perceptron-using-numpy",
+    description:
+      "Learn how to implement a perceptron using numpy.",
+  }
 ];
