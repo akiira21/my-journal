@@ -91,7 +91,7 @@ const CommandMenu = () => {
                 />
                 <CommandList>
                   <CommandEmpty>No results found.</CommandEmpty>
-                  <CommandGroup heading="Tools">
+                  {/* <CommandGroup heading="Tools">
                     <CommandItem className="flex items-center justify-between bg-[#f0f5fe] dark:bg-[#0e121f] text-[#4A72F4] cursor-pointer">
                       <button
                         className="flex items-center justify-between w-full"
@@ -106,7 +106,7 @@ const CommandMenu = () => {
                         </span>
                       </button>
                     </CommandItem>
-                  </CommandGroup>
+                  </CommandGroup> */}
                   <CommandGroup heading="Navigation">
                     {navigationRoutes.map((route) => (
                       <CommandItem key={route.label}>

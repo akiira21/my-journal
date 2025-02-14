@@ -1,0 +1,263 @@
+---
+title: "Implementation of Perceptron using Numpy"
+description: "In this article, we will implement a simple Perceptron using Numpy. We will train the Perceptron on a Iris dataset."
+categories: ["Machine Learning", "Python", "Numpy", "Perceptron"]
+slug: "implementation-perceptron-using-numpy"
+featured: false
+createdAt: "2025-02-14T02:00:00Z"
+---
+
+# Introduction
+
+Before we discuss the implementation of the Perceptron, let's take a look at **what a Perceptron is and why it is built**.
+
+Warren McCulloch and Walter Pitts introduced the concept of a Perceptron in 1943. Basically it replicated the functioning of a simple neuron. It takes input signal and based on it's strength generate output signal. The Perceptron is the simplest form of an artificial neural network. It is a linear classifier, which means it can classify data that is linearly separable.
+
+Here is an image of a biological neuron and a Perceptron:
+
+<div className="py-6 flex flex-col items-center gap-y-3">
+<img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Neuron3.png" width={415} height={220} alt="Biological neuron"/>
+<p className="text-xs text-center py-3">By <a href="//commons.wikimedia.org/wiki/User:Egm4313.s12" title="User:Egm4313.s12">Egm4313.s12</a> (Prof. Loc Vu-Quoc) - <span class="int-own-work" lang="en">Own work</span>, <a href="https://creativecommons.org/licenses/by-sa/4.0" title="Creative Commons Attribution-Share Alike 4.0">CC BY-SA 4.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=72816083">Link</a></p>
+
+
+<img src="https://myjournalbucket-arun.s3.eu-north-1.amazonaws.com/basic-perceptron-1.jpg" width={800} height={600} alt="Perceptron"/>
+<p className="text-xs text-center py-3">Perceptron</p>
+</div>
+
+The Perceptron or MCP neuron accepts binary inputs(0 or 1) and yield single output. 
+
+After few year later, Frank Rosenblatt introduced a concept named perceptron learning rule for MCP neuron, which is basically a method for modifying the weights for yielding the correct output. In this blog, we will discuss it's implementation and train it on **"Hello World of Machine Learning"**, Iris dataset.
+
+# Working of Perceptron
+
+As you can see in the above image, the Perceptron takes $\mathbf{x1}$, $\mathbf{x2}$, $\mathbf{x3}$, ..., $\mathbf{xn}$ inputs and has $\mathbf{w1}$, $\mathbf{w2}$, $\mathbf{w3}$, ..., $\mathbf{wn}$ weights. For a better understanding of what inputs and weights are, let's consider a biological neuron. The inputs for a biological neuron are some information from the environment like *"Is it sunny?"* or *"Is it rainy?"* etc. Weights are the knowledge the neuron has to predict the output, like sunny weather can be observed by no clouds, no rain, bright light, etc. Neurons gain knowledge by learning from the environment.
+
+You can easily predict the output because you have seen the weather and you know the weights. But the Perceptron doesn't know the weights initially. It learns the weights by training on the dataset. The Perceptron takes the inputs and weights and calculates the weighted sum of inputs and weights. If the weighted sum is greater than a threshold value, the Perceptron fires and gives the output as 1, otherwise 0.
+
+Mathematically, weighted sum is calculated as:
+
+$$
+\mathbf{z} = \mathbf{w1} \times \mathbf{x1} + \mathbf{w2} \times \mathbf{x2} + \mathbf{w3} \times \mathbf{x3} + ... + \mathbf{wn} \times \mathbf{xn}
+$$
+
+And, if $\mathbf{z} > \mathbf{threshold}$, then the output is 1, otherwise 0.
+
+If the output is not correct, the Perceptron updates the weights using the Perceptron learning rule. The Perceptron learning rule is given by:
+
+$$
+\mathbf{w} = \mathbf{w} + \mathbf{η} \times (\mathbf{target} - \mathbf{output}) \times \mathbf{x}
+$$
+
+
+Where:
+- $\mathbf{w}$ is the weight vector, $\mathbf{η}$ is the learning rate, $\mathbf{target}$ is the target output, $\mathbf{output}$ is the predicted output and $\mathbf{x}$ is the input vector
+
+<div className="py-2">
+<Callout variant="danger">
+<p className="text-sm">Before we proceed with the implementation, you should have a basic understanding of Numpy, Pandas, and Matplotlib.</p>
+</Callout>
+</div>
+
+# Implementation
+
+Let's start by creating a Perceptron class and initialize it.
+
+```python title="Initialize Perceptron"
+import numpy as np
+
+class Perceptron(object):
+    def __init__(self, lr=0.01, epochs=50):
+        self.lr = lr
+        self.epochs = epochs
+```
+
+In the above code, we have created a Perceptron class with two parameters, `lr` and `epochs`. `lr` is the learning rate and `epochs` is the number of iterations the Perceptron will train on the dataset.
+
+Next, we will define the `fit` method, which will train the Perceptron on the dataset.
+
+```python title="Fit method"
+def fit(self, X, y):
+    self.weights_ = np.random.normal(loc=0, scale=0.01, size=1+X.shape[1])
+    self.errors_ = []
+
+    for _ in range(self.epochs):
+        errors = 0
+        for xi, target in zip(X, y):
+            update = self.lr * (target - self.predict(xi))
+            self.weights_[1:] += update * xi
+            self.weights_[0] += update
+            errors += int(update != 0.0)
+        self.errors_.append(errors)
+    
+    return self
+```
+
+In the `fit` method, we have initialized the weights using the normal distribution, which take the mean(`loc`), standard deviation(`scale`) as parameters and size which we take as `1+X.shape[1]`. We take one extra weight for the bias term. We have also initialized the `errors_` list to store the number of misclassifications in each epoch.
+Then we iterate over the number of epochs and update the weights using the Perceptron learning rule. We calculate the update using the formula: 
+
+$$
+\mathbf{η} \times (\mathbf{target} - \mathbf{output}) \times \mathbf{x}
+$$
+
+We also update the bias term using the formula: 
+
+$$
+\mathbf{w0} += \mathbf{η} \times (\mathbf{target} - \mathbf{output})
+$$
+
+We calculate the number of misclassifications in each epoch and append it to the `errors_` list.
+
+Next, we will define the `net_input` method, which calculates the weighted sum of inputs and weights.
+
+```python title="Net input method"
+def net_input(self, X):
+    return np.dot(X, self.weights_[1:]) + self.weights_[0]
+```
+
+In the `net_input` method, we calculate the dot product of the input vector and weights and add the bias term to it, which is basically given by formula:
+
+$$
+\mathbf{z} = \mathbf{w1} \times \mathbf{x1} + \mathbf{w2} \times \mathbf{x2} + \mathbf{w3} \times \mathbf{x3} + ... + \mathbf{wn} \times \mathbf{xn} + \mathbf{w0}
+$$
+
+
+Finally, we will define the `predict` method, which predicts the output based on the weighted sum.
+
+```python title="Predict method"
+def predict(self, X):
+    return np.where(self.net_input(X) >= 0.0, 1, 0)
+```
+
+In the `predict` method, we calculate the weighted sum using the `net_input` method and return 1 if the weighted sum is greater than or equal to 0, otherwise 0.
+
+So, this is the complete implementation of the Perceptron class. In the next section, we will train the Perceptron on the Iris dataset.
+
+# Training the Perceptron on Iris dataset
+
+The Iris dataset is a popular dataset in machine learning. It contains 150 samples of iris flowers, each with four features: sepal length, sepal width, petal length, and petal width. The dataset has three classes: Iris-setosa, Iris-versicolor, and Iris-virginica.
+
+Well, before we proceed take a look at these flower images:
+
+<div className="py-6 flex flex-wrap justify-center gap-6">
+  {[
+    {
+      src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Irissetosa1.jpg/640px-Irissetosa1.jpg",
+      alt: "Iris Setosa",
+    },
+    {
+      src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Iris_versicolor_3.jpg/640px-Iris_versicolor_3.jpg",
+      alt: "Iris Versicolor",
+    },
+    {
+      src: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Iris_virginica.jpg/640px-Iris_virginica.jpg",
+      alt: "Iris Virginica",
+    },
+  ].map((item, index) => (
+    <div key={index} className="flex flex-col items-center">
+      <img
+        src={item.src}
+        alt={item.alt}
+        width={400}
+        height={300}
+        className="rounded-md shadow-md"
+      />
+      <p className="text-xs text-center py-3">{item.alt}</p>
+    </div>
+  ))}
+</div>
+
+<p className="text-center text-xs">Images from <Link href={"https://www.wikipedia.org/"}>Wikipedia</Link></p>
+
+As Perceptron is a binary classifier, we can't classify these three classes at once. So, we will consider only two classes, Iris-setosa and Iris-versicolor. But we can extend the Perceptron to classify multiple classes using the One-vs-All(OvA) method. For now, let's train the Perceptron on Iris-setosa and Iris-versicolor.
+
+Let's import the Iris dataset.
+
+```python title="Import Iris dataset"
+import pandas as pd
+
+df = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data', header=None)
+df.head()
+```
+
+Output will look like this:
+
+```markdown
+<!--   0    1    2    3    4 -->
+    0  5.1  3.5  1.4  0.2  Iris-setosa
+    1  4.9  3.0  1.4  0.2  Iris-setosa
+    2  4.7  3.2  1.3  0.2  Iris-setosa
+    3  4.6  3.1  1.5  0.2  Iris-setosa
+    4  5.0  3.6  1.4  0.2  Iris-setosa
+```
+
+from the dataset, let's extract main features that can classify Iris-setosa and Iris-versicolor. As you can see in their images, the petal length and sepal length can be the main features to classify them. So here is the code to extract these features:
+
+```python title="Extract main features"
+import matplotlib.pyplot as plt
+import numpy as np
+
+#select setosa and versicolor
+y = df.iloc[0:100, 4].values
+y = np.where(y == 'Iris-setosa', 0, 1)
+
+#extract sepal length and petal length
+X = df.iloc[0:100, [0, 2]].values
+
+#plot data
+plt.scatter(X[:50, 0], X[:50, 1], color='red', marker='o', label='setosa')
+plt.scatter(X[50:100, 0], X[50:100, 1], color='blue', marker='x', label='versicolor')
+
+plt.xlabel('sepal length [cm]')
+plt.ylabel('petal length [cm]')
+plt.legend(loc='upper left')
+
+plt.show()
+```
+
+In the above code, we have selected only the Setosa and Versicolor classes and extracted their sepal length and petal length. Setosa is represented by the red color and Versicolor by the blue color. For the target variable, Setosa is represented by 0 and Versicolor by 1.
+
+Output will look like this:
+
+<div className="flex items-center w-full justify-center py-6 flex-col gap-y-3">
+  <a href="https://myjournalbucket-arun.s3.eu-north-1.amazonaws.com/setosa-vs-versicolor.png" target="_blank"><img src="https://myjournalbucket-arun.s3.eu-north-1.amazonaws.com/setosa-vs-versicolor.png" alt="Setosa vs Versicolor" width={512} className="rounded-md"/></a>
+  <p className="text-xs">Setosa vs Versicolor</p>
+</div>
+
+Plot shows that versicolor has larger sepal length and petal length than setosa.
+
+You can see that the data is linearly separable. Now, let's train the Perceptron on this dataset.
+
+```python title="Train Perceptron"
+ppn = Perceptron(lr=0.1, epochs=10)
+ppn.fit(X, y)
+plt.plot(range(1, len(ppn.errors_)+1), ppn.errors_, marker='o')
+plt.xlabel('Epochs')
+plt.ylabel('Number of misclassifications')
+plt.show()
+```
+
+When you run above code you get the following plot:
+
+<div className="flex items-center w-full justify-center py-6 flex-col gap-y-3">
+  <a href="https://myjournalbucket-arun.s3.eu-north-1.amazonaws.com/error-vs-epochs.png" target="_blank"><img src="https://myjournalbucket-arun.s3.eu-north-1.amazonaws.com/error-vs-epochs.png" alt="Perceptron Errors" width={512} className="rounded-md"/></a>
+  <p className="text-xs">Perceptron Errors</p>
+</div>
+
+The plot shows that the number of misclassifications decreases with each epoch. After 10 epochs, the Perceptron has converged and learned the weights to classify the Setosa and Versicolor classes.
+
+You can now predict the output using the Perceptron.
+
+```python title="Predict output"
+flower = [5.1, 1.4]
+output = ppn.predict(flower)
+
+print('Predicted output:', 'Setosa' if output == 0 else 'Versicolor')
+```
+
+This is a simple implementation of the Perceptron using Numpy. You can extend this implementation to classify multiple classes using the One-vs-All(OvA) method. You can also experiment with different datasets and hyperparameters to see how the Perceptron performs.
+
+# Conclusion
+
+This is how you can implement a simple Perceptron using Numpy. The Perceptron is the simplest form of an artificial neural network and can be used to classify data that is linearly separable. In this article, we trained the Perceptron on the Iris dataset and classified the Setosa and Versicolor classes based on sepal length and petal length.
+
+*I hope you found this article helpful. Happy learning!* 
