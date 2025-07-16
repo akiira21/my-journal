@@ -1,13 +1,13 @@
-import { GradientButton } from "@/custom_components/buttons/buttons";
-import { TypographyH2 } from "@/custom_components/typography";
-import { MoveUpRight } from "lucide-react";
-import Link from "next/link";
+import { TypographyH2, TypographyH3 } from "@/custom_components/typography";
 import LatestPosts from "./_components/latest-posts";
-import { PORTFOLIO } from "@/personal-links";
+import CategoriesSection from "./_components/categories-section";
+import { getBlogPosts } from "@/lib/mdx";
 
 export default function HomePage() {
+  const posts = getBlogPosts();
+
   return (
-    <div className="pt-[15vh] max-w-3xl mx-auto px-4">
+    <div className="pt-[15vh] max-w-3xl mx-auto md:px-4">
       <div>
         <TypographyH2 className="leading-normal font-medium inline">
           Hi 👋🏻 I&apos;m Arun Kumar, and this is my blog.
@@ -20,8 +20,8 @@ export default function HomePage() {
         </TypographyH2>
       </div>
 
-      <div className="my-4">
-        <GradientButton>
+      <div className="my-8">
+        {/* <GradientButton>
           <Link
             href={PORTFOLIO}
             target="_blank"
@@ -33,12 +33,16 @@ export default function HomePage() {
               className="group-hover:rotate-45 transition-all duration-500"
             />
           </Link>
-        </GradientButton>
-
+        </GradientButton> */}
         <div className="mt-12 max-w-xl">
-          <LatestPosts />
+          <LatestPosts latestPosts={posts.splice(0, 10)} />
         </div>
       </div>
+
+      {/* <div className="mt-12">
+        <TypographyH3 className="mb-4">Categories</TypographyH3>
+        <CategoriesSection />
+      </div> */}
     </div>
   );
 }

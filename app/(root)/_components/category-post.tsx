@@ -1,5 +1,6 @@
 import { TypographyH4, TypographyP } from "@/custom_components/typography";
-import { formatDate, getPostsByCategory } from "@/lib/mdx";
+import { getPostsByCategory } from "@/lib/mdx";
+import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 
 interface CategoryPostsProps {

@@ -6,7 +6,8 @@ import {
   TypographyH3,
   TypographyP,
 } from "@/custom_components/typography";
-import { formatDate, getBlogPosts, getPostBySlug } from "@/lib/mdx";
+import { getBlogPosts, getPostBySlug } from "@/lib/mdx";
+import { formatDate } from "@/lib/utils";
 
 export async function generateStaticParams() {
   const posts = getBlogPosts();
