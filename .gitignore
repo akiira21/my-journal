@@ -35,3 +35,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/.venv
+
+/manim/*/__pycache__/
+/manim/*/media/

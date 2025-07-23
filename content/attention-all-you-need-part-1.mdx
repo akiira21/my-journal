@@ -1,0 +1,189 @@
+---
+title: "Attention is All You Need - Part 1"
+description: "An introduction to the Transformer architecture and its significance in modern NLP."
+categories: ["Transformer", "Machine Learning"]
+slug: "attention-all-you-need-part-1"
+featured: true
+createdAt: "2025-07-13T14:00:00Z"
+---
+
+Before discussing attention, encoders, decoders, and other transformer stuff, let's first understand why ***'Why RNNs fall short'*** 😅.
+
+# Why RNNs Fall Short
+
+Recurrent Neural Networks (RNNs) were once the default choice for handling sequence data - language, audio, time, and more. They were inspired by the idea of **'memory'** 🧠
+in model; the ability to remember what came before in sequence.
+
+But as NLP tasks become more complex and datasets grew, the limitations of RNNs became too big to ignore 😬.
+
+<p style={{fontSize: '18px'}}> Limitation of RNNs </p>
+
+<br/>
+
+<OrderedList items={["Sequential Computation - No parallelism", "Vanishing and exploading gradient", "Hard to model long range dependencies"]}/>
+
+<br/>
+
+**Sequential Computation - No parallelism:**
+
+RNN process input sequences one step at a time. That is, they take the first token, update the hidden state, pass that to the next token, and so on — like a chain ⛓️.
+
+
+This makes parallel processing impossible during training. Even with a GPU, you can't compute step 5 without finishing step 4. As a result:
+
+<UnorderedList items={["RNNs are slow to train, especially on long sequences. 🐌", "They don't scale well with large datasets or long inputs."]}/>
+
+A simple visualization of this limitation is:
+
+<div className='flex flex-col items-center mt-4 mb-6'>
+<VideoPlayer className="mb-4" src="https://myjournalbucket-arun.s3.eu-north-1.amazonaws.com/RNNSequentialComputation.mp4" width="100%" height="auto" controls/>
+<p className='text-sm text-gray-500'>Sequential Computation in RNNs</p>
+</div>
+
+
+**Vanishing and Exploding Gradients:**
+
+In deep RNNs, gradients (used for training) are multiplied through many time steps. If the values are < 1, they vanish 👻. If > 1, they explode 💥.
+
+This lead to:
+
+<UnorderedList items={["Difficulty in learning long-term dependenciesVanishing gradients → model 'forgets' early information in a long sequence.", "Models that can't remember what happened 10 steps ago.Exploding gradients → unstable training."]}/>
+
+
+A simple visualization of this limitation is:
+
+<div className='flex flex-col items-center mt-4 mb-6'>
+<VideoPlayer className="mb-4" src="https://myjournalbucket-arun.s3.eu-north-1.amazonaws.com/GradientVanishingExploding.mp4" width="100%" height="auto" controls/>
+<p className='text-sm text-gray-500'>Vanishing and Exploding Gradients</p>
+</div>
+
+**Hard to Model Long Range Dependencies:**
+
+Suppose a model has to answer a question like:
+
+> "The boy who wore a blue shirt and carried a skateboard went to the park. What color was his shirt?"
+
+The answer relies on information from earlier in the sentence.
+
+RNNs struggle with this because their memory is compressed into a single hidden state vector, updated step-by-step. As sequences get longer, older information gets blurred or overwritten by new inputs 😵‍💫.
+
+
+# Transformer Architecture - A High-Level Overview
+
+This section introduces the Transformer's big-picture structure before diving into the individual components like attention or embeddings.
+
+<p className='text-[18px]'>What is the Transformer</p>
+
+The Transformer is a sequence-to-sequence model architecture introduced in the 2017 paper ***"Attention Is All You Need."*** It was designed for tasks like translation, summarization, and any problem involving a sequence of inputs and outputs.
+
+The core idea is simple:
+
+> Instead of processing sequences step-by-step like RNNs, Transformers look at the entire sequence at once — using attention to figure out which parts matter 🎯.
+
+<br/>
+
+<p className='text-[18px]'>The Two Main Parts</p>
+
+At a high level, the Transformer is made of two main stacks:
+
+
+***Encoder:***
+
+<UnorderedList items={["Reads the input sequence (e.g., a sentence in English).", "Processes the input sequence through multiple identical layers.", "Outputs a set of contextualized embeddings for each input token."]}/>
+
+***Decoder:***
+
+<UnorderedList items={["Takes the encoder output and the previously generated outputs.", "Predicts the next token one by one.", "Also built from a stack of identical layers, with a few extra tweaks."]}/>
+
+
+<p className='text-[14px] my-4'>Transformer architecture:</p>
+
+<div className='flex flex-col items-center mt-4 mb-6 bg-white'>
+<img src='https://myjournalbucket-arun.s3.eu-north-1.amazonaws.com/960px-Transformer%2C_full_architecture.png' alt='Transformer architecture'/>
+<p className='text-xs my-4 text-black text-center'>By dvgodoy - <Link href={'https://github.com/dvgodoy/dl-visuals/?tab=readme-ov-file'}>https://github.com/dvgodoy/dl-visuals/?tab=readme-ov-file</Link>, CC BY 4.0, <Link href={'https://commons.wikimedia.org/w/index.php?curid=151216016'}>https://commons.wikimedia.org/w/index.php?curid=151216016</Link></p>
+</div>
+
+<br/>
+
+In diagram, left side is the **encoder** and right side is the **decoder**. Each box represents a layer in the stack.
+
+<br/>
+
+<p className='text-[18px]'>Encoder-Decoder Flow (Simple View)</p>
+
+Let's say you're translating:
+
+> Input: "I love you" ❤️
+
+> Output: "Je t'aime"
+
+The flow looks like this:
+
+<OrderedList items={["Encoder reads 'I love you', and turns it into a rich representation (vectors).", "Decoder starts generating 'Je', then 't'', then 'aime', using both:"]}/>
+
+<div className='pl-4 my-2'>
+<UnorderedList items={["The encoder's output (context),", "Previously generated tokens (like 'Je')."]}/>
+</div>
+
+<br/>
+
+# Encoder and Decoder Blocks Components
+
+The Transformer architecture consists of two main components: the **Encoder** and the **Decoder**. Each of these components is made up of multiple identical layers, which are stacked to form the complete architecture.
+
+<p className="text-[18px]">Encoder Block </p>
+
+The encoder block takes in the input sequence and creates rich representations of each word. Each encoder layer has two main parts:
+
+<OrderedList items={["Multi-Head Self-Attention:", "Feed-Forward Network:"]} />
+
+**Multi-Head Self-Attention:**
+
+<UnorderedList items={["Lets the model look at all words in the sentence at the same time", "Figures out which words are important for understanding each word"]}/>
+
+**Feed-Forward Network:**
+
+<UnorderedList items={["Consists of two linear transformations with a ReLU activation in between", "Processes the attention results through simple calculations"]}/>
+
+<br/>
+
+<p className='text-[18px]'>Decoder Block</p>
+
+The decoder block creates the output sequence, one word at a time. Each decoder layer has three main parts:
+<OrderedList items={["Masked Multi-Head Self-Attention:", "Cross-Attention:", "Feed-Forward Network:"]} />
+
+**Masked Multi-Head Self-Attention:**
+
+<UnorderedList items={["Works like the encoder's attention, but with a twist", "It can only look at words that came before, not future words (that would be cheating! 😏)"]}/>
+
+**Cross-Attention:**
+
+<UnorderedList items={["This is where the magic happens - the decoder looks at what the encoder learned ✨", "It connects the input sentence with the output being generated"]}/>
+
+**Feed-Forward Network:**
+
+<UnorderedList items={["Same as the encoder - just processes the attention results", "Two simple layers doing some calculations"]}/>
+
+These blocks are stacked (usually 6 or 12 layers deep), but all layers are identical in structure — just with different learned weights.
+
+
+# The Attention Mechanism (Preview)
+
+The attention block is the heart of the Transformer 💖.
+
+At every layer, each token can attend to all other tokens — deciding how much to "focus" on each one when creating its own representation.
+
+This attention mechanism replaces recurrence and allows the model to learn relationships regardless of distance.
+
+# Conclusion
+
+That wraps up our high-level overview of the Transformer architecture 🎉.
+
+In this post, we looked at why RNNs started to fall apart for complex sequence tasks, and how Transformers came in with a fresh approach — getting rid of recurrence entirely and relying only on attention.
+
+We also broke down the overall structure of the model: the encoder and decoder stacks, how they interact, and what kind of layers make them up. Don't worry if it still feels a bit abstract — we'll dig into each component step by step in the upcoming parts.
+
+In the next blog, we'll start with the attention mechanism, the core building block of the Transformer. We'll look at how it works, what those Query-Key-Value terms actually mean, and implement it from scratch to see it in action.
+
+Thanks for reading — see you in the next one! 👋
+

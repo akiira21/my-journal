@@ -17,6 +17,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ReactNode } from "react";
 import { TypographyInlineCode } from "@/custom_components/typography";
+import VideoPlayer from "@/custom_components/video-player";
 
 interface CodeProps {
   children: ReactNode;
@@ -150,4 +151,5 @@ export const mdxComponents = {
   BackwardAnchor,
   Image,
   TypographyInlineCode,
+  VideoPlayer
 };

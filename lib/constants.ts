@@ -16,5 +16,10 @@ export const POSTS: { title: string; href: string; description: string }[] = [
     href: "/posts/implementation-perceptron-using-numpy",
     description:
       "Learn how to implement a perceptron using numpy.",
+  },
+  {
+    title: "Attention is All You Need - Part 1",
+    href: "/posts/attention-all-you-need-part-1",
+    description: "An introduction to the Transformer architecture and its significance in modern NLP."
   }
 ];
