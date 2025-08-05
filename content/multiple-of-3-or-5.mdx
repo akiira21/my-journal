@@ -1,0 +1,175 @@
+---
+title: "Euler - Multiple of 3 or 5 (P1)"
+description: ""
+categories: ["Maths", "Optimization", "Euler"]
+tag: "Euler"
+slug: "euler-problem-1"
+featured: false 
+createdAt: "2025-08-05T09:00:00Z"
+isDsaBlog: false
+---
+
+
+# Problem
+
+If we list all the natural numbers below $10$ that are multiples of $3$ or $5$, we get $3, 5, 6$ and $9$. The sum of these multiples is $23$.
+
+Find the sum of all the multiples of $3$ or $5$ below $1000$.
+
+<br/>
+
+Problem link:
+<Link href="https://projecteuler.net/problem=1" target="_blank" className="text-blue-500">Project Euler - Problem 1</Link>
+
+
+# Problem Explanation
+
+The problem is self-explanatory, so it doesn't require much explanation. Just a short explanation is:
+
+We need to find the sum of all natural numbers below $1000$ that are multiples of either $3$ or $5$.
+
+Example:
+
+For $n = 10$, 
+
+Multiple of $3$ below $10$ are: $3, 6, 9$.
+
+Multiple of $5$ below $10$ are: $5$.
+
+The sum of these multiples is $3 + 6 + 9 + 5 = 23$.
+
+# Mathematical Formulation
+
+Let $N = 1000$.
+
+We need to compute:
+
+<div className='text-center my-4'>
+$\sum_{i=1}^{N-1} i,\ \text{where } i \bmod 3 = 0 \text{ or } i \bmod 5 = 0$
+</div>
+
+In set notation, we can write this as:
+
+$$
+S = \{x \in \mathbb{N} \mid x < N \land (3 \mid x \lor 5 \mid x)\}
+$$
+
+Compute:
+
+$$
+\sum_{x \in S} x
+$$
+
+Let's consider one example to cover an edge case:
+
+For $N = 20$, 
+
+The multiples of $3$ below $20$ are: $3, 6, 9, 12, 15, 18$.
+
+The multiples of $5$ below $20$ are: $5, 10, 15$.
+
+The sum of these multiples is:
+
+$3 + 6 + 9 + 12 + 15 + 18 + 5 + 10 + 15 = 93$.
+
+But, notice that $15$ is counted twice, once in the multiples of $3$ and once in the multiples of $5$.
+To avoid this, we can use the <Link href="https://en.wikipedia.org/wiki/Inclusion%E2%80%93exclusion_principle" target="_blank" className="text-blue-500">**principle of inclusion-exclusion**</Link>.
+
+Let $A$ be the set of multiples of $3$ below $N$ and $B$ be the set of multiples of $5$ below $N$.
+
+We want to compute:
+
+$$
+|A \cup B| = |A| + |B| - |A \cap B|
+$$
+ 
+The last term accounts for the double counting of the multiples of $15$ (the least common multiple of $3$ and $5$).
+
+So we reduce the problem to:
+
+> Finding the sum of all numbers divisible by a number $d$ below $N$.
+
+Which can be computed using the <Link href="https://en.wikipedia.org/wiki/Arithmetic_progression" target="_blank" className="text-blue-500"><strong>arithmetic series formula</strong></Link>:
+
+$$
+S_d = d + 2d + 3d + \ldots + kd
+$$
+
+
+where: 
+$$
+k = \left\lfloor \frac{N-1}{d} \right\rfloor
+$$
+
+This can be simplified to:
+
+$$
+S_d = d \cdot \frac{k(k+1)}{2}
+$$
+
+Final formula:
+
+$$
+S = S_3 + S_5 - S_{15}
+
+$$
+
+where:
+> $S_3$ is the sum of all multiples of $3$ below $N$.
+
+> $S_5$ is the sum of all multiples of $5$ below $N$.
+
+> $S_{15}$ is the sum of all multiples of $15$ below $N$.
+
+Here is computation:
+
+$$
+k_{3} = \left\lfloor \frac{1000-1}{3} \right\rfloor = 333 
+$$
+
+$$
+k_{5} = \left\lfloor \frac{1000-1}{5} \right\rfloor = 199
+$$
+
+$$
+k_{15} = \left\lfloor \frac{1000-1}{15} \right\rfloor = 66
+$$
+
+Then:
+
+$$
+Sum = 3 \cdot \frac{333(333+1)}{2} + 5 \cdot \frac{199(199+1)}{2} - 15 \cdot \frac{66(66+1)}{2}
+$$
+
+<Callout variant={"info"}> 
+    This gives us the exact result in constant time — no loop needed!
+</Callout>
+
+# Algorithm Summary
+
+<OrderedList items={["Compute how many multiples of 3, 5, and 15 exist below N", "Use the formula for sum of first k natural numbers scaled by the multiple.", "Add the 3 and 5 sums, subtract the 15 sum.", "Done in O(1) time."]}/>
+
+
+# Code
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+// Function to compute sum of all multiples of `d` below `n`
+long long sumOfMultiples(int n, int d) {
+    int k = (n - 1) / d;
+    return 1LL * d * k * (k + 1) / 2;
+}
+
+int main() {
+    int n = 1000;
+
+    long long sum = sumOfMultiples(n, 3)
+                  + sumOfMultiples(n, 5)
+                  - sumOfMultiples(n, 15);
+
+    cout << sum;
+    return 0;
+}

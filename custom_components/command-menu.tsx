@@ -113,6 +113,7 @@ const CommandMenu = () => {
                         <Link
                           href={route.path}
                           className="flex gap-x-4 items-center w-full"
+                          onClick={() => setOpen(false)}
                         >
                           <MoveRight />
                           <span>{route.label}</span>
@@ -160,6 +161,14 @@ const navigationRoutes = [
   {
     label: "Home",
     path: "/",
+  },
+  {
+    label: "All posts",
+    path: "/posts"
+  },
+  {
+    label: "Categories",
+    path: "/categories"
   },
   {
     label: "Design System",

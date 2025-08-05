@@ -4,24 +4,24 @@ import { postType } from "@/types";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 
-export default function LatestPosts({
-  latestPosts,
+export default function EulerPosts({
+  eulerPosts,
 }: {
-  latestPosts: postType[];
+  eulerPosts: postType[];
 }) {
   return (
     <>
       <div className="flex items-center justify-between pe-6">
-        <TypographyH4 className="font-medium">Recent</TypographyH4>
+        <TypographyH4 className="font-medium">Euler Problems</TypographyH4>
         <Link 
-            href="/posts" 
+            href="/posts/euler-problems" 
             className="text-sm text-zinc-700 hover:text-zinc-900  dark:text-zinc-300 dark:hover:text-zinc-100"
           >
             View all
-          </Link>
+        </Link>
       </div>
       <div className="my-4">
-        {latestPosts
+        {eulerPosts
           .sort((a, b) => {
             if (
               new Date(a.metadata.createdAt) > new Date(b.metadata.createdAt)
@@ -37,3 +37,4 @@ export default function LatestPosts({
     </>
   );
 }
+
