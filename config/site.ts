@@ -18,7 +18,7 @@ type SiteConfig = {
 };
 
 export const siteConfig: SiteConfig = {
-  name: "Arun Kumar's Blog",
+  name: "Arun Kumar's Journal",
   description:
     "Hi I'm Arun Kumar, and this is my blog. I'm passionate about sharing my knowledge and learning in Mathematics, Machine Learning, React, and sometimes other topics that inspire me",
   url: "https://blog.arun.space",

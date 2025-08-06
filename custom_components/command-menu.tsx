@@ -14,7 +14,7 @@ import React from "react";
 import CommandMenuButton from "./buttons/command-menu-button";
 import Link from "next/link";
 import { GITHUB, GMAIL, PORTFOLIO, XPROFILE } from "@/personal-links";
-import LLMSearch from "@/app/search/llm-search";
+import LLMSearch from "@/custom_components/search/llm-search";
 
 const CommandMenu = () => {
   const [open, setOpen] = React.useState(false);

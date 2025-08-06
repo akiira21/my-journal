@@ -1,6 +1,5 @@
-import Script from "next/script";
 import Footer from "@/custom_components/footer";
-import MainNav from "../navigation/main-nav";
+import Navbar from "./_components/nav";
 
 export default function PagesLayout({
   children,
@@ -9,11 +8,13 @@ export default function PagesLayout({
 }>) {
   return (
     <>
-      <MainNav />
-      <div className="mt-20 min-h-[calc(100vh-13rem)] h-full w-full relative mb-24 px-4">
+      <Navbar />
+
+      <div className="max-w-3xl mx-auto mt-24 px-4 min-h-[60vh]">
         {children}
       </div>
-      <Footer />
+
+       <Footer />
     </>
   );
 }

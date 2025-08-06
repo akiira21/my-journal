@@ -1,6 +1,6 @@
 ---
 title: "Euler - Multiple of 3 or 5 (P1)"
-description: ""
+description: "A comprehensive solution to Project Euler Problem 1: finding the sum of all multiples of 3 or 5 below 1000. Learn how to solve this classic problem efficiently using the inclusion-exclusion principle and arithmetic series formula for O(1) time complexity."
 categories: ["Maths", "Optimization", "Euler"]
 tag: "Euler"
 slug: "euler-problem-1"
@@ -137,9 +137,11 @@ $$
 
 Then:
 
+<div className="text-sm overflow-x-auto">
 $$
 Sum = 3 \cdot \frac{333(333+1)}{2} + 5 \cdot \frac{199(199+1)}{2} - 15 \cdot \frac{66(66+1)}{2}
 $$
+</div>
 
 <Callout variant={"info"}> 
     This gives us the exact result in constant time — no loop needed!
@@ -173,3 +175,14 @@ int main() {
     cout << sum;
     return 0;
 }
+```
+
+<br/>
+
+# Reference
+
+<div className="text-sm">
+1. <Link href="https://projecteuler.net/problem=1" target="_blank" className="text-blue-500">Project Euler - Problem 1</Link>
+2. <Link href="https://en.wikipedia.org/wiki/Inclusion%E2%80%93exclusion_principle" target="_blank" className="text-blue-500">Inclusion-exclusion principle - Wikipedia</Link>
+3. <Link href="https://en.wikipedia.org/wiki/Arithmetic_progression" target="_blank" className="text-blue-500">Arithmetic progression - Wikipedia</Link>
+</div>

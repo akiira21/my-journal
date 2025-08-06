@@ -12,9 +12,10 @@ body {
     text-wrap: balance;
   }
 }
+
 @layer base {
   :root {
-    --background: 217.5, 80%, 98.04%;
+    --background: 255, 255, 255;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
@@ -42,7 +43,7 @@ body {
   }
 
   .dark {
-    --background: 230, 25%, 4.71%;
+    --background: 0, 0, 0;
     --foreground: 0 0% 98%;
     --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
@@ -58,7 +59,7 @@ body {
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
+    --border: 240 3.7% 35.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
     --chart-1: 220 70% 50%;
@@ -77,3 +78,11 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Enhanced dark mode token colors */
+@layer components {
+  .dark [style*="--dark-token-color"] {
+    color: var(--dark-token-color) !important;
+  }
+}
+

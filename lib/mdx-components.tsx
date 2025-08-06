@@ -101,7 +101,7 @@ const Heading: React.FC<{ children: ReactNode }> = ({ children }) => {
 };
 
 const Paragraph: React.FC<{ children: ReactNode }> = ({ children }) => (
-  <TypographyP className="text-sm my-2 text-zinc-700 leading-relaxed tracking-wide dark:text-zinc-400">
+  <TypographyP className="text-sm  text-zinc-700 leading-relaxed tracking-wide dark:text-zinc-400">
     {children}
   </TypographyP>
 );

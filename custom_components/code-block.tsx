@@ -1,17 +1,14 @@
 "use client";
-
 import React, { useState } from "react";
 import { Highlight, Prism } from "prism-react-renderer";
-import { Check, Copy } from "lucide-react";
-
-import { IconButton } from "./buttons/buttons";
+import { Check, Copy } from 'lucide-react';
 
 interface CodeBlockProps {
   codeString: string;
   language: string;
   metastring?: string;
   title?: string;
-  highlightedLines?: number[]; // New prop for highlighted lines
+  highlightedLines?: number[];
 }
 
 const calculateLinesToHighlight = (meta?: string) => {
@@ -19,7 +16,6 @@ const calculateLinesToHighlight = (meta?: string) => {
   const regex = /{([\d,-]+)}/;
   const match = regex.exec(meta);
   if (!match) return () => false;
-
   const lineNumbers = match[1]
     .split(",")
     .flatMap((line) =>
@@ -38,12 +34,11 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   language,
   metastring,
   title,
-  highlightedLines = [], // Default to empty array
+  highlightedLines = [],
 }) => {
   const [copied, setCopied] = React.useState(false);
-  const [hoveredLine, setHoveredLine] = useState<number | null>(null);
   const metaHighlight = calculateLinesToHighlight(metastring);
-
+  
   const isLineHighlighted = (index: number) => {
     return metaHighlight(index) || highlightedLines.includes(index + 1);
   };
@@ -52,7 +47,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     try {
       await navigator.clipboard.writeText(codeString);
       setCopied(true);
-      setTimeout(() => setCopied(false), 5000);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Failed to copy code:", err);
     }
@@ -60,43 +55,39 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 
   const handleClick = () => {
     copyToClipboard();
-    setCopied(true);
-    setTimeout(() => setCopied(false), 5000);
   };
 
   return (
-    <div className="w-full border rounded-lg">
+    <div className="w-full border border-border bg-card rounded-lg overflow-hidden shadow-sm">
       {title && (
-        <div className="flex items-center justify-between rounded-t-lg border border-b bg-background px-4 py-2">
-          <h3 className="text-sm text-zinc-700 dark:text-zinc-400">{title}</h3>
-          <span onClick={handleClick}>
-            <IconButton className="hover:shadow-[0_0_16px_rgba(59,130,246,0.5)] w-8 h-8 hover:rounded-lg">
-              {copied ? (
-                <Check
-                  size={14}
-                  className="text-green-500 transition-all duration-300"
-                />
-              ) : (
-                <Copy size={14} />
-              )}
-            </IconButton>
-          </span>
+        <div className="flex items-center justify-between border-b border-border bg-muted px-4 py-3">
+          <h3 className="text-sm font-medium text-muted-foreground font-mono">{title}</h3>
+          <button
+            onClick={handleClick}
+            className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent"
+            aria-label={copied ? "Copied!" : "Copy code"}
+          >
+            {copied ? (
+              <Check size={16} className="text-green-600 dark:text-green-400" />
+            ) : (
+              <Copy size={16} />
+            )}
+          </button>
         </div>
       )}
       <Highlight
         theme={{
-          plain: {},
+          plain: {
+            color: "hsl(var(--foreground))",
+            backgroundColor: "hsl(var(--card))",
+          },
           styles: [
+            // Comments - muted
             {
-              types: ["prolog", "doctype", "cdata", "punctuation"],
+              types: ["comment", "prolog", "doctype", "cdata"],
               style: {
-                color: "#4A72F4",
-              },
-            },
-            {
-              types: ["comment"],
-              style: {
-                color: "#6A737D",
+                color: "hsl(var(--muted-foreground))",
+                fontStyle: "italic",
               },
             },
             {
@@ -105,55 +96,52 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 opacity: 0.7,
               },
             },
+            // Strings - green
             {
               types: ["string", "attr-value"],
               style: {
-                color: "#4A72F4",
+                color: "#16a34a", // green-600
               },
             },
+            // Punctuation and operators
             {
-              types: ["entity", "url"],
+              types: ["punctuation", "operator"],
               style: {
-                color: "#0550ae",
+                color: "hsl(var(--foreground))",
               },
             },
+            // Numbers, booleans, constants - blue
             {
-              types: [
-                "symbol",
-                "number",
-                "boolean",
-                "variable",
-                "constant",
-                "property",
-                "regex",
-                "inserted",
-              ],
+              types: ["entity", "url", "symbol", "number", "boolean", "variable", "constant", "property", "regex", "inserted"],
               style: {
-                color: "#116329",
+                color: "#2563eb", // blue-600
               },
             },
+            // Keywords - darker blue
             {
               types: ["atrule", "keyword", "attr-name"],
               style: {
-                color: "#4A72F4",
+                color: "#1d4ed8", // blue-700
               },
             },
+            // Functions - purple
             {
               types: ["function", "deleted", "tag"],
               style: {
-                color: "#CF0082",
+                color: "#9333ea", // purple-600
               },
             },
             {
               types: ["function-variable"],
               style: {
-                color: "#953800",
+                color: "#9333ea", // purple-600
               },
             },
+            // Tags and selectors - teal
             {
               types: ["tag", "selector"],
               style: {
-                color: "#116329",
+                color: "#0d9488", // teal-600
               },
             },
           ],
@@ -163,67 +151,81 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         language={language}
       >
         {({ style, tokens, getLineProps, getTokenProps }) => (
-          <div className="relative">
-            <pre
-              className={`overflow-x-auto bg-[#f6f9fe] dark:bg-[#0f1117] py-2 font-mono text-sm ${
-                !title ? "rounded-lg" : "rounded-b-lg"
-              }`}
-              style={style}
-            >
-              {tokens.map((line, lineIndex) => {
-                const isHighlighted = isLineHighlighted(lineIndex);
-                const isHovered = hoveredLine === lineIndex;
-
-                // Get line props and destructure key
-                const { key, ...lineProps } = getLineProps({
-                  line,
-                  key: lineIndex,
-                });
-
-                return (
-                  <div
-                    key={`line-${lineIndex}`} // Explicitly pass the key
-                    {...lineProps} // Spread the remaining props
-                    onMouseEnter={() => setHoveredLine(lineIndex)}
-                    onMouseLeave={() => setHoveredLine(null)}
-                    className="relative"
-                  >
-                    {/* Background div for full-width highlighting */}
-                    <div
-                      className={`absolute left-0 right-0 transition-colors duration-150 h-full ${
-                        isHighlighted
-                          ? "bg-[#ECF1FD] dark:bg-[#141926] border-l-2 border-[#3B82F6]"
-                          : isHovered
-                          ? "bg-[#ECF1FD] dark:bg-[#141926]"
-                          : ""
-                      }`}
-                    />
-                    {/* Content div */}
-                    <div className="flex relative z-10 h-6">
-                      <span className="select-none mr-2 text-gray-600 text-right px-4">
-                        {String(lineIndex + 1)}
-                      </span>
-                      <span>
-                        {line.map((token, tokenIndex) => {
-                          const { key: tokenKey, ...tokenProps } =
-                            getTokenProps({
-                              token,
-                              key: tokenIndex,
-                            }); // Destructure token key
-                          return (
-                            <span
-                              key={`token-${lineIndex}-${tokenIndex}`} // Explicitly pass token key
-                              {...tokenProps}
-                            />
-                          );
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </pre>
-          </div>
+          <pre
+            className="p-2 font-mono text-sm leading-relaxed whitespace-pre-wrap break-words bg-card text-card-foreground"
+            style={{
+              backgroundColor: "transparent",
+            }}
+          >
+            {tokens.map((line, lineIndex) => {
+              const isHighlighted = isLineHighlighted(lineIndex);
+              const { key, ...lineProps } = getLineProps({
+                line,
+                key: lineIndex,
+              });
+              
+              return (
+                <div
+                  key={`line-${lineIndex}`}
+                  {...lineProps}
+                  className={`rounded-sm ${
+                    isHighlighted
+                      ? "bg-blue-50 dark:bg-blue-950/30 border-l-2 border-blue-500 dark:border-blue-400 pl-2 -ml-2"
+                      : ""
+                  }`}
+                >
+                  <span className="select-none inline-block w-8 text-right text-muted-foreground mr-4 text-xs">
+                    {String(lineIndex + 1)}
+                  </span>
+                  <span className="inline">
+                    {line.map((token, tokenIndex) => {
+                      const { key: tokenKey, ...tokenProps } = getTokenProps({
+                        token,
+                        key: tokenIndex,
+                      });
+                      
+                      // Enhanced dark mode colors
+                      const getDarkModeColor = (tokenTypes: string[]) => {
+                        if (tokenTypes.includes('comment') || tokenTypes.includes('prolog') || tokenTypes.includes('doctype') || tokenTypes.includes('cdata')) {
+                          return '#9ca3af'; // gray-400
+                        }
+                        if (tokenTypes.includes('string') || tokenTypes.includes('attr-value')) {
+                          return '#22c55e'; // green-500
+                        }
+                        if (tokenTypes.includes('number') || tokenTypes.includes('boolean') || tokenTypes.includes('constant') || tokenTypes.includes('variable') || tokenTypes.includes('property')) {
+                          return '#3b82f6'; // blue-500
+                        }
+                        if (tokenTypes.includes('keyword') || tokenTypes.includes('atrule') || tokenTypes.includes('attr-name')) {
+                          return '#60a5fa'; // blue-400
+                        }
+                        if (tokenTypes.includes('function') || tokenTypes.includes('tag')) {
+                          return '#a855f7'; // purple-500
+                        }
+                        if (tokenTypes.includes('selector')) {
+                          return '#14b8a6'; // teal-500
+                        }
+                        return tokenProps.style?.color || 'inherit';
+                      };
+                      
+                      const darkModeColor = getDarkModeColor(token.types);
+                      
+                      return (
+                        <span
+                          key={`token-${lineIndex}-${tokenIndex}`}
+                          {...tokenProps}
+                          className="dark:text-[var(--dark-token-color)] text-xs"
+                          style={{
+                            ...tokenProps.style,
+                            '--dark-token-color': darkModeColor,
+                          } as React.CSSProperties}
+                        />
+                      );
+                    })}
+                  </span>
+                </div>
+              );
+            })}
+          </pre>
         )}
       </Highlight>
     </div>
@@ -231,3 +233,4 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 };
 
 export default CodeBlock;
+

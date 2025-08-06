@@ -1,72 +1,44 @@
-import { TypographyH2, TypographyH3 } from "@/custom_components/typography";
-import LatestPosts from "./_components/latest-posts";
-import { getBlogPosts } from "@/lib/mdx";
-import {
-  GradientButton,
-  SimpleButton,
-} from "@/custom_components/buttons/buttons";
-import Link from "next/link";
-import { PORTFOLIO } from "@/personal-links";
-import { MoveUpRight } from "lucide-react";
-import DsaPosts from "./_components/dsa-posts";
+import { TypographyH2, TypographyP } from "@/custom_components/typography";
 import FeaturedPosts from "./_components/featured-posts";
+import { getBlogPosts } from "@/lib/mdx";
+import LatestPosts from "./_components/latest-posts";
 import EulerPosts from "./_components/euler-posts";
+import AsymmetricGaussianPlot from "./_components/gaussian-sketch";
 
-export default function HomePage() {
-  const posts = getBlogPosts();
-  const featuredPosts = posts.filter((post) => post.metadata.featured)
+export default function HomePage () {
+	const posts = getBlogPosts();
 
-  const dsaPosts = posts.filter((post, i) => post.metadata.isDsaBlog);
-  const eulerPosts = posts.filter(post => post.metadata.tag == "Euler")
+	const featuredPosts = posts.filter(post => post.metadata.featured);
+	const eulerPosts = posts.filter(post => post.metadata.tag === "Euler")
 
-  return (
-    <div className="pt-[15vh] max-w-3xl mx-auto md:px-4">
-      <div>
-        <TypographyH2 className="leading-normal font-medium inline">
-          Hi 👋🏻 I&apos;m Arun Kumar, and this is my blog.
-        </TypographyH2>
-        <TypographyH2 className="leading-normal inline">
-          {" "}
-          I&apos;m passionate about sharing my knowledge and learning in
-          Mathematics, Machine Learning, React, and sometimes other topics that
-          inspire me.
-        </TypographyH2>
-      </div>
+	return (
+		<>
+			<AsymmetricGaussianPlot />
 
-      <div className="my-8">
-        <GradientButton>
-          <Link
-            href={PORTFOLIO}
-            target="_blank"
-            className="flex gap-x-2 items-center group"
-          >
-            About me
-            <MoveUpRight
-              size={12}
-              className="group-hover:rotate-45 transition-all duration-500"
-            />
-          </Link>
-        </GradientButton>
- 
-        <div className="mt-12 max-w-xl">
-          <FeaturedPosts featuredPosts={featuredPosts} />
-        </div>
+			<div>
+				<TypographyH2 className="italic">Arun Kumar's Journal</TypographyH2>
+				<p className="italic mt-2">
+					A journal of things I learn and build.
+				</p>
+				<p>
+					It covers topics like math, computer science, and machine learning.
+				</p>
+			</div>
 
 
-        <div className="mt-12 max-w-xl">
-          <LatestPosts latestPosts={posts.splice(0, 3)} />
-        </div>
+			<div className="max-w-xl mb-32">
+				<div className="my-12">
+					{featuredPosts.length > 0 && <FeaturedPosts featuredPosts={featuredPosts}/>}
+				</div>
 
+				<div className="my-12">
+					<LatestPosts latestPosts={posts.splice(0, 3)}/>
+				</div>
 
-        {eulerPosts.length > 0 &&
-        <div className="mt-12 max-w-xl">
-          <EulerPosts eulerPosts={eulerPosts.splice(0, 10)}/>
-        </div>}
-
-        {dsaPosts.length > 0 &&  <div className="mt-12 max-w-xl">
-          <DsaPosts dsaPosts={dsaPosts.splice(0, 10)} />
-        </div>}
-      </div>
-    </div>
-  );
+				<div className="my-12">
+					<EulerPosts eulerPosts={eulerPosts}/>
+				</div>
+			</div>	
+		</>
+	)
 }

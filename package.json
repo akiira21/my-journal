@@ -37,6 +37,7 @@
     "rehype-katex": "^7.0.1",
     "remark": "^15.0.1",
     "remark-math": "^6.0.0",
+    "roughjs": "^4.6.6",
     "styled-components": "^6.1.13",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
