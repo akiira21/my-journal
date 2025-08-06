@@ -16,7 +16,7 @@ export default function HomePage () {
 			<AsymmetricGaussianPlot />
 
 			<div>
-				<TypographyH2 className="italic">Arun Kumar's Journal</TypographyH2>
+				<TypographyH2 className="italic">Arun Kumar&apos;s Journal</TypographyH2>
 				<p className="italic mt-2">
 					A journal of things I learn and build.
 				</p>
