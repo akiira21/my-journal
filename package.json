@@ -9,17 +9,22 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.862.0",
     "@codesandbox/sandpack-react": "^2.19.10",
+    "@hookform/resolvers": "^5.2.1",
     "@mdx-js/loader": "^3.1.0",
     "@mdx-js/react": "^3.1.0",
     "@next/mdx": "^15.1.0",
+    "@prisma/client": "^6.13.0",
     "@radix-ui/react-dialog": "^1.1.2",
+    "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slider": "^1.2.1",
-    "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tooltip": "^1.1.4",
     "@types/mdx": "^2.0.13",
     "@vercel/analytics": "^1.4.1",
     "@vercel/speed-insights": "^1.2.0",
+    "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
@@ -34,6 +39,7 @@
     "prism-react-renderer": "^2.4.0",
     "react": "^18",
     "react-dom": "^18",
+    "react-hook-form": "^7.62.0",
     "rehype-katex": "^7.0.1",
     "remark": "^15.0.1",
     "remark-math": "^6.0.0",
@@ -41,7 +47,8 @@
     "styled-components": "^6.1.13",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
-    "unist-util-visit": "^5.0.0"
+    "unist-util-visit": "^5.0.0",
+    "zod": "^4.0.15"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -50,7 +57,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.19",
     "postcss": "^8",
-    "prisma": "^6.2.1",
+    "prisma": "^6.13.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }

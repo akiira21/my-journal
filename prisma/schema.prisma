@@ -12,3 +12,15 @@ datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
+model Subscriber {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  email             String   @unique
+  verified          Boolean  @default(false)
+  verificationToken String   @unique @default(cuid())
+  unsubscribeToken  String   @unique @default(cuid())
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("subscribers")
+}
