@@ -21,5 +21,10 @@ export const POSTS: { title: string; href: string; description: string }[] = [
     title: "Euler - Multiple of 3 or 5 (P1)",
     href: "/posts/euler-problem-1",
     description: "A comprehensive solution to Project Euler Problem 1: finding the sum of all multiples of 3 or 5 below 1000. Learn how to solve this classic problem efficiently using the inclusion-exclusion principle and arithmetic series formula for O(1) time complexity."
+  },
+  {
+    title: "Euler - Even Fibonacci Numbers (P2)",
+    href: "/posts/euler-problem-2",
+    description: "A complete solution to Project Euler Problem 2: finding the sum of all even Fibonacci numbers not exceeding four million. Learn why every third Fibonacci number is even, derive the recurrence for even Fibonacci terms, and solve it in O(log n) steps.",
   }
 ];
