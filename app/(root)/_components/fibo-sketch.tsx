@@ -25,7 +25,7 @@ const FibonacciSpiral: React.FC = () => {
         const rect = container.getBoundingClientRect();
         // Maintain aspect ratio (4:3) while being responsive
         const aspectRatio = 4 / 3;
-        let newWidth = Math.min(rect.width, 500); // Max width 1000px
+        const newWidth = Math.min(rect.width, 500); // Max width 1000px
         let newHeight = newWidth / aspectRatio;
 
         // For mobile devices, use more square aspect ratio
@@ -90,8 +90,8 @@ const FibonacciSpiral: React.FC = () => {
     const scale = Math.max(2, 4 * scaleFactor);
 
     // Starting position
-    let startX = width * 0.45;
-    let startY = height * 0.40;
+    const startX = width * 0.45;
+    const startY = height * 0.40;
 
     let currentX = startX;
     let currentY = startY;
