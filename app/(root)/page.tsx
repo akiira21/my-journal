@@ -4,12 +4,15 @@ import { getBlogPosts } from "@/lib/mdx";
 import LatestPosts from "./_components/latest-posts";
 import EulerPosts from "./_components/euler-posts";
 import AsymmetricGaussianPlot from "./_components/gaussian-sketch";
+import ChessPosts from "./_components/chess-posts";
 
 export default function HomePage () {
 	const posts = getBlogPosts();
 
 	const featuredPosts = posts.filter(post => post.metadata.featured);
 	const eulerPosts = posts.filter(post => post.metadata.tag === "Euler")
+
+	const chessEngineBlogs = posts.filter(post => post.metadata.tag === "chess")
 
 	return (
 		<>
@@ -33,6 +36,11 @@ export default function HomePage () {
 
 				<div className="my-12">
 					<LatestPosts latestPosts={posts.splice(0, 3)}/>
+				</div>
+
+
+				<div className="my-12">
+					<ChessPosts chessPosts={chessEngineBlogs}/>
 				</div>
 
 				<div className="my-12">

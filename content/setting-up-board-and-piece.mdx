@@ -1,0 +1,317 @@
+---
+title: "Chess Engine Dev Log #1 - Setting Up the Board and Pieces"
+description: "A progress log of developing a neural-network-powered chess engine, covering every stage from setup to optimization."
+categories: ["Chess"]
+tag: "chess"
+slug: "chess-engine-devlog-1"
+featured: false 
+createdAt: "2025-08-11T09:00:00Z"
+isDsaBlog: false
+---
+
+I've always enjoyed the challenge of chess, but what really interests me is how different a game feels when you play 
+against a human compared to a computer. Most engines are brutally efficient, but also predictable in the way they 
+calculate and respond. With this project, I'm setting out to build a chess engine that thinks a little differently — one 
+that uses neural networks to make decisions in a more human-like way. And, to be honest, I'm a total noob at chess, so 
+part of me wants to build an engine I can actually beat… at least until it gets good enough to crush me and make me better.
+
+
+<br/>
+
+With that hope in mind, I jumped into the project. But before diving into the full neural network chess engine, it only 
+makes sense to start with the basics — setting up the chessboard and pieces, the foundation for everything that follows.
+
+<br/>
+
+For the tech stack, I chose React for the frontend. It's simple, powerful, and makes building interactive components much 
+easier compared to working directly with vanilla JavaScript and HTML. Sure, it could be done without a framework, but I 
+find React far more convenient and less tedious for this kind of project. As for the engine itself, I'll save that 
+discussion for the upcoming blogs.
+
+<br/>
+
+The chessboard is basically just an `8×8` 2D matrix. Each element in the board is either black or white. So, I start by 
+simply initializing it like ` board = [] `. Then, to fill the elements and give color to the squares, I append a div element 
+with a background color based on the position of that block in the board (the 2D matrix). This can be done using the 
+formula **(ri + ci) % 2**, where *`ri`* is the row number and *`ci`* is the column number. Here’s how I implemented it…
+
+
+```Typescript
+const renderSquares = () => {
+    const board = [];
+
+    for (let r=0; r<8; r++) {
+        const rowSquares = [];
+
+        for (let c=0; c<8; c++) {
+            const isBlack = (r+c) % 2 === 1;
+            rowSquares.push(
+                <div 
+                    key={`row-${r}-col-${c}`}
+                    className={`${isBlack ? "bg-[#b58863]" : "bg-[#f0d9b5]"} w-[50px] h-[50px]`}
+                >
+                </div>
+            );
+        }
+
+        board.push(<div key=`row-${r}` className="flex">{rowSquares}</div>);
+    }
+
+    return board;
+}
+```
+
+
+Then render it on a page:
+
+
+```tsx
+
+export default function Board () {
+    //func renderSquares();
+
+    return (
+        <div className="flex flex-col">
+            {renderSquares()}
+        </div>
+    )
+}
+```
+
+This will give you a Chessboard pattern, like this:
+
+<div className='w-full flex items-center flex-col my-4'>
+    <img src="https://myjournalbucket-arun.s3.eu-north-1.amazonaws.com/chessboard-pattern.png" alt="Chessboard Pattern"/>
+    <p className='text-sm mt-2'>Chessboard Pattern</p>
+</div>
+
+<br/>
+
+After creating the board, the next task for me was adding pieces to it. After some Googling and asking a lot of questions to ChatGPT, I found a really nice way to do it — using FEN notation.
+
+<Callout variant="info">
+    <p className='text-sm'>
+        FEN (Forsyth–Edwards Notation) is a standard way to describe a chess position using a simple text string. It tells you exactly where each piece is on the board, whose turn it is, and a few other game details.
+    </p>
+
+    <p className='text-sm'>
+        You can learn more about FEN notation on <Link href="https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation" className="text-blue-500 hover:underline transition-colors duration-200" target="_blank" rel="noopener noreferrer">Wikipedia</Link>.
+    </p>
+</Callout>
+
+
+<br/>
+
+For example, the starting position of a chess game in FEN looks like this:
+
+```markdown
+rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
+```
+
+Using this, I placed the pieces on the board. To do that, I created some utility functions and a helper object. 
+First, I made a map of each piece to its image, which looks like this:
+
+```Typescript
+
+const pieceImageMap: Record<string, string> = {
+    r: "src/assets/pieces/Chess_rdt60.png",
+    n: "src/assets/pieces/Chess_ndt60.png",
+    b: "src/assets/pieces/Chess_bdt60.png",
+    q: "src/assets/pieces/Chess_qdt60.png",
+    k: "src/assets/pieces/Chess_kdt60.png",
+    p: "src/assets/pieces/Chess_pdt60.png",
+    R: "src/assets/pieces/Chess_rlt60.png",
+    N: "src/assets/pieces/Chess_nlt60.png",
+    B: "src/assets/pieces/Chess_blt60.png",
+    Q: "src/assets/pieces/Chess_qlt60.png",
+    K: "src/assets/pieces/Chess_klt60.png",
+    P: "src/assets/pieces/Chess_plt60.png",
+}
+
+```
+
+<br/>
+
+Then, I wrote a parser function that takes a FEN string and converts it into a board state, showing which piece is in 
+which square. This made it super easy to render the board directly from the FEN notation without manually placing each 
+piece.
+
+```Typescript
+
+export function fenToBoard(fen: string) {
+    const rows = fen.split(" ")[0].split("/");
+    return rows.map(row =>
+        row
+            .replace(/[1-8]/g, match => ".".repeat(Number(match)))
+            .split("")
+    );
+}
+
+```
+
+<br/>
+
+What I do here is first split the FEN string by spaces and take the first part, because that part contains the actual 
+piece placement data. Then, I split that by `/` to get each row of the board. After that, for every row, I replace any 
+number (from 1 to 8) with that many "." characters — this is just my way of marking empty squares. Finally, I split the 
+row into an array of single characters so I can easily loop through them later when rendering the board. This gives me a 
+neat 2D array representing the board’s current state.
+
+<br/>
+
+For example, for starting position FEN string, generated board look like this:
+
+```markdown
+[
+    ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+    ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+    ['.', '.', '.', '.', '.', '.', '.', '.'],
+    ['.', '.', '.', '.', '.', '.', '.', '.'],
+    ['.', '.', '.', '.', '.', '.', '.', '.'],
+    ['.', '.', '.', '.', '.', '.', '.', '.'],
+    ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+    ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+]
+```
+
+<br />
+
+Then, I made some changes in the board component so it can display piece images. Instead of initializing the board with an 
+empty array, I now initialize it with the matrix generated by the FEN parser.
+
+<br/>
+
+Here's the updated code:
+
+```Typescript
+
+const stateFen = "3q4/8/8/1p6/5K2/8/8/8";
+
+const [boardState, setBoardState] = useState(fenToBoard(stateFen));
+
+const renderSquares = () => {
+    const board = [];
+
+    for (let r = 0; r < 8; r++) {
+        const rowSquares = [];
+        for (let c = 0; c < 8; c++) {
+            const isBlack = (r + c) % 2 === 1;
+            const piece = boardState[r][c];
+            rowSquares.push(
+                <div
+                    key={`row-${r}-col-${c}`}
+                    className={`${isBlack ? darkSquaresColor : whiteSquaresColor} w-[70px] h-[70px] flex items-center justify-center`}
+                >
+                    {piece !== "." && (
+                        <img
+                            src={pieceImageMap[piece]}
+                            alt={piece}
+                            className="w-[60px] h-[60px] select-none cursor-grab active:cursor-grabbing"
+                        />
+                    )}
+                </div>
+            );
+        }
+        board.push(<div key={`row-${r}`} className="flex">{rowSquares}</div>);
+    }
+
+    return board;
+}
+
+```
+
+<br/>
+
+And here's the result for FEN string ***3q4/8/8/1p6/5K2/8/8/8***:
+
+<div className='w-full flex items-center flex-col my-4'>
+    <img src="https://myjournalbucket-arun.s3.eu-north-1.amazonaws.com/chessboard-fen-pos.png" alt="Chess pieces displayed on the board"/>
+    <p className='text-sm mt-2'>Chess pieces rendered using FEN notation</p>
+</div>
+
+<br/>
+
+Okk, I got the pieces rendered on the board, and now came a kind of hard challenge for me — making the pieces draggable 
+and droppable on the board. It’s not the most complex thing in the world, but it’s definitely tricky to get right.
+
+The approach I took was to create a function that triggers when a user drags and drops a piece. This function takes the 
+from square, the to square, and the piece being moved. It updates the board state by moving the piece from its starting 
+position to its new position, and then uses useState to re-render the component with the updated board. This way, as soon 
+as a move happens, the board instantly reflects the change.
+
+<br/>
+
+Here’s the updated code:
+
+
+```Typescript
+
+function movePiece(from:any, to:any, piece:any) {
+    setBoardState((prev:any) => {
+        const newBoard = prev.map((row:any) => [...row]);
+        newBoard[from[0]][from[1]] = ".";
+        newBoard[to[0]][to[1]] = piece;
+        return newBoard;
+    });
+}
+
+```
+
+```Typescript
+// Change in board component
+
+// Added drag-and-drop event handling in the square div
+onDragOver={(e) => e.preventDefault()} 
+onDrop={(e) => {
+    const data = JSON.parse(e.dataTransfer.getData("piece"));
+    movePiece(data.from, [r, c], data.piece);
+}}
+
+// Updated <img> to be draggable and handle drag start
+draggable
+onDragStart={(e) => {
+    e.dataTransfer.setData("piece", JSON.stringify({ piece, from: [r, c] }));
+    e.dataTransfer.effectAllowed = "move";
+    // Create a drag image
+    const img = new Image();
+    img.src = pieceImageMap[piece];
+    e.dataTransfer.setDragImage(img, 30, 30);
+}}
+
+```
+
+<br/>
+
+So, final output look like this:
+
+<br/>
+
+<div className='flex flex-col items-center mb-6'>
+    <VideoPlayer className="mb-4" src="https://myjournalbucket-arun.s3.eu-north-1.amazonaws.com/chesspiece-init-moves.mp4" width="100%" height="auto" />
+    <p className='text-sm text-gray-500'>Drag & Drop with pieces</p>
+</div>
+
+<br/>
+
+I know there are lot of issues — there’s no move validation, no checkmate detection, and none of the deeper chess 
+logic yet. But since this is just the first part, I’m keeping things simple for now. In the next blog, I’ll work on adding 
+move validation so pieces can only move to legal squares, along with some other important rules and logic. So stay tuned… 
+and thanks for reading!
+
+<br/>
+
+You can find the complete source code for this project on GitHub: ***<Link href="https://github.com/Arun-Kumar21/nn-chess-engine" target="_blank" className="text-blue-500">@Arun-Kumar21/nn-chess-engine</Link>***
+
+<br/>
+
+<p className='text-xl'>References:</p>
+
+<div className="text-sm">
+1. <Link href="https://www.chessprogramming.org/Main_Page" target="_blank" className="text-blue-500">Chess Programming - Wikipedia</Link>
+2. <Link href="https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation" target="_blank" className="text-blue-500">Forsyth–Edwards Notation - Wikipedia</Link>
+3. <Link href="https://en.wikipedia.org/wiki/Computer_chess" target="_blank" className="text-blue-500">Computer chess - Wikipedia</Link>
+4. <Link href="https://react.dev/learn" target="_blank" className="text-blue-500">React Documentation</Link>
+5. <Link href="https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API" target="_blank" className="text-blue-500">HTML Drag and Drop API - MDN</Link>
+6. <Link href="https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent" target="_blank" className="text-blue-500">Chess Pieces - Wikipedia</Link>
+</div>
+

@@ -17,9 +17,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     poster,
     width = '100%',
     height = 'auto',
-    autoPlay = false,
+    autoPlay = true,
     controls = true,
-    muted = false,
+    muted = true,
     loop = false,
     className = '',
 }) => {
