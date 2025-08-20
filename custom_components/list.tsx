@@ -13,7 +13,7 @@ const OrderedList: React.FC<ListProps> = ({ items, className }) => {
         <li
           key={item}
           className={cn(
-            "flex items-center gap-2 text-sm leading-relaxed tracking-wide text-zinc-700 dark:text-zinc-400",
+            "flex items-center gap-2 leading-relaxed tracking-wide text-zinc-700 dark:text-zinc-400",
             className
           )}
         >
@@ -32,7 +32,7 @@ const UnorderedList: React.FC<ListProps> = ({ items, className }) => {
         <li
           key={item}
           className={cn(
-            "flex items-center gap-2 text-sm leading-relaxed tracking-wide text-zinc-700 dark:text-zinc-400",
+            "flex items-center gap-2 leading-relaxed tracking-wide text-zinc-700 dark:text-zinc-400",
             className
           )}
         >

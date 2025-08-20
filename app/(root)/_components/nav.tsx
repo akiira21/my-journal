@@ -3,7 +3,6 @@
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -54,8 +53,4 @@ const navLinks = [
     label: "Posts",
     path: "/posts",
   },
-  {
-    label: "Euler Problems",
-    path: "/posts/euler-problems"
-  }
 ];

@@ -1,8 +1,7 @@
 import { TypographyH4 } from "@/custom_components/typography";
-import BlogCard from "./blog-card";
 import { postType } from "@/types";
-import { formatDate } from "@/lib/utils";
 import Link from "next/link";
+import SortedPosts from "./sorted-posts";
 
 export default function EulerPosts({
   eulerPosts,
@@ -21,19 +20,8 @@ export default function EulerPosts({
         </Link>
       </div>
       <div className="my-4">
-        {eulerPosts
-          .sort((a, b) => {
-            if (
-              new Date(a.metadata.createdAt) > new Date(b.metadata.createdAt)
-            ) {
-              return -1;
-            }
-            return 1;
-          })
-          .map((post) => (
-            <BlogCard key={post.slug} post={post} formatDate={formatDate} />
-          ))}
-      </div>
+        <SortedPosts posts={eulerPosts.splice(0,5)}/>
+     </div>
     </>
   );
 }

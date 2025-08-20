@@ -5,11 +5,14 @@ import LatestPosts from "./_components/latest-posts";
 import EulerPosts from "./_components/euler-posts";
 import AsymmetricGaussianPlot from "./_components/gaussian-sketch";
 import ChessPosts from "./_components/chess-posts";
+import DsaPosts from "./_components/dsa-posts";
 
 export default function HomePage () {
 	const posts = getBlogPosts();
 
 	const featuredPosts = posts.filter(post => post.metadata.featured);
+	const dsaPosts = posts.filter(posts => posts.metadata.isDsaBlog)
+
 	const eulerPosts = posts.filter(post => post.metadata.tag === "Euler")
 
 	const chessEngineBlogs = posts.filter(post => post.metadata.tag === "chess")
@@ -38,14 +41,18 @@ export default function HomePage () {
 					<LatestPosts latestPosts={posts.splice(0, 3)}/>
 				</div>
 
-
 				<div className="my-12">
-					<ChessPosts chessPosts={chessEngineBlogs}/>
+					{dsaPosts.length > 0 && <DsaPosts dsaPosts={dsaPosts.splice(0, 5)}/>}
 				</div>
 
 				<div className="my-12">
 					<EulerPosts eulerPosts={eulerPosts}/>
 				</div>
+
+				<div className="my-12">
+					<ChessPosts chessPosts={chessEngineBlogs}/>
+				</div>
+
 			</div>	
 		</>
 	)

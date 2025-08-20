@@ -26,5 +26,15 @@ export const POSTS: { title: string; href: string; description: string }[] = [
     title: "Euler - Even Fibonacci Numbers (P2)",
     href: "/posts/euler-problem-2",
     description: "A complete solution to Project Euler Problem 2: finding the sum of all even Fibonacci numbers not exceeding four million. Learn why every third Fibonacci number is even, derive the recurrence for even Fibonacci terms, and solve it in O(log n) steps.",
+  },
+  {
+    title: "Chess Engine Dev Log #1 - Setting Up the Board and Pieces",
+    href: "/posts/chess-engine-devlog-1",
+    description: "A progress log of developing a neural-network-powered chess engine, covering every stage from setup to optimization.",
+  },
+  {
+    title: "Introduction to String Matching: Naive Pattern Search Explained",
+    href: "/posts/string-matching-naive-algorithm",
+    description: "This article introduces the fundamental string matching problem and presents a detailed analysis of the naive pattern searching algorithm. It explains the brute-force approach of checking every possible alignment of a pattern within a text, provides a C++ implementation, and examines its time and space complexity. The discussion highlights the algorithm's role as a foundational method for understanding more sophisticated string matching techniques."
   }
 ];

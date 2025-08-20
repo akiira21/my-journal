@@ -1,0 +1,199 @@
+---
+title: "Introduction to String Matching: Naive Pattern Search Explained"
+description: "This article introduces the fundamental string matching problem and presents a detailed analysis of the naive pattern searching algorithm. It explains the brute-force approach of checking every possible alignment of a pattern within a text, provides a C++ implementation, and examines its time and space complexity. The discussion highlights the algorithm's role as a foundational method for understanding more sophisticated string matching techniques."
+categories: ["Data Structures", "Algorithms", "String Matching", "String", "Naive Algorithm"]
+tag: "algorithm"
+slug: "string-matching-naive-algorithm"
+featured: false
+createdAt: "2025-08-20T09:00:00Z"
+isDsaBlog: true
+series: "Strings"
+---
+
+This article introduces the string matching problem, where the task is to locate all occurrences of a given pattern within a text. 
+We begin with the naive string matching algorithm, the most straightforward approach that checks every possible alignment of the pattern.
+Although inefficient for large inputs, it serves as the foundation for understanding more advanced algorithms studied later in this series.
+
+
+# Introduction
+
+The string matching problem is a fundamental task in computer science: given a text `T` of length `n` and a pattern `P` of length `m`, 
+the goal is to find all positions in `T` where `P` occurs as a substring.
+
+<br/>
+
+Applications of string matching problems -
+
+<div className='my-2'>
+<UnorderedList items={["Used in finding pattern in DNA sequences.", "Search engine uses string matching for finding results."]}/>
+</div>
+
+
+# Problem Structure
+
+let `T[1:n]` is an array of `n` length, and `P[1:m]` is an array of `m` length.
+
+<br/>
+
+Example - 
+
+```jsx
+T = ['a', 'b', 'c', 'a', 'b', 'a', 'a', 'b', 'c', 'a', 'b', 'c', 'c']
+ 			 P =  ['a', 'b', 'a', 'a']
+```
+
+- `P` occur with shift `s` in text `T`
+
+
+<br/>
+
+i.e.
+
+$$
+
+0 < s < n-m
+
+$$
+
+and
+
+$$
+T[s+1: s+m] = P[1:m]
+
+$$
+
+<br/>
+
+
+# Naive string-matching algorithm
+
+In this algorithm, we align the pattern `P` with every possible position in the text `T` and check character by character if the pattern matches the substring of the text.
+
+<p className='text-[16px] my-2'>Step-by-step explaination</p>
+
+<OrderedList items={["Start with shift s=0.", "Compare P[1:m] with T[s:s+m].", "If all characters match, record s as valid occurrence.", "Increase s by 1 and repeat until s = n-m."]}/>
+
+<br/>
+
+Example:
+
+```markdown
+T="ababaabab"
+p="abab"
+```
+
+<UnorderedList 
+    items={
+        [
+            "At s=0: compare 'abab' with 'abab' ---> Match.",
+            "At s=1: compare 'baba' with 'abab' ---> Not Match.",
+            "At s=2: compare 'abaa' with 'abab' ---> Not Match.",
+            "At s=3: compare 'baab' with 'abab' ---> Not Match.",
+            "At s=4: compare 'aaba' with 'abab' ---> Not Match.",
+            "At s=5: compare 'abab' with 'abab' ---> Match."
+        ]
+    }
+/>
+
+<br/>
+
+Thus, valid shift are `s`=0, 5.
+
+
+# Code
+
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+void naiveStringMatch(const string& T, const string& P) {
+    int n = T.size();
+    int m = P.size();
+
+    for (int s = 0; s <= n - m; s++) {
+        int j = 0;
+
+        // Check if pattern matches at shift s
+        while (j < m && T[s + j] == P[j]) {
+            j++;
+        }
+
+        if (j == m) {
+            cout << "Pattern occurs at shift " << s << endl;
+        }
+    }
+}
+
+int main() {
+    string T = "ababaabab";
+    string P = "abab";
+
+    naiveStringMatch(T, P);
+
+    return 0;
+}
+
+```
+
+<br/>
+
+Output:
+
+
+```markdown
+Pattern occurs at shift 0
+Pattern occurs at shift 5
+```
+
+<br/>
+
+# Time Complexity and Space Complexity  
+
+- **Worst case:**  
+
+For each shift, we may compare up to `m` characters, and there are \( n - m + 1 \) possible shifts.  
+
+Example: \( T = a^n \) and \( P = a^m \).  
+
+$$
+    Time Complexity = \mathcal{O}((n-m+1) \cdot m) \approx \mathcal{O}(nm) 
+$$
+
+
+- **Best case:**  
+
+When all characters in the pattern `P` are distinct.  
+
+Example: \( T = abcdeabcde \), \( P = bcd \).  
+
+Since all characters are different:  
+
+- for mismatch: \( s = s+1 \)  
+- for match: \( s = s+m \)  
+
+$$
+    Time Complexity = \mathcal{O}(n)  
+$$
+
+
+- **Space Complexity:**  
+
+The naive string matching algorithm only requires a constant amount of extra space for counters and indices.  
+
+$$
+    Space Complexity = \mathcal{O}(1)
+$$
+
+
+<br/>
+
+# Reference
+
+
+<div>
+1. <Link href="https://en.wikipedia.org/wiki/String-searching_algorithm" target="_blank" className="text-blue-500">String-searching algorithm - Wikipedia</Link>
+2. <Link href="https://enos.itcollege.ee/~japoia/algorithms/GT/Introduction_to_algorithms-3rd%20Edition.pdf" target="_blank" className="text-blue-500">Introduction to Algorithms by Cormen, Leiserson, Rivest, and Stein</Link>
+</div>
+
