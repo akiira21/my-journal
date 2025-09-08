@@ -2,10 +2,7 @@ import { TypographyH2, TypographyP } from "@/custom_components/typography";
 import FeaturedPosts from "./_components/featured-posts";
 import { getBlogPosts } from "@/lib/mdx";
 import LatestPosts from "./_components/latest-posts";
-import EulerPosts from "./_components/euler-posts";
 import AsymmetricGaussianPlot from "./_components/gaussian-sketch";
-import ChessPosts from "./_components/chess-posts";
-import DsaPosts from "./_components/dsa-posts";
 
 export default function HomePage () {
 	const posts = getBlogPosts();
@@ -39,18 +36,6 @@ export default function HomePage () {
 
 				<div className="my-12">
 					<LatestPosts latestPosts={posts.splice(0, 3)}/>
-				</div>
-
-				<div className="my-12">
-					{dsaPosts.length > 0 && <DsaPosts dsaPosts={dsaPosts.splice(0, 5)}/>}
-				</div>
-
-				<div className="my-12">
-					<EulerPosts eulerPosts={eulerPosts}/>
-				</div>
-
-				<div className="my-12">
-					<ChessPosts chessPosts={chessEngineBlogs}/>
 				</div>
 
 			</div>	
