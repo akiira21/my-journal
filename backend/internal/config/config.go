@@ -31,6 +31,7 @@ type Config struct {
 	RateLimitWindow   string
 
 	AssistantName string
+	AdminAPIKey   string
 }
 
 func Load() (*Config, error) {
@@ -61,6 +62,7 @@ func Load() (*Config, error) {
 		RateLimitWindow:   "24h",
 
 		AssistantName: getEnv("ASSISTANT_NAME", "Assistant"),
+		AdminAPIKey:   os.Getenv("ADMIN_API_KEY"),
 	}, nil
 }
 

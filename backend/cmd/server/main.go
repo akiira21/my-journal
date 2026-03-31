@@ -68,6 +68,11 @@ func main() {
 
 	srv := server.New(cfg, db, redisClient, r2Client, openaiClient)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	srv.StartWorkers(ctx)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -85,6 +90,9 @@ func main() {
 	<-quit
 
 	log.Println("Shutting down server...")
+
+	cancel()
+	srv.StopWorkers()
 
 	if redisClient != nil {
 		redisClient.Close()

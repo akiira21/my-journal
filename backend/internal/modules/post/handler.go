@@ -205,6 +205,11 @@ func (h *Handler) CreatePost(c *gin.Context) {
 		return
 	}
 
+	if len(req.Content) > MaxContentSize {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "content exceeds maximum size"})
+		return
+	}
+
 	post, err := h.service.Create(c.Request.Context(), CreatePostInput{
 		Slug:        req.Slug,
 		Title:       req.Title,
@@ -216,6 +221,22 @@ func (h *Handler) CreatePost(c *gin.Context) {
 		Publish:     req.Publish,
 	})
 	if err != nil {
+		if err == ErrInvalidSlug {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid slug format"})
+			return
+		}
+		if err == ErrTitleTooLong {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "title exceeds maximum length"})
+			return
+		}
+		if err == ErrDescriptionTooLong {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "description exceeds maximum length"})
+			return
+		}
+		if err == ErrContentTooLarge {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "content exceeds maximum size"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create post"})
 		return
 	}

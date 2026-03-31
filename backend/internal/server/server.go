@@ -6,25 +6,30 @@ import (
 	"time"
 
 	"github.com/akiira21/my-journal-backend/internal/config"
+	"github.com/akiira21/my-journal-backend/internal/jobs"
 	"github.com/akiira21/my-journal-backend/internal/middleware"
 	"github.com/akiira21/my-journal-backend/internal/modules/post"
 	"github.com/akiira21/my-journal-backend/internal/pkg/database"
 	"github.com/akiira21/my-journal-backend/internal/pkg/openai"
+	"github.com/akiira21/my-journal-backend/internal/pkg/queue"
 	"github.com/akiira21/my-journal-backend/internal/pkg/redis"
 	"github.com/akiira21/my-journal-backend/internal/pkg/storage"
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	config   *config.Config
-	router   *gin.Engine
-	db       *database.DB
-	redis    *redis.Client
-	R2       *storage.R2Client
-	openai   *openai.Client
-	postRepo *post.Repository
-	postSvc  *post.Service
-	postHdlr *post.Handler
+	config          *config.Config
+	router          *gin.Engine
+	db              *database.DB
+	redis           *redis.Client
+	r2              *storage.R2Client
+	openai          *openai.Client
+	postRepo        *post.Repository
+	postSvc         *post.Service
+	postHdlr        *post.Handler
+	adminHdlr       *post.AdminHandler
+	queue           *queue.Queue
+	embeddingWorker *jobs.EmbeddingWorker
 }
 
 func New(cfg *config.Config, db *database.DB, redis *redis.Client, r2 *storage.R2Client, openaiClient *openai.Client) *Server {
@@ -44,7 +49,7 @@ func New(cfg *config.Config, db *database.DB, redis *redis.Client, r2 *storage.R
 		router: router,
 		db:     db,
 		redis:  redis,
-		R2:     r2,
+		r2:     r2,
 		openai: openaiClient,
 	}
 
@@ -56,8 +61,27 @@ func New(cfg *config.Config, db *database.DB, redis *redis.Client, r2 *storage.R
 
 func (s *Server) initModules() {
 	s.postRepo = post.NewRepository(s.db)
-	s.postSvc = post.NewService(s.postRepo, s.R2)
+	s.postSvc = post.NewService(s.postRepo, s.r2)
 	s.postHdlr = post.NewHandler(s.postSvc)
+
+	s.queue = queue.NewQueue(s.redis)
+	s.adminHdlr = post.NewAdminHandler(s.postSvc, s.queue)
+
+	if s.openai != nil {
+		s.embeddingWorker = jobs.NewEmbeddingWorker(s.redis, s.postRepo, s.openai)
+	}
+}
+
+func (s *Server) StartWorkers(ctx context.Context) {
+	if s.embeddingWorker != nil {
+		s.embeddingWorker.Start(ctx)
+	}
+}
+
+func (s *Server) StopWorkers() {
+	if s.embeddingWorker != nil {
+		s.embeddingWorker.Stop()
+	}
 }
 
 func (s *Server) Run(addr string) error {
@@ -78,11 +102,17 @@ func (s *Server) registerRoutes() {
 		posts.GET("/category/:category", s.postHdlr.ListByCategory)
 		posts.GET("/tag/:tag", s.postHdlr.ListByTag)
 		posts.GET("/:slug", s.postHdlr.GetPost)
-		posts.POST("", s.postHdlr.CreatePost)
-		posts.PUT("/:id", s.postHdlr.UpdatePost)
-		posts.DELETE("/:id", s.postHdlr.DeletePost)
-		posts.POST("/:id/archive", s.postHdlr.ArchivePost)
 		posts.POST("/:id/view", s.postHdlr.IncrementViewCount)
+	}
+
+	admin := v1.Group("/admin")
+	admin.Use(middleware.AdminAuth(s.config.AdminAPIKey))
+	{
+		admin.POST("/posts", s.adminHdlr.CreatePost)
+		admin.POST("/posts/mdx", s.adminHdlr.CreateFromMDX)
+		admin.PUT("/posts/:id", s.adminHdlr.UpdatePost)
+		admin.DELETE("/posts/:id", s.adminHdlr.DeletePost)
+		admin.POST("/posts/:slug/repost", s.adminHdlr.Repost)
 	}
 }
 

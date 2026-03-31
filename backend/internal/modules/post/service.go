@@ -2,6 +2,7 @@ package post
 
 import (
 	"context"
+	"regexp"
 	"strings"
 	"time"
 
@@ -9,17 +10,31 @@ import (
 	"github.com/google/uuid"
 )
 
-type Service struct {
-	repo    *Repository
-	storage *storage.R2Client
+var slugRegex = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
+
+func isValidSlug(slug string) bool {
+	return slugRegex.MatchString(slug) && len(slug) <= 255
 }
 
-func NewService(repo *Repository, storage *storage.R2Client) *Service {
-	return &Service{
-		repo:    repo,
-		storage: storage,
+func sanitizeSlug(slug string) string {
+	slug = strings.ToLower(strings.TrimSpace(slug))
+	result := make([]rune, 0, len(slug))
+	for _, r := range slug {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			result = append(result, r)
+		} else if r == ' ' || r == '_' || r == '-' {
+			result = append(result, '-')
+		}
 	}
+	return strings.Trim(string(result), "-")
 }
+
+const (
+	MaxContentSize = 10 * 1024 * 1024 // 10MB
+	MaxTitleLength = 500
+	MaxDescLength  = 2000
+	MaxSlugLength  = 255
+)
 
 type CreatePostInput struct {
 	Slug        string
@@ -42,6 +57,37 @@ type UpdatePostInput struct {
 	ReadTime    *int
 	PublishedAt *time.Time
 	IsArchived  *bool
+}
+
+type Service struct {
+	repo    *Repository
+	storage *storage.R2Client
+}
+
+func NewService(repo *Repository, storage *storage.R2Client) *Service {
+	return &Service{
+		repo:    repo,
+		storage: storage,
+	}
+}
+
+func (s *Service) validateCreateInput(input *CreatePostInput) error {
+	if !isValidSlug(input.Slug) {
+		input.Slug = sanitizeSlug(input.Slug)
+		if !isValidSlug(input.Slug) {
+			return ErrInvalidSlug
+		}
+	}
+	if len(input.Title) > MaxTitleLength {
+		return ErrTitleTooLong
+	}
+	if input.Description != nil && len(*input.Description) > MaxDescLength {
+		return ErrDescriptionTooLong
+	}
+	if len(input.Content) > MaxContentSize {
+		return ErrContentTooLarge
+	}
+	return nil
 }
 
 func (s *Service) GetBySlug(ctx context.Context, slug string) (*Post, *string, error) {
@@ -93,8 +139,11 @@ func (s *Service) Search(ctx context.Context, query string, limit, offset int) (
 }
 
 func (s *Service) Create(ctx context.Context, input CreatePostInput) (*Post, error) {
-	contentURL := input.Slug + ".mdx"
-	contentKey := "posts/" + contentURL
+	if err := s.validateCreateInput(&input); err != nil {
+		return nil, err
+	}
+
+	contentKey := "posts/" + input.Slug + ".mdx"
 
 	err := s.storage.Upload(ctx, contentKey, strings.NewReader(input.Content), "text/markdown")
 	if err != nil {
@@ -112,7 +161,7 @@ func (s *Service) Create(ctx context.Context, input CreatePostInput) (*Post, err
 	post, err := s.repo.Create(ctx,
 		input.Slug,
 		input.Title,
-		contentURL,
+		input.Slug+".mdx",
 		input.Description,
 		input.Categories,
 		input.Tags,
