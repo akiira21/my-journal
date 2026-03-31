@@ -7,16 +7,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/akiira21/my-journal-backend/internal/modules/post"
+	"github.com/akiira21/my-journal-backend/internal/modules/post/postdb"
 	"github.com/akiira21/my-journal-backend/internal/pkg/openai"
 	"github.com/akiira21/my-journal-backend/internal/pkg/queue"
 	redisPkg "github.com/akiira21/my-journal-backend/internal/pkg/redis"
-	"github.com/google/uuid"
 )
 
 const (
 	maxChunkSize = 2000
-	overlapSize  = 200
 	pollInterval = 5 * time.Second
 )
 
@@ -79,43 +80,72 @@ func (w *EmbeddingWorker) processJobs(ctx context.Context) {
 			return
 		}
 
-		log.Printf("Processing embedding job for post: %s", job.PostSlug)
+		log.Printf("Processing embedding job %s for post: %s", job.JobID, job.PostSlug)
 
 		if err := w.processEmbeddingJob(ctx, job); err != nil {
-			log.Printf("Error processing embedding job: %v", err)
+			log.Printf("Error processing embedding job %s: %v", job.JobID, err)
 			continue
 		}
 
-		log.Printf("Successfully processed embedding job for post: %s", job.PostSlug)
+		log.Printf("Successfully processed embedding job %s for post: %s", job.JobID, job.PostSlug)
 	}
 }
 
 func (w *EmbeddingWorker) processEmbeddingJob(ctx context.Context, job *queue.EmbeddingJob) error {
+	jobID, err := uuid.Parse(job.JobID)
+	if err != nil {
+		return fmt.Errorf("invalid job ID: %w", err)
+	}
+
 	postID, err := uuid.Parse(job.PostID)
 	if err != nil {
 		return fmt.Errorf("invalid post ID: %w", err)
 	}
 
-	chunks := w.chunkContent(job.Content, job.Title, job.Description)
-
-	if err := w.postRepo.DeleteEmbeddingsByPostID(ctx, postID); err != nil {
-		return fmt.Errorf("failed to delete existing embeddings: %w", err)
+	if err := w.postRepo.UpdateEmbeddingJobStatus(ctx, jobID, post.JobStatusProcessing, nil); err != nil {
+		log.Printf("Warning: failed to update job status to processing: %v", err)
 	}
 
+	chunks := w.chunkContent(job.Content, job.Title, job.Description)
+
+	chunksTotal := len(chunks)
+	if chunksTotal == 0 {
+		chunksTotal = 1
+	}
+
+	if err := w.postRepo.DeleteEmbeddingsByPostID(ctx, postID); err != nil {
+		errMsg := "failed to delete existing embeddings"
+		w.postRepo.UpdateEmbeddingJobStatus(ctx, jobID, post.JobStatusFailed, &errMsg)
+		return fmt.Errorf("%s: %w", errMsg, err)
+	}
+
+	var lastErr error
 	for i, chunk := range chunks {
 		embedding, err := w.openai.GenerateEmbedding(ctx, chunk)
 		if err != nil {
 			log.Printf("Error generating embedding for chunk %d: %v", i, err)
+			lastErr = err
 			continue
 		}
 
 		if err := w.postRepo.CreateEmbedding(ctx, postID, i, chunk, embedding); err != nil {
 			log.Printf("Error saving embedding for chunk %d: %v", i, err)
+			lastErr = err
 			continue
+		}
+
+		if err := w.postRepo.UpdateEmbeddingJobProgress(ctx, jobID, i+1); err != nil {
+			log.Printf("Warning: failed to update job progress: %v", err)
 		}
 	}
 
-	return nil
+	if lastErr != nil {
+		errMsg := lastErr.Error()
+		w.postRepo.UpdateEmbeddingJobStatus(ctx, jobID, post.JobStatusFailed, &errMsg)
+		return fmt.Errorf("embedding generation failed: %w", lastErr)
+	}
+
+	return w.postRepo.UpdateEmbeddingJobStatus(ctx, jobID, post.JobStatusCompleted, nil)
 }
 
 func (w *EmbeddingWorker) chunkContent(content, title, description string) []string {
@@ -173,4 +203,8 @@ func (w *EmbeddingWorker) chunkByParagraph(content string) []string {
 	}
 
 	return chunks
+}
+
+func JobStatusFromDB(s postdb.JobStatus) post.EmbeddingJobStatus {
+	return post.EmbeddingJobStatus(s)
 }

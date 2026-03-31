@@ -2,12 +2,15 @@ package post
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/akiira21/my-journal-backend/internal/pkg/frontmatter"
 	"github.com/akiira21/my-journal-backend/internal/pkg/queue"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
+
+const maxChunkSize = 2000
 
 type AdminHandler struct {
 	service *Service
@@ -19,6 +22,34 @@ func NewAdminHandler(service *Service, queue *queue.Queue) *AdminHandler {
 		service: service,
 		queue:   queue,
 	}
+}
+
+func estimateChunks(content string) int {
+	sections := strings.Split(content, "\n## ")
+	total := 0
+	for _, section := range sections {
+		if len(section) <= maxChunkSize {
+			total++
+		} else {
+			paragraphs := strings.Split(section, "\n\n")
+			current := 0
+			for _, p := range paragraphs {
+				if current+len(p) > maxChunkSize && current > 0 {
+					total++
+					current = len(p)
+				} else {
+					current += len(p) + 2
+				}
+			}
+			if current > 0 {
+				total++
+			}
+		}
+	}
+	if total == 0 {
+		return 1
+	}
+	return total
 }
 
 type createWithMDXRequest struct {
@@ -76,7 +107,18 @@ func (h *AdminHandler) CreatePost(c *gin.Context) {
 		return
 	}
 
+	chunks := estimateChunks(req.Content)
+	job, err := h.service.CreateEmbeddingJob(c.Request.Context(), post.ID, chunks)
+	if err != nil {
+		c.JSON(http.StatusCreated, gin.H{
+			"post":    toPostResponse(post),
+			"warning": "post created but failed to queue embedding job: " + err.Error(),
+		})
+		return
+	}
+
 	if err := h.queue.PushEmbeddingJob(c.Request.Context(), queue.EmbeddingJob{
+		JobID:       job.ID.String(),
 		PostID:      post.ID.String(),
 		PostSlug:    post.Slug,
 		Content:     req.Content,
@@ -85,7 +127,7 @@ func (h *AdminHandler) CreatePost(c *gin.Context) {
 	}); err != nil {
 		c.JSON(http.StatusCreated, gin.H{
 			"post":    toPostResponse(post),
-			"warning": "post created but embedding generation failed",
+			"warning": "post created but failed to queue embedding job",
 		})
 		return
 	}
@@ -125,7 +167,18 @@ func (h *AdminHandler) CreateFromMDX(c *gin.Context) {
 		return
 	}
 
+	chunks := estimateChunks(parsed.Content)
+	job, err := h.service.CreateEmbeddingJob(c.Request.Context(), post.ID, chunks)
+	if err != nil {
+		c.JSON(http.StatusCreated, gin.H{
+			"post":    toPostResponse(post),
+			"warning": "post created but failed to create embedding job: " + err.Error(),
+		})
+		return
+	}
+
 	if err := h.queue.PushEmbeddingJob(c.Request.Context(), queue.EmbeddingJob{
+		JobID:       job.ID.String(),
 		PostID:      post.ID.String(),
 		PostSlug:    post.Slug,
 		Content:     parsed.Content,
@@ -134,7 +187,7 @@ func (h *AdminHandler) CreateFromMDX(c *gin.Context) {
 	}); err != nil {
 		c.JSON(http.StatusCreated, gin.H{
 			"post":    toPostResponse(post),
-			"warning": "post created but embedding generation failed",
+			"warning": "post created but failed to queue embedding job",
 		})
 		return
 	}
@@ -223,7 +276,18 @@ func (h *AdminHandler) Repost(c *gin.Context) {
 		return
 	}
 
+	chunks := estimateChunks(parsed.Content)
+	job, err := h.service.CreateEmbeddingJob(c.Request.Context(), updated.ID, chunks)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"post":    toPostResponse(updated),
+			"warning": "post updated but failed to create embedding job: " + err.Error(),
+		})
+		return
+	}
+
 	if err := h.queue.PushEmbeddingJob(c.Request.Context(), queue.EmbeddingJob{
+		JobID:       job.ID.String(),
 		PostID:      updated.ID.String(),
 		PostSlug:    updated.Slug,
 		Content:     parsed.Content,
@@ -232,7 +296,7 @@ func (h *AdminHandler) Repost(c *gin.Context) {
 	}); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"post":    toPostResponse(updated),
-			"warning": "post updated but embedding regeneration failed",
+			"warning": "post updated but failed to queue embedding job",
 		})
 		return
 	}

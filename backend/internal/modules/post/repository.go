@@ -428,3 +428,96 @@ func pgtypeTimestamptzToPtr(t pgtype.Timestamptz) *time.Time {
 	}
 	return &t.Time
 }
+
+type EmbeddingJobStatus string
+
+const (
+	JobStatusPending    EmbeddingJobStatus = "pending"
+	JobStatusProcessing EmbeddingJobStatus = "processing"
+	JobStatusCompleted  EmbeddingJobStatus = "completed"
+	JobStatusFailed     EmbeddingJobStatus = "failed"
+)
+
+type EmbeddingJob struct {
+	ID              uuid.UUID
+	PostID          uuid.UUID
+	Status          EmbeddingJobStatus
+	Error           *string
+	ChunksTotal     int
+	ChunksCompleted int
+	CreatedAt       time.Time
+	StartedAt       *time.Time
+	CompletedAt     *time.Time
+}
+
+func (r *Repository) CreateEmbeddingJob(ctx context.Context, postID uuid.UUID, chunksTotal int) (*EmbeddingJob, error) {
+	job, err := r.q.CreateEmbeddingJob(ctx, postdb.CreateEmbeddingJobParams{
+		PostID:      uuidToPgtype(postID),
+		ChunksTotal: pgtype.Int4{Int32: int32(chunksTotal), Valid: true},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return toEmbeddingJob(job), nil
+}
+
+func (r *Repository) GetEmbeddingJobByID(ctx context.Context, id uuid.UUID) (*EmbeddingJob, error) {
+	job, err := r.q.GetEmbeddingJobByID(ctx, uuidToPgtype(id))
+	if err != nil {
+		return nil, err
+	}
+	return toEmbeddingJob(job), nil
+}
+
+func (r *Repository) GetEmbeddingJobsByPostID(ctx context.Context, postID uuid.UUID) ([]EmbeddingJob, error) {
+	jobs, err := r.q.GetEmbeddingJobsByPostID(ctx, uuidToPgtype(postID))
+	if err != nil {
+		return nil, err
+	}
+	result := make([]EmbeddingJob, len(jobs))
+	for i, j := range jobs {
+		result[i] = *toEmbeddingJob(j)
+	}
+	return result, nil
+}
+
+func (r *Repository) GetLatestEmbeddingJobForPost(ctx context.Context, postID uuid.UUID) (*EmbeddingJob, error) {
+	job, err := r.q.GetLatestEmbeddingJobForPost(ctx, uuidToPgtype(postID))
+	if err != nil {
+		return nil, err
+	}
+	return toEmbeddingJob(job), nil
+}
+
+func (r *Repository) UpdateEmbeddingJobStatus(ctx context.Context, id uuid.UUID, status EmbeddingJobStatus, errMsg *string) error {
+	var errText pgtype.Text
+	if errMsg != nil {
+		errText = pgtype.Text{String: *errMsg, Valid: true}
+	}
+	return r.q.UpdateEmbeddingJobStatus(ctx, postdb.UpdateEmbeddingJobStatusParams{
+		ID:     uuidToPgtype(id),
+		Status: postdb.JobStatus(status),
+		Error:  errText,
+	})
+}
+
+func (r *Repository) UpdateEmbeddingJobProgress(ctx context.Context, id uuid.UUID, chunksCompleted int) error {
+	return r.q.UpdateEmbeddingJobProgress(ctx, postdb.UpdateEmbeddingJobProgressParams{
+		ID:              uuidToPgtype(id),
+		ChunksCompleted: pgtype.Int4{Int32: int32(chunksCompleted), Valid: true},
+	})
+}
+
+func toEmbeddingJob(j postdb.EmbeddingJob) *EmbeddingJob {
+	return &EmbeddingJob{
+		ID:              pgtypeToUUID(j.ID),
+		PostID:          pgtypeToUUID(j.PostID),
+		Status:          EmbeddingJobStatus(j.Status),
+		Error:           pgtypeTextToPtr(j.Error),
+		ChunksTotal:     int(j.ChunksTotal.Int32),
+		ChunksCompleted: int(j.ChunksCompleted.Int32),
+		CreatedAt:       j.CreatedAt.Time,
+		StartedAt:       pgtypeTimestamptzToPtr(j.StartedAt),
+		CompletedAt:     pgtypeTimestamptzToPtr(j.CompletedAt),
+	}
+}

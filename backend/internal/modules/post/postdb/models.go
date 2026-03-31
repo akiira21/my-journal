@@ -5,9 +5,56 @@
 package postdb
 
 import (
+	"database/sql/driver"
+	"fmt"
+
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/pgvector/pgvector-go"
 )
+
+type JobStatus string
+
+const (
+	JobStatusPending    JobStatus = "pending"
+	JobStatusProcessing JobStatus = "processing"
+	JobStatusCompleted  JobStatus = "completed"
+	JobStatusFailed     JobStatus = "failed"
+)
+
+func (e *JobStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = JobStatus(s)
+	case string:
+		*e = JobStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for JobStatus: %T", src)
+	}
+	return nil
+}
+
+type NullJobStatus struct {
+	JobStatus JobStatus `json:"job_status"`
+	Valid     bool      `json:"valid"` // Valid is true if JobStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullJobStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.JobStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.JobStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullJobStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.JobStatus), nil
+}
 
 type CacheKey struct {
 	ID        pgtype.UUID        `json:"id"`
@@ -24,6 +71,18 @@ type ChatSession struct {
 	Messages      []byte             `json:"messages"`
 	CreatedAt     pgtype.Timestamptz `json:"created_at"`
 	LastMessageAt pgtype.Timestamptz `json:"last_message_at"`
+}
+
+type EmbeddingJob struct {
+	ID              pgtype.UUID        `json:"id"`
+	PostID          pgtype.UUID        `json:"post_id"`
+	Status          JobStatus          `json:"status"`
+	Error           pgtype.Text        `json:"error"`
+	ChunksTotal     pgtype.Int4        `json:"chunks_total"`
+	ChunksCompleted pgtype.Int4        `json:"chunks_completed"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	StartedAt       pgtype.Timestamptz `json:"started_at"`
+	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
 }
 
 type GithubActivity struct {

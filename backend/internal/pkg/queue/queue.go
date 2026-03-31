@@ -13,6 +13,7 @@ const (
 )
 
 type EmbeddingJob struct {
+	JobID       string `json:"job_id"`
 	PostID      string `json:"post_id"`
 	PostSlug    string `json:"post_slug"`
 	Content     string `json:"content"`

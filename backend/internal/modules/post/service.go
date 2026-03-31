@@ -261,6 +261,18 @@ func (s *Service) SearchSimilar(ctx context.Context, embedding []float32, limit 
 	return s.repo.SearchSimilar(ctx, embedding, limit)
 }
 
+func (s *Service) CreateEmbeddingJob(ctx context.Context, postID uuid.UUID, chunksTotal int) (*EmbeddingJob, error) {
+	return s.repo.CreateEmbeddingJob(ctx, postID, chunksTotal)
+}
+
+func (s *Service) GetEmbeddingJobsByPostID(ctx context.Context, postID uuid.UUID) ([]EmbeddingJob, error) {
+	return s.repo.GetEmbeddingJobsByPostID(ctx, postID)
+}
+
+func (s *Service) GetLatestEmbeddingJobForPost(ctx context.Context, postID uuid.UUID) (*EmbeddingJob, error) {
+	return s.repo.GetLatestEmbeddingJobForPost(ctx, postID)
+}
+
 func calculateReadTime(content string) *int {
 	wordCount := len(strings.Fields(content))
 	readTime := wordCount / 200
