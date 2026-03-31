@@ -7,19 +7,27 @@ import (
 
 	"github.com/akiira21/my-journal-backend/internal/config"
 	"github.com/akiira21/my-journal-backend/internal/middleware"
+	"github.com/akiira21/my-journal-backend/internal/modules/post"
 	"github.com/akiira21/my-journal-backend/internal/pkg/database"
-	redisPkg "github.com/akiira21/my-journal-backend/internal/pkg/redis"
+	"github.com/akiira21/my-journal-backend/internal/pkg/openai"
+	"github.com/akiira21/my-journal-backend/internal/pkg/redis"
+	"github.com/akiira21/my-journal-backend/internal/pkg/storage"
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	config *config.Config
-	router *gin.Engine
-	db     *database.DB
-	redis  *redisPkg.Client
+	config   *config.Config
+	router   *gin.Engine
+	db       *database.DB
+	redis    *redis.Client
+	R2       *storage.R2Client
+	openai   *openai.Client
+	postRepo *post.Repository
+	postSvc  *post.Service
+	postHdlr *post.Handler
 }
 
-func New(cfg *config.Config, db *database.DB, redis *redisPkg.Client) *Server {
+func New(cfg *config.Config, db *database.DB, redis *redis.Client, r2 *storage.R2Client, openaiClient *openai.Client) *Server {
 	gin.SetMode(gin.ReleaseMode)
 	if cfg.IsDevelopment() {
 		gin.SetMode(gin.DebugMode)
@@ -36,11 +44,20 @@ func New(cfg *config.Config, db *database.DB, redis *redisPkg.Client) *Server {
 		router: router,
 		db:     db,
 		redis:  redis,
+		R2:     r2,
+		openai: openaiClient,
 	}
 
+	srv.initModules()
 	srv.registerRoutes()
 
 	return srv
+}
+
+func (s *Server) initModules() {
+	s.postRepo = post.NewRepository(s.db)
+	s.postSvc = post.NewService(s.postRepo, s.R2)
+	s.postHdlr = post.NewHandler(s.postSvc)
 }
 
 func (s *Server) Run(addr string) error {
@@ -51,6 +68,21 @@ func (s *Server) registerRoutes() {
 	v1 := s.router.Group("/api/v1")
 	{
 		v1.GET("/health", s.healthHandler)
+	}
+
+	posts := v1.Group("/posts")
+	{
+		posts.GET("", s.postHdlr.ListPosts)
+		posts.GET("/featured", s.postHdlr.ListFeatured)
+		posts.GET("/search", s.postHdlr.Search)
+		posts.GET("/category/:category", s.postHdlr.ListByCategory)
+		posts.GET("/tag/:tag", s.postHdlr.ListByTag)
+		posts.GET("/:slug", s.postHdlr.GetPost)
+		posts.POST("", s.postHdlr.CreatePost)
+		posts.PUT("/:id", s.postHdlr.UpdatePost)
+		posts.DELETE("/:id", s.postHdlr.DeletePost)
+		posts.POST("/:id/archive", s.postHdlr.ArchivePost)
+		posts.POST("/:id/view", s.postHdlr.IncrementViewCount)
 	}
 }
 

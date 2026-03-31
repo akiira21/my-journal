@@ -9,7 +9,9 @@ import (
 
 	"github.com/akiira21/my-journal-backend/internal/config"
 	"github.com/akiira21/my-journal-backend/internal/pkg/database"
+	"github.com/akiira21/my-journal-backend/internal/pkg/openai"
 	redisPkg "github.com/akiira21/my-journal-backend/internal/pkg/redis"
+	"github.com/akiira21/my-journal-backend/internal/pkg/storage"
 	"github.com/akiira21/my-journal-backend/internal/server"
 )
 
@@ -42,7 +44,29 @@ func main() {
 		log.Fatal("REDIS_URL is required")
 	}
 
-	srv := server.New(cfg, db, redisClient)
+	var r2Client *storage.R2Client
+	if cfg.R2AccountID != "" && cfg.R2AccessKeyID != "" && cfg.R2SecretKey != "" && cfg.R2BucketName != "" {
+		r2Client, err = storage.NewR2Client(cfg.R2AccountID, cfg.R2AccessKeyID, cfg.R2SecretKey, cfg.R2BucketName, cfg.R2PublicURL)
+		if err != nil {
+			log.Fatalf("Failed to create R2 client: %v", err)
+		}
+		log.Println("R2 client initialized successfully")
+	} else {
+		log.Fatal("R2 credentials are required")
+	}
+
+	var openaiClient *openai.Client
+	if cfg.OpenAIKey != "" {
+		openaiClient, err = openai.New(cfg.OpenAIKey)
+		if err != nil {
+			log.Fatalf("Failed to create OpenAI client: %v", err)
+		}
+		log.Println("OpenAI client initialized successfully")
+	} else {
+		log.Fatal("OPENAI_API_KEY is required")
+	}
+
+	srv := server.New(cfg, db, redisClient, r2Client, openaiClient)
 
 	port := os.Getenv("PORT")
 	if port == "" {
