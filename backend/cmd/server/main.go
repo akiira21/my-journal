@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/joho/godotenv"
+
 	"github.com/akiira21/my-journal-backend/internal/config"
 	"github.com/akiira21/my-journal-backend/internal/pkg/database"
 	"github.com/akiira21/my-journal-backend/internal/pkg/openai"
@@ -16,6 +18,10 @@ import (
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment variables")
+	}
+
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
@@ -37,11 +43,12 @@ func main() {
 	if cfg.RedisURL != "" {
 		redisClient, err = redisPkg.New(cfg.RedisURL)
 		if err != nil {
-			log.Fatalf("Failed to connect to redis: %v", err)
+			log.Printf("Warning: Failed to connect to redis: %v", err)
+		} else {
+			log.Println("Redis connected successfully")
 		}
-		log.Println("Redis connected successfully")
 	} else {
-		log.Fatal("REDIS_URL is required")
+		log.Println("Warning: REDIS_URL not set, embedding worker disabled")
 	}
 
 	var r2Client *storage.R2Client

@@ -117,19 +117,21 @@ func (h *AdminHandler) CreatePost(c *gin.Context) {
 		return
 	}
 
-	if err := h.queue.PushEmbeddingJob(c.Request.Context(), queue.EmbeddingJob{
-		JobID:       job.ID.String(),
-		PostID:      post.ID.String(),
-		PostSlug:    post.Slug,
-		Content:     req.Content,
-		Title:       req.Title,
-		Description: desc,
-	}); err != nil {
-		c.JSON(http.StatusCreated, gin.H{
-			"post":    toPostResponse(post),
-			"warning": "post created but failed to queue embedding job",
-		})
-		return
+	if h.queue != nil {
+		if err := h.queue.PushEmbeddingJob(c.Request.Context(), queue.EmbeddingJob{
+			JobID:       job.ID.String(),
+			PostID:      post.ID.String(),
+			PostSlug:    post.Slug,
+			Content:     req.Content,
+			Title:       req.Title,
+			Description: desc,
+		}); err != nil {
+			c.JSON(http.StatusCreated, gin.H{
+				"post":    toPostResponse(post),
+				"warning": "post created but failed to queue embedding job",
+			})
+			return
+		}
 	}
 
 	c.JSON(http.StatusCreated, toPostResponse(post))
@@ -177,19 +179,21 @@ func (h *AdminHandler) CreateFromMDX(c *gin.Context) {
 		return
 	}
 
-	if err := h.queue.PushEmbeddingJob(c.Request.Context(), queue.EmbeddingJob{
-		JobID:       job.ID.String(),
-		PostID:      post.ID.String(),
-		PostSlug:    post.Slug,
-		Content:     parsed.Content,
-		Title:       parsed.Title,
-		Description: parsed.Description,
-	}); err != nil {
-		c.JSON(http.StatusCreated, gin.H{
-			"post":    toPostResponse(post),
-			"warning": "post created but failed to queue embedding job",
-		})
-		return
+	if h.queue != nil {
+		if err := h.queue.PushEmbeddingJob(c.Request.Context(), queue.EmbeddingJob{
+			JobID:       job.ID.String(),
+			PostID:      post.ID.String(),
+			PostSlug:    post.Slug,
+			Content:     parsed.Content,
+			Title:       parsed.Title,
+			Description: parsed.Description,
+		}); err != nil {
+			c.JSON(http.StatusCreated, gin.H{
+				"post":    toPostResponse(post),
+				"warning": "post created but failed to queue embedding job",
+			})
+			return
+		}
 	}
 
 	c.JSON(http.StatusCreated, toPostResponse(post))
@@ -286,19 +290,21 @@ func (h *AdminHandler) Repost(c *gin.Context) {
 		return
 	}
 
-	if err := h.queue.PushEmbeddingJob(c.Request.Context(), queue.EmbeddingJob{
-		JobID:       job.ID.String(),
-		PostID:      updated.ID.String(),
-		PostSlug:    updated.Slug,
-		Content:     parsed.Content,
-		Title:       parsed.Title,
-		Description: parsed.Description,
-	}); err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"post":    toPostResponse(updated),
-			"warning": "post updated but failed to queue embedding job",
-		})
-		return
+	if h.queue != nil {
+		if err := h.queue.PushEmbeddingJob(c.Request.Context(), queue.EmbeddingJob{
+			JobID:       job.ID.String(),
+			PostID:      updated.ID.String(),
+			PostSlug:    updated.Slug,
+			Content:     parsed.Content,
+			Title:       parsed.Title,
+			Description: parsed.Description,
+		}); err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"post":    toPostResponse(updated),
+				"warning": "post updated but failed to queue embedding job",
+			})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, toPostResponse(updated))

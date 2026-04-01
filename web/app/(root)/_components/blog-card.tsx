@@ -9,9 +9,9 @@ interface BlogCardProps {
 export default function BlogCard({ post, formatDate }: BlogCardProps) {
   return (
     <article key={post.slug}>
-      <div className="flex items-center justify-between w-full py-2">
-        <div className="flex items-center gap-x-8">
-          <span className="text-neutral-500 text-sm font-medium dark:text-neutral-400">
+      <div className="flex items-center justify-between w-full py-2 gap-x-3">
+        <div className="flex items-center gap-x-8 min-w-0">
+          <span className="text-neutral-500 text-sm font-medium dark:text-neutral-400 shrink-0">
             {formatDate(post.metadata.createdAt, false, false)}
           </span>
           <Link
@@ -21,6 +21,11 @@ export default function BlogCard({ post, formatDate }: BlogCardProps) {
             <span className="text-wrap">{post.metadata.title}</span>
           </Link>
         </div>
+        {post.metadata.readTimeMinutes && (
+          <span className="text-xs text-zinc-500 dark:text-zinc-400 shrink-0">
+            {post.metadata.readTimeMinutes} min
+          </span>
+        )}
       </div>
     </article>
   );

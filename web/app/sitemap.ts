@@ -4,7 +4,8 @@ import { getBlogPosts } from "@/lib/mdx";
 export const baseUrl = "https://blog.arun.space";
 
 export default async function sitemap() {
-  const blogs = getBlogPosts().map((post) => ({
+  const postEntries = await getBlogPosts();
+  const blogs = postEntries.map((post) => ({
     url: `${baseUrl}/posts/${post.slug}`,
     lastModified: post.metadata.createdAt,
   }));

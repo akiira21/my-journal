@@ -91,7 +91,7 @@ const CommandMenu = () => {
                 />
                 <CommandList>
                   <CommandEmpty>No results found.</CommandEmpty>
-                  {/* <CommandGroup heading="Tools">
+                  <CommandGroup heading="Tools">
                     <CommandItem className="flex items-center justify-between bg-[#f0f5fe] dark:bg-[#0e121f] text-[#4A72F4] cursor-pointer">
                       <button
                         className="flex items-center justify-between w-full"
@@ -99,14 +99,11 @@ const CommandMenu = () => {
                       >
                         <div className="flex items-center gap-x-4">
                           <Sparkles />
-                          <span>Switch to AI Search</span>
+                          <span>Open Assistant Chat</span>
                         </div>
-                        <span className="text-red-500 text-xs font-medium p-1 rounded">
-                          Underdevelopment
-                        </span>
                       </button>
                     </CommandItem>
-                  </CommandGroup> */}
+                  </CommandGroup>
                   <CommandGroup heading="Navigation">
                     {navigationRoutes.map((route) => (
                       <CommandItem key={route.label}>

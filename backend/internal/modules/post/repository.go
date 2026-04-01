@@ -495,9 +495,9 @@ func (r *Repository) UpdateEmbeddingJobStatus(ctx context.Context, id uuid.UUID,
 		errText = pgtype.Text{String: *errMsg, Valid: true}
 	}
 	return r.q.UpdateEmbeddingJobStatus(ctx, postdb.UpdateEmbeddingJobStatusParams{
-		ID:     uuidToPgtype(id),
-		Status: postdb.JobStatus(status),
-		Error:  errText,
+		ID:      uuidToPgtype(id),
+		Column2: postdb.JobStatus(status),
+		Error:   errText,
 	})
 }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/akiira21/my-journal-backend/internal/config"
 	"github.com/akiira21/my-journal-backend/internal/jobs"
 	"github.com/akiira21/my-journal-backend/internal/middleware"
+	"github.com/akiira21/my-journal-backend/internal/modules/chat"
 	"github.com/akiira21/my-journal-backend/internal/modules/post"
 	"github.com/akiira21/my-journal-backend/internal/pkg/database"
 	"github.com/akiira21/my-journal-backend/internal/pkg/openai"
@@ -28,6 +29,9 @@ type Server struct {
 	postSvc         *post.Service
 	postHdlr        *post.Handler
 	adminHdlr       *post.AdminHandler
+	chatRepo        *chat.Repository
+	chatSvc         *chat.Service
+	chatHdlr        *chat.Handler
 	queue           *queue.Queue
 	embeddingWorker *jobs.EmbeddingWorker
 }
@@ -64,10 +68,18 @@ func (s *Server) initModules() {
 	s.postSvc = post.NewService(s.postRepo, s.r2)
 	s.postHdlr = post.NewHandler(s.postSvc)
 
-	s.queue = queue.NewQueue(s.redis)
-	s.adminHdlr = post.NewAdminHandler(s.postSvc, s.queue)
+	if s.redis != nil {
+		s.queue = queue.NewQueue(s.redis)
+		s.adminHdlr = post.NewAdminHandler(s.postSvc, s.queue)
+	} else {
+		s.adminHdlr = post.NewAdminHandler(s.postSvc, nil)
+	}
 
-	if s.openai != nil {
+	s.chatRepo = chat.NewRepository(s.db, s.postRepo)
+	s.chatSvc = chat.NewService(s.chatRepo, s.openai, s.postRepo)
+	s.chatHdlr = chat.NewHandler(s.chatSvc)
+
+	if s.openai != nil && s.redis != nil {
 		s.embeddingWorker = jobs.NewEmbeddingWorker(s.redis, s.postRepo, s.openai)
 	}
 }
@@ -102,6 +114,7 @@ func (s *Server) registerRoutes() {
 		posts.GET("/category/:category", s.postHdlr.ListByCategory)
 		posts.GET("/tag/:tag", s.postHdlr.ListByTag)
 		posts.GET("/:slug", s.postHdlr.GetPost)
+		posts.GET("/:slug/related", s.postHdlr.GetRelated)
 		posts.POST("/:id/view", s.postHdlr.IncrementViewCount)
 	}
 
@@ -113,6 +126,14 @@ func (s *Server) registerRoutes() {
 		admin.PUT("/posts/:id", s.adminHdlr.UpdatePost)
 		admin.DELETE("/posts/:id", s.adminHdlr.DeletePost)
 		admin.POST("/posts/:slug/repost", s.adminHdlr.Repost)
+	}
+
+	chatGroup := v1.Group("/chat")
+	{
+		chatGroup.POST("/sessions", s.chatHdlr.CreateSession)
+		chatGroup.GET("/sessions/:id", s.chatHdlr.GetSession)
+		chatGroup.POST("/message", s.chatHdlr.Chat)
+		chatGroup.POST("/stream", s.chatHdlr.ChatStream)
 	}
 }
 

@@ -6,11 +6,13 @@ export default function LLMInput({
   setSearchQuery,
   handleSearchResult,
   loading,
+  disabled,
 }: {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  handleSearchResult: (query: string) => void;
+  handleSearchResult: (query: string) => Promise<void>;
   loading: boolean;
+  disabled?: boolean;
 }) {
   return (
     <div className="flex h-12 items-center bg-background px-3 py-2 text-sm border-t">
@@ -23,12 +25,17 @@ export default function LLMInput({
         placeholder="Ask me anything about my posts..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        disabled={loading}
+        disabled={loading || disabled}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && searchQuery.trim()) {
+            handleSearchResult(searchQuery);
+          }
+        }}
       />
       {searchQuery.length > 0 && (
         <motion.div
           className={`flex gap-x-2 text-xs hover:text-[#3E69F4] cursor-pointer ${
-            loading ? "hidden" : ""
+            loading || disabled ? "hidden" : ""
           }`}
           animate={{ y: 0, opacity: 1 }}
           initial={{ y: -20, opacity: 0 }}

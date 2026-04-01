@@ -10,29 +10,21 @@ export default function LLMInfo({
     <div className="bg-background flex flex-col gap-y-3 p-4 pb-8 text-sm mb-4 text-zinc-800 dark:text-zinc-300 max-h-96 overflow-y-auto">
       <TypographyP>Dear reader,</TypographyP>
 
-      <TypographyP className="text-red-500">
-        Note: The LLM functionality is currently under development. This is a
-        placeholder for the frontend component.
+      <TypographyP>
+        This assistant answers questions using semantic search over blog post
+        embeddings and then responds with relevant context.
       </TypographyP>
 
       <TypographyP>
-        I built this AI-powered search tool to explore innovative ways for
-        readers to connect with my content. It&apos;s still in the early stages
-        of development, so I&apos;d love to hear your feedback on how I can
-        improve it.
-      </TypographyP>
-
-      <TypographyP>
-        Feel free to ask me anything about my posts, and I&apos;ll do my best to
-        provide you with relevant information. I hope you enjoy using this tool
-        as much as I enjoyed building it!
+        Ask anything about articles, concepts, or implementation details from
+        this journal.
       </TypographyP>
 
       <FeaturedQueries setSearchQuery={setSearchQuery} />
 
       <TypographyP className="text-muted-foreground">
-        Results are sadly not guaranteed to be 100% accurate but I&apos;m
-        working on improving the quality of the search results.
+        Responses can still be imperfect, so verify important details before
+        using them directly in production.
       </TypographyP>
 
       <TypographyP>

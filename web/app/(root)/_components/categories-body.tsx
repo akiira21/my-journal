@@ -3,12 +3,12 @@ import { formatDate } from "@/lib/utils";
 import { TypographyP } from "@/custom_components/typography";
 import BlogCard from "./blog-card";
 
-export default function CategoriesBody({
+export default async function CategoriesBody({
   activeCategory,
 }: {
   activeCategory: string;
 }) {
-  const posts = getBlogPosts();
+  const posts = await getBlogPosts();
 
   const categoryPosts = posts.filter((post) =>
     post.metadata.categories.includes(activeCategory)

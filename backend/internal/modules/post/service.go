@@ -261,6 +261,35 @@ func (s *Service) SearchSimilar(ctx context.Context, embedding []float32, limit 
 	return s.repo.SearchSimilar(ctx, embedding, limit)
 }
 
+func (s *Service) GetRelated(ctx context.Context, slug string, limit int) ([]SearchResult, error) {
+	post, err := s.repo.GetBySlug(ctx, slug)
+	if err != nil {
+		return nil, err
+	}
+
+	embeddings, err := s.repo.GetEmbeddingsByPostID(ctx, post.ID)
+	if err != nil || len(embeddings) == 0 {
+		return nil, err
+	}
+
+	results, err := s.repo.SearchSimilar(ctx, embeddings[0].Embedding, limit+1)
+	if err != nil {
+		return nil, err
+	}
+
+	filtered := make([]SearchResult, 0, limit)
+	for _, r := range results {
+		if r.Post.ID != post.ID {
+			filtered = append(filtered, r)
+			if len(filtered) >= limit {
+				break
+			}
+		}
+	}
+
+	return filtered, nil
+}
+
 func (s *Service) CreateEmbeddingJob(ctx context.Context, postID uuid.UUID, chunksTotal int) (*EmbeddingJob, error) {
 	return s.repo.CreateEmbeddingJob(ctx, postID, chunksTotal)
 }

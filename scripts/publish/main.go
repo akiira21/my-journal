@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 )
 
@@ -50,6 +51,8 @@ type AdminMDXRequest struct {
 }
 
 func main() {
+	_ = godotenv.Load("../../backend/.env")
+
 	file := flag.String("file", "", "Path to MDX file to publish")
 	apiURLFlag := flag.String("url", "", "Backend API URL (default: API_URL env or http://localhost:8080)")
 	apiKeyFlag := flag.String("key", "", "Admin API key (default: ADMIN_API_KEY env)")
@@ -156,7 +159,7 @@ func main() {
 		log.Fatalf("Failed to publish: %s\n%s", resp.Status, string(respBody))
 	}
 
-	fmt.Printf("\n✓ Post published successfully!\n")
+	fmt.Printf("\nPost published successfully!\n")
 	fmt.Printf("Response: %s\n", string(respBody))
 }
 

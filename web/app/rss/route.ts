@@ -2,19 +2,20 @@ import { getBlogPosts } from "@/lib/mdx";
 import { baseUrl } from "../sitemap";
 
 export async function GET() {
-  const allBlogs = getBlogPosts();
+  const allBlogs = await getBlogPosts();
 
   const itemsXml = allBlogs
     .sort((a, b) => {
-      if (new Date(a.metadata.createdAt) > new Date(b.metadata.createdAt))
+      if (new Date(a.metadata.createdAt) > new Date(b.metadata.createdAt)) {
         return -1;
+      }
 
       return 1;
     })
     .map(
       (post) => `<item>
   <title>${post.metadata.title}</title>
-  <link>${post.metadata.slug}</link>
+  <link>${baseUrl}/posts/${post.slug}</link>
   <description>${post.metadata.description || ""}</description>
   <pubDate>${new Date(post.metadata.createdAt).toUTCString()}</pubDate>
 </item>`

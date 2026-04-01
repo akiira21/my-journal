@@ -7,8 +7,8 @@ interface CategoryPostsProps {
   category: string;
 }
 
-export default function CategoryPosts({ category }: CategoryPostsProps) {
-  const posts = getPostsByCategory(category);
+export default async function CategoryPosts({ category }: CategoryPostsProps) {
+  const posts = await getPostsByCategory(category);
 
   if (posts.length === 0) {
     return (
@@ -41,12 +41,19 @@ export default function CategoryPosts({ category }: CategoryPostsProps) {
             <article key={post.slug}>
               <Link
                 href={`/posts/${post.slug}`}
-                className="flex items-center transition-all duration-300 gap-x-8 py-4 ps-4 hover:bg-[#f0f5fe] hover:dark:bg-[#0e121f] rounded-xl hover:text-[#3E69F4]"
+                className="flex items-center justify-between transition-all duration-300 gap-x-8 py-4 ps-4 pe-3 hover:bg-[#f0f5fe] hover:dark:bg-[#0e121f] rounded-xl hover:text-[#3E69F4]"
               >
-                <span className="text-neutral-500 text-sm font-medium dark:text-neutral-400">
-                  {formatDate(post.metadata.createdAt, false, false)}
-                </span>
-                <span>{post.metadata.title}</span>
+                <div className="flex items-center gap-x-8">
+                  <span className="text-neutral-500 text-sm font-medium dark:text-neutral-400">
+                    {formatDate(post.metadata.createdAt, false, false)}
+                  </span>
+                  <span>{post.metadata.title}</span>
+                </div>
+                {post.metadata.readTimeMinutes && (
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {post.metadata.readTimeMinutes} min
+                  </span>
+                )}
               </Link>
             </article>
           ))}

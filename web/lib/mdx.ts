@@ -1,100 +1,175 @@
-import fs from "fs";
-import path from "path";
-import matter from "gray-matter";
+import { compileMDX } from "next-mdx-remote/rsc";
+import rehypeKatex from "rehype-katex";
+import { mdxComponents } from "./mdx-components";
 import { remarkMeta } from "./remark-meta";
 import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import { compileMDX } from "next-mdx-remote/rsc";
+import { postType } from "@/types";
 
-import { mdxComponents } from "./mdx-components";
+type ApiPostSummary = {
+  id: string;
+  slug: string;
+  title: string;
+  description?: string | null;
+  categories?: string[];
+  tags?: string[];
+  featured?: boolean;
+  view_count?: number;
+  read_time_minutes?: number | null;
+  published_at?: string | null;
+};
 
-// Get all the mdx files from content dir
-function getMdxFiles(dir: string) {
-  return fs.readdirSync(dir).filter((file) => path.extname(file) === ".mdx");
-}
+type ApiPost = ApiPostSummary & {
+  content?: string;
+  content_url?: string;
+  created_at?: string;
+  updated_at?: string;
+};
 
-// Read data from mdx files
-function readMdxFile(filepath: fs.PathOrFileDescriptor) {
-  const rawContent = fs.readFileSync(filepath, "utf-8");
+type ApiListResponse = {
+  posts: ApiPostSummary[];
+  total: number;
+  page: number;
+  page_size: number;
+};
 
-  return matter(rawContent);
-}
+export type ApiRelatedPost = {
+  id: string;
+  slug: string;
+  title: string;
+  description?: string | null;
+  score: number;
+};
 
-// Extract metadata and mdx data
-function getMdxData(dir: string) {
-  const mdxFiles = getMdxFiles(dir);
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:8080";
 
-  return mdxFiles.map((file) => {
-    const { data: metadata, content } = readMdxFile(path.join(dir, file));
-    const slug = path.basename(file, path.extname(file));
-
-    return {
-      metadata,
-      slug,
-      content,
-    };
+async function fetchFromAPI<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    next: { revalidate: 60 },
   });
-}
 
-export function getBlogPosts() {
-  return getMdxData(path.join(process.cwd(), "content"));
-}
-
-export async function getPostBySlug(slug: string) {
-  const filePath = path.join(process.cwd(), "content", `${slug}.mdx`);
-
-  if (!fs.existsSync(filePath)) {
-    return null;
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${path}: ${response.status}`);
   }
 
-  const source = fs.readFileSync(filePath, "utf-8");
-  const { data, content } = matter(source);
+  return (await response.json()) as T;
+}
 
-  const { content: mdxContent } = await compileMDX({
-    source: content,
-    options: {
-      parseFrontmatter: true,
-      mdxOptions: {
-        remarkPlugins: [remarkMath],
-        rehypePlugins: [remarkMeta, rehypeKatex],
-      },
-    },
-
-    //@ts-ignore
-    components: {
-      ...mdxComponents,
-    },
-  });
-
-  const sections = extractMDXSections(content);
+function mapApiPostToPostType(post: ApiPostSummary): postType {
+  const createdAt = post.published_at || new Date().toISOString();
 
   return {
-    metadata: data,
-    content: mdxContent,
-    readTime: calculateReadingTime(content),
-    sections,
+    slug: post.slug,
+    content: "",
+    metadata: {
+      id: post.id,
+      slug: post.slug,
+      title: post.title,
+      description: post.description || "",
+      categories: post.categories || [],
+      tags: post.tags || [],
+      tag: post.tags?.[0] || "",
+      featured: post.featured || false,
+      viewCount: post.view_count || 0,
+      readTimeMinutes: post.read_time_minutes || null,
+      createdAt,
+      updatedAt: createdAt,
+    },
   };
 }
 
-export function getCategories() {
-  const posts = getBlogPosts();
+export async function getBlogPosts(pageSize = 100) {
+  try {
+    const response = await fetchFromAPI<ApiListResponse>(
+      `/api/v1/posts?page=1&page_size=${pageSize}`
+    );
+    return response.posts.map(mapApiPostToPostType);
+  } catch {
+    return [];
+  }
+}
 
-  const categories: string[] = [];
+export async function getPostBySlug(slug: string) {
+  try {
+    const post = await fetchFromAPI<ApiPost>(`/api/v1/posts/${slug}?content=true`);
+    if (!post.content) {
+      return null;
+    }
 
-  posts.map((post) => {
-    post.metadata.categories.forEach((category: string) => {
-      if (categories.includes(category)) return;
-      else categories.push(category);
+    const { content: mdxContent } = await compileMDX({
+      source: post.content,
+      options: {
+        parseFrontmatter: true,
+        mdxOptions: {
+          remarkPlugins: [remarkMath],
+          rehypePlugins: [remarkMeta, rehypeKatex],
+        },
+      },
+      // @ts-ignore
+      components: {
+        ...mdxComponents,
+      },
+    });
+
+    const createdAt = post.published_at || post.created_at || new Date().toISOString();
+    const updatedAt = post.updated_at || createdAt;
+
+    return {
+      metadata: {
+        id: post.id,
+        slug: post.slug,
+        title: post.title,
+        description: post.description || "",
+        categories: post.categories || [],
+        tags: post.tags || [],
+        featured: post.featured || false,
+        viewCount: post.view_count || 0,
+        readTimeMinutes: post.read_time_minutes || null,
+        createdAt,
+        updatedAt,
+      },
+      content: mdxContent,
+      readTime: post.read_time_minutes || calculateReadingTime(post.content),
+      sections: extractMDXSections(post.content),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function getCategories() {
+  const posts = await getBlogPosts();
+  const categories = new Set<string>();
+
+  posts.forEach((post) => {
+    (post.metadata.categories || []).forEach((category: string) => {
+      categories.add(category);
     });
   });
 
-  return categories;
+  return Array.from(categories).sort((a, b) => a.localeCompare(b));
 }
 
-export function getPostsByCategory(category: string) {
-  const posts = getBlogPosts();
+export async function getPostsByCategory(category: string) {
+  try {
+    const posts = await fetchFromAPI<ApiPostSummary[]>(
+      `/api/v1/posts/category/${encodeURIComponent(category)}?page=1&page_size=100`
+    );
 
-  return posts.filter((post) => post.metadata.categories.includes(category));
+    return posts.map(mapApiPostToPostType);
+  } catch {
+    return [];
+  }
+}
+
+export async function getRelatedPosts(slug: string, limit = 5) {
+  try {
+    return await fetchFromAPI<ApiRelatedPost[]>(
+      `/api/v1/posts/${encodeURIComponent(slug)}/related?limit=${limit}`
+    );
+  } catch {
+    return [];
+  }
 }
 
 export function calculateReadingTime(content: string) {
@@ -103,34 +178,26 @@ export function calculateReadingTime(content: string) {
 
   return Math.ceil(textLength / wordsPerMinute);
 }
+
 export function extractMDXSections(content: string) {
   const patterns = {
-    // Matches standard markdown headings (# Heading)
     markdownHeading: /^(#{1,6})\s+(.+)$/gm,
-
-    // Matches JSX section components (<Section>)
     jsxSection: /<Section[^>]*>[\s\S]*?<\/Section>/g,
-
-    // Matches HTML heading tags (<h1>-<h6>)
     htmlHeading: /<h[1-6][^>]*>(.*?)<\/h[1-6]>/g,
-
-    // Matches custom heading components
     customHeading: /<Heading[^>]*>(.*?)<\/Heading>/g,
   };
 
-  const sections = [];
+  const sections = [] as any[];
 
-  // Function to convert text to ID format
   const generateId = (text: string) => {
     return text
       .toLowerCase()
-      .replace(/[^\w\s-]/g, "") // Remove special characters
-      .replace(/\s+/g, "-") // Replace spaces with hyphens
-      .replace(/-+/g, "-") // Remove consecutive hyphens
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
       .trim();
   };
 
-  // Extract markdown headings
   let match;
   while ((match = patterns.markdownHeading.exec(content)) !== null) {
     const [, level, title] = match;
@@ -143,12 +210,9 @@ export function extractMDXSections(content: string) {
     });
   }
 
-  // Extract JSX sections
   while ((match = patterns.jsxSection.exec(content)) !== null) {
     const section = match[0];
-    // Extract id from section props
     const idMatch = section.match(/id=["']([^"']+)["']/);
-    // Extract title from section props
     const titleMatch = section.match(/title=["']([^"']+)["']/);
 
     sections.push({
@@ -160,18 +224,16 @@ export function extractMDXSections(content: string) {
     });
   }
 
-  // Extract HTML headings
   while ((match = patterns.htmlHeading.exec(content)) !== null) {
-    const title = match[1].replace(/<[^>]+>/g, "").trim(); // Remove any nested HTML tags
+    const title = match[1].replace(/<[^>]+>/g, "").trim();
     sections.push({
       type: "html",
-      title: title,
+      title,
       id: generateId(title),
       position: match.index,
     });
   }
 
-  // Extract custom heading components
   while ((match = patterns.customHeading.exec(content)) !== null) {
     const heading = match[0];
     const idMatch = heading.match(/id=["']([^"']+)["']/);
@@ -187,7 +249,6 @@ export function extractMDXSections(content: string) {
     });
   }
 
-  // Sort sections by their position in the document
   sections.sort((a, b) => a.position - b.position);
 
   return sections;

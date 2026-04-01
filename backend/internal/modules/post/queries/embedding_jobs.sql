@@ -23,10 +23,10 @@ LIMIT $1;
 
 -- name: UpdateEmbeddingJobStatus :exec
 UPDATE embedding_jobs
-SET status = $2,
+SET status = $2::job_status,
     error = COALESCE($3, error),
     started_at = CASE WHEN $2 = 'processing' THEN NOW() ELSE started_at END,
-    completed_at = CASE WHEN $2 = 'completed' OR $2 = 'failed' THEN NOW() ELSE completed_at END
+    completed_at = CASE WHEN $2 IN ('completed', 'failed') THEN NOW() ELSE completed_at END
 WHERE id = $1;
 
 -- name: UpdateEmbeddingJobProgress :exec

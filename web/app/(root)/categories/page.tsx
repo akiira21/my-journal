@@ -3,8 +3,8 @@ import { TypographyH3 } from "@/custom_components/typography";
 import { getCategories } from "@/lib/mdx";
 import CategoryPosts from "../_components/category-post";
 
-export default function CategoriesPage() {
-  const categories = getCategories();
+export default async function CategoriesPage() {
+  const categories = await getCategories();
 
   return (
     <div className="max-w-2xl mx-auto mt-[25vh]">
@@ -15,8 +15,8 @@ export default function CategoriesPage() {
       />
       <TypographyH3 className="my-4">Categories</TypographyH3>
 
-      {categories.map((category, index) => (
-        <div key={category + index.toString} className="max-w-xl my-6">
+      {categories.map((category) => (
+        <div key={category} className="max-w-xl my-6">
           <CategoryPosts category={category} />
         </div>
       ))}

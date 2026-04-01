@@ -47,6 +47,14 @@ type postSummaryResponse struct {
 	PublishedAt     *string   `json:"published_at"`
 }
 
+type relatedPostResponse struct {
+	ID          uuid.UUID `json:"id"`
+	Slug        string    `json:"slug"`
+	Title       string    `json:"title"`
+	Description *string   `json:"description"`
+	Score       float64   `json:"score"`
+}
+
 type listResponse struct {
 	Posts    []postSummaryResponse `json:"posts"`
 	Total    int64                 `json:"total"`
@@ -323,6 +331,22 @@ func (h *Handler) IncrementViewCount(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *Handler) GetRelated(c *gin.Context) {
+	slug := c.Param("slug")
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
+	if limit > 20 {
+		limit = 20
+	}
+
+	results, err := h.service.GetRelated(c.Request.Context(), slug, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get related posts"})
+		return
+	}
+
+	c.JSON(http.StatusOK, toRelatedPostsResponse(results))
+}
+
 func toPostResponse(p *Post) postResponse {
 	return postResponse{
 		ID:              p.ID,
@@ -358,6 +382,20 @@ func toPostSummariesResponse(posts []PostSummary) []postSummaryResponse {
 		}
 	}
 	return result
+}
+
+func toRelatedPostsResponse(results []SearchResult) []relatedPostResponse {
+	resp := make([]relatedPostResponse, len(results))
+	for i, r := range results {
+		resp[i] = relatedPostResponse{
+			ID:          r.Post.ID,
+			Slug:        r.Post.Slug,
+			Title:       r.Post.Title,
+			Description: r.Post.Description,
+			Score:       r.Score,
+		}
+	}
+	return resp
 }
 
 func formatTime(t *time.Time) *string {

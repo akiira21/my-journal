@@ -116,6 +116,53 @@ func (c *Client) ChatWithHistory(ctx context.Context, systemPrompt string, messa
 	return resp.Choices[0].Message.Content, nil
 }
 
+type StreamChunk struct {
+	Content string
+	Done    bool
+	Error   error
+}
+
+func (c *Client) ChatWithHistoryStream(ctx context.Context, systemPrompt string, messages []ChatMessage) <-chan StreamChunk {
+	ch := make(chan StreamChunk, 10)
+
+	go func() {
+		defer close(ch)
+
+		msgs := make([]openai.ChatCompletionMessageParamUnion, 0, len(messages)+1)
+		msgs = append(msgs, openai.SystemMessage(systemPrompt))
+
+		for _, m := range messages {
+			switch m.Role {
+			case "user":
+				msgs = append(msgs, openai.UserMessage(m.Content))
+			case "assistant":
+				msgs = append(msgs, openai.AssistantMessage(m.Content))
+			}
+		}
+
+		stream := c.client.Chat.Completions.NewStreaming(ctx, openai.ChatCompletionNewParams{
+			Model:    openai.ChatModelGPT4o,
+			Messages: msgs,
+		})
+
+		for stream.Next() {
+			chunk := stream.Current()
+			if len(chunk.Choices) > 0 && chunk.Choices[0].Delta.Content != "" {
+				ch <- StreamChunk{Content: chunk.Choices[0].Delta.Content}
+			}
+		}
+
+		if err := stream.Err(); err != nil {
+			ch <- StreamChunk{Error: fmt.Errorf("stream error: %w", err)}
+			return
+		}
+
+		ch <- StreamChunk{Done: true}
+	}()
+
+	return ch
+}
+
 type ChatMessage struct {
 	Role    string
 	Content string

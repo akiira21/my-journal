@@ -3,6 +3,7 @@
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import CommandMenu from "@/custom_components/command-menu";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -15,7 +16,7 @@ export default function Navbar() {
   };
 
   return (
-      <div className="flex flex-col items-end gap-2 w-full  py-4 px-4 md:px-8">
+      <div className="flex flex-col items-end gap-2 w-full py-4 px-4 md:px-8">
         <div className="flex items-center gap-x-4 text-sm italic">
           {navLinks.map((link) => (
             <Link
@@ -28,6 +29,7 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
+          <CommandMenu />
         </div>
       <button className="text-xs italic" onClick={handleThemeToggle}>
         {theme === "dark" ? (

@@ -180,20 +180,20 @@ func (q *Queries) UpdateEmbeddingJobProgress(ctx context.Context, arg UpdateEmbe
 
 const updateEmbeddingJobStatus = `-- name: UpdateEmbeddingJobStatus :exec
 UPDATE embedding_jobs
-SET status = $2,
+SET status = $2::job_status,
     error = COALESCE($3, error),
     started_at = CASE WHEN $2 = 'processing' THEN NOW() ELSE started_at END,
-    completed_at = CASE WHEN $2 = 'completed' OR $2 = 'failed' THEN NOW() ELSE completed_at END
+    completed_at = CASE WHEN $2 IN ('completed', 'failed') THEN NOW() ELSE completed_at END
 WHERE id = $1
 `
 
 type UpdateEmbeddingJobStatusParams struct {
-	ID     pgtype.UUID `json:"id"`
-	Status JobStatus   `json:"status"`
-	Error  pgtype.Text `json:"error"`
+	ID      pgtype.UUID `json:"id"`
+	Column2 JobStatus   `json:"column_2"`
+	Error   pgtype.Text `json:"error"`
 }
 
 func (q *Queries) UpdateEmbeddingJobStatus(ctx context.Context, arg UpdateEmbeddingJobStatusParams) error {
-	_, err := q.db.Exec(ctx, updateEmbeddingJobStatus, arg.ID, arg.Status, arg.Error)
+	_, err := q.db.Exec(ctx, updateEmbeddingJobStatus, arg.ID, arg.Column2, arg.Error)
 	return err
 }
