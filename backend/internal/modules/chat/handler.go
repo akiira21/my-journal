@@ -153,17 +153,14 @@ func (h *Handler) ChatStream(c *gin.Context) {
 
 	h.service.SaveMessages(c.Request.Context(), req.SessionID, newMessages)
 
-	sources := make([]Source, 0, len(chatCtx.Results))
-	for _, r := range chatCtx.Results {
-		if r.Score > 0.7 {
-			sources = append(sources, Source{
-				PostID:    r.Post.ID,
-				PostSlug:  r.Post.Slug,
-				Title:     r.Post.Title,
-				ChunkText: r.ChunkText,
-				Score:     r.Score,
-			})
-		}
+	sources := make([]Source, 0, len(chatCtx.PostContents))
+	for _, pc := range chatCtx.PostContents {
+		sources = append(sources, Source{
+			PostID:   pc.Post.ID,
+			PostSlug: pc.Post.Slug,
+			Title:    pc.Post.Title,
+			Score:    pc.Score,
+		})
 	}
 
 	if len(sources) > 0 {

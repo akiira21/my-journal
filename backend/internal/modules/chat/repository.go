@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/akiira21/my-journal-backend/internal/modules/chat/chatdb"
-	"github.com/akiira21/my-journal-backend/internal/modules/post"
 	"github.com/akiira21/my-journal-backend/internal/pkg/database"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -42,14 +41,12 @@ type OwnerProfile struct {
 }
 
 type Repository struct {
-	q        *chatdb.Queries
-	postRepo *post.Repository
+	q *chatdb.Queries
 }
 
-func NewRepository(db *database.DB, postRepo *post.Repository) *Repository {
+func NewRepository(db *database.DB) *Repository {
 	return &Repository{
-		q:        chatdb.New(db.Pool),
-		postRepo: postRepo,
+		q: chatdb.New(db.Pool),
 	}
 }
 
@@ -98,10 +95,6 @@ func (r *Repository) GetOwnerProfile(ctx context.Context) (*OwnerProfile, error)
 	}
 
 	return toOwnerProfile(profile), nil
-}
-
-func (r *Repository) SearchSimilarPosts(ctx context.Context, embedding []float32, limit int) ([]post.SearchResult, error) {
-	return r.postRepo.SearchSimilar(ctx, embedding, limit)
 }
 
 func toChatSession(s chatdb.ChatSession) *ChatSession {

@@ -258,8 +258,9 @@ func (r *Repository) DeleteEmbeddingsByPostID(ctx context.Context, postID uuid.U
 }
 
 func (r *Repository) SearchSimilar(ctx context.Context, embedding []float32, limit int) ([]SearchResult, error) {
+	vector := pgvector.NewVector(embedding)
 	results, err := r.q.SearchSimilarEmbeddings(ctx, postdb.SearchSimilarEmbeddingsParams{
-		Embedding: pgvector.NewVector(embedding),
+		Embedding: vector,
 		Limit:     int32(limit),
 	})
 	if err != nil {

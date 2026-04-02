@@ -75,8 +75,8 @@ func (s *Server) initModules() {
 		s.adminHdlr = post.NewAdminHandler(s.postSvc, nil)
 	}
 
-	s.chatRepo = chat.NewRepository(s.db, s.postRepo)
-	s.chatSvc = chat.NewService(s.chatRepo, s.openai, s.postRepo)
+	s.chatRepo = chat.NewRepository(s.db)
+	s.chatSvc = chat.NewService(s.chatRepo, s.openai, s.postSvc)
 	s.chatHdlr = chat.NewHandler(s.chatSvc)
 
 	if s.openai != nil && s.redis != nil {

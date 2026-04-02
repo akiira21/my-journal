@@ -2,6 +2,7 @@ package post
 
 import (
 	"context"
+	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -258,7 +259,12 @@ func (s *Service) DeleteEmbeddings(ctx context.Context, postID uuid.UUID) error 
 }
 
 func (s *Service) SearchSimilar(ctx context.Context, embedding []float32, limit int) ([]SearchResult, error) {
-	return s.repo.SearchSimilar(ctx, embedding, limit)
+	results, err := s.repo.SearchSimilar(ctx, embedding, limit)
+	if err != nil {
+		log.Printf("[PostService] SearchSimilar error: %v", err)
+		return nil, err
+	}
+	return results, nil
 }
 
 func (s *Service) GetRelated(ctx context.Context, slug string, limit int) ([]SearchResult, error) {

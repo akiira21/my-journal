@@ -25,6 +25,7 @@ func New(apiKey string) (*Client, error) {
 }
 
 func (c *Client) GenerateEmbedding(ctx context.Context, text string) ([]float32, error) {
+
 	resp, err := c.client.Embeddings.New(ctx, openai.EmbeddingNewParams{
 		Model: openai.EmbeddingModelTextEmbedding3Small,
 		Input: openai.EmbeddingNewParamsInputUnion{

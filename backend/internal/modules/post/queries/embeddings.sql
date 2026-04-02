@@ -36,10 +36,10 @@ SELECT
   p.slug,
   p.title,
   p.description,
-  1 - (e.embedding <=> $1) as similarity
+  (1 - (e.embedding <=> $1))::double precision as similarity
 FROM post_embeddings e
 JOIN posts p ON p.id = e.post_id
-WHERE p.is_archived = false AND p.published_at IS NOT NULL
+WHERE p.is_archived = false
 ORDER BY e.embedding <=> $1
 LIMIT $2;
 
@@ -53,11 +53,10 @@ SELECT
   p.slug,
   p.title,
   p.description,
-  1 - (e.embedding <=> $1) as similarity
+  (1 - (e.embedding <=> $1))::double precision as similarity
 FROM post_embeddings e
 JOIN posts p ON p.id = e.post_id
 WHERE p.is_archived = false 
-  AND p.published_at IS NOT NULL
   AND $2 = ANY(p.categories)
 ORDER BY e.embedding <=> $1
 LIMIT $3;
