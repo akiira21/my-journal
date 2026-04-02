@@ -23,7 +23,7 @@ function PanelHeader({
   return (
     <header
       data-slot="panel-header"
-      className={cn("screen-line-bottom px-4 py-4 sm:px-6", className)}
+      className={cn("screen-line-bottom px-4 py-3 sm:px-5", className)}
       {...props}
     />
   );
@@ -36,7 +36,7 @@ function PanelTitle({
   return (
     <h2
       data-slot="panel-title"
-      className={cn("text-2xl font-semibold tracking-tight", className)}
+      className={cn("text-xl font-semibold tracking-tight", className)}
       {...props}
     />
   );
@@ -49,7 +49,7 @@ function PanelContent({
   return (
     <div
       data-slot="panel-content"
-      className={cn("px-4 pb-4 sm:px-6", className)}
+      className={cn("px-4 pb-3 sm:px-5", className)}
       {...props}
     />
   );

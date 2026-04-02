@@ -17,7 +17,7 @@ export default function BlogCard({ post, formatDate }: BlogCardProps) {
         className="group block h-full"
         aria-label={`Read ${post.metadata.title}`}
       >
-        <Card className="h-full rounded-none border-line bg-background/80 shadow-none transition-colors hover:bg-muted/30">
+        <Card className="h-full border-line bg-card/80 shadow-sm transition-colors hover:bg-muted/45 dark:bg-card/70 dark:hover:bg-muted/35">
           <div className="flex h-full flex-col gap-4 p-4">
             <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               <span>{formatDate(post.metadata.createdAt, false, false)}</span>
@@ -41,7 +41,7 @@ export default function BlogCard({ post, formatDate }: BlogCardProps) {
                 {categories.map((category: string) => (
                   <span
                     key={category}
-                    className="border border-line bg-background px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground"
+                    className="rounded-md border border-line bg-background/60 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground dark:bg-background/30"
                   >
                     {category}
                   </span>

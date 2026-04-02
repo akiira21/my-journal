@@ -31,7 +31,7 @@ export default async function HomePage() {
 
       <div className="space-y-0">
         {featuredPosts.length > 0 && <FeaturedPosts featuredPosts={featuredPosts} />}
-        <SectionDivider className="h-6" />
+        <SectionDivider className="h-2" />
         <LatestPosts latestPosts={latestPosts} />
       </div>
     </div>
@@ -42,9 +42,9 @@ function SectionDivider({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "relative flex h-8 w-full border-x border-line",
-        "before:absolute before:-left-[100vw] before:-z-10 before:h-8 before:w-[200vw]",
-        "before:bg-[repeating-linear-gradient(315deg,var(--pattern-foreground)_0,var(--pattern-foreground)_1px,transparent_0,transparent_50%)] before:bg-[size:10px_10px] before:[--pattern-foreground:hsl(var(--line))]",
+        "relative flex h-3 w-full border-x border-line",
+        "before:absolute before:-left-[100vw] before:-z-10 before:h-3 before:w-[200vw]",
+        "before:bg-[repeating-linear-gradient(315deg,var(--pattern-foreground)_0,var(--pattern-foreground)_1px,transparent_0,transparent_50%)] before:bg-[size:8px_8px] before:[--pattern-foreground:hsl(var(--line))]",
         className
       )}
     />

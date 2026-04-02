@@ -28,21 +28,21 @@ export default function LatestPosts({
 
         <Button
           asChild
-          variant="ghost"
+          variant="outline"
           size="sm"
-          className="rounded-none border border-line px-3 text-xs font-medium uppercase tracking-[0.12em]"
+          className="gap-1.5 border-line px-2.5 text-[11px] font-medium uppercase tracking-[0.12em]"
         >
           <Link href="/posts">View all</Link>
         </Button>
       </PanelHeader>
 
-      <PanelContent className="relative py-4">
-        <div className="pointer-events-none absolute inset-0 -z-10 hidden grid-cols-2 gap-4 sm:grid">
+      <PanelContent className="relative py-3">
+        <div className="pointer-events-none absolute inset-0 -z-10 hidden grid-cols-2 gap-3 sm:grid">
           <div className="border-r border-line" />
           <div className="border-l border-line" />
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {latestPosts
             .sort((a, b) => {
               if (
