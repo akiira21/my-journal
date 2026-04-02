@@ -4,6 +4,7 @@ import { postType } from "@/types";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Panel, PanelContent, PanelHeader, PanelTitle } from "./panel";
 
 export default function FeaturedPosts({
   featuredPosts,
@@ -11,40 +12,51 @@ export default function FeaturedPosts({
   featuredPosts: postType[];
 }) {
   return (
-    <section className="space-y-4">
-      <div className="flex w-full items-center justify-between gap-4">
-        <div className="space-y-1">
-          <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-slate-500 dark:text-white/45">
-            Highlighted
-          </p>
-          <TypographyH4 className="font-semibold text-slate-900 dark:text-white">
-            Featured Posts
+    <Panel id="featured-posts">
+      <PanelHeader className="flex w-full items-center justify-between gap-3">
+        <div>
+          <TypographyH4 className="font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+            Featured
           </TypographyH4>
+          <PanelTitle className="mt-1">
+            Featured Posts
+            <span className="ml-2 align-middle text-sm font-medium text-muted-foreground">
+              ({featuredPosts.length})
+            </span>
+          </PanelTitle>
         </div>
 
         <Button
           asChild
           variant="ghost"
           size="sm"
-          className="rounded-full border border-white/10 bg-white/60 px-3 text-xs font-medium text-slate-600 shadow-none backdrop-blur-md hover:bg-white/80 hover:text-slate-900 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white"
+          className="rounded-none border border-line px-3 text-xs font-medium uppercase tracking-[0.12em]"
         >
           <Link href="/posts/featured">View all</Link>
         </Button>
-      </div>
-      <div className="space-y-4">
-        {featuredPosts
-          .sort((a, b) => {
-            if (
-              new Date(a.metadata.createdAt) > new Date(b.metadata.createdAt)
-            ) {
-              return -1;
-            }
-            return 1;
-          })
-          .map((post) => (
-            <BlogCard key={post.slug} post={post} formatDate={formatDate} />
-          ))}
-      </div>
-    </section>
+      </PanelHeader>
+
+      <PanelContent className="relative py-4">
+        <div className="pointer-events-none absolute inset-0 -z-10 hidden grid-cols-2 gap-4 sm:grid">
+          <div className="border-r border-line" />
+          <div className="border-l border-line" />
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {featuredPosts
+            .sort((a, b) => {
+              if (
+                new Date(a.metadata.createdAt) > new Date(b.metadata.createdAt)
+              ) {
+                return -1;
+              }
+              return 1;
+            })
+            .map((post) => (
+              <BlogCard key={post.slug} post={post} formatDate={formatDate} />
+            ))}
+        </div>
+      </PanelContent>
+    </Panel>
   );
 }

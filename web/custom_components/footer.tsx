@@ -4,53 +4,48 @@ import { GITHUB, PORTFOLIO, XPROFILE } from "@/personal-links";
 
 export default function Footer() {
     return (
-        <footer className="border-t mt-16">
-            <div className="max-w-3xl mx-auto px-6 py-12">
-                <div className="flex flex-col items-center space-y-6">
-                    {/* Logo */}
-                    <div className="flex items-center">
-                        <Logo width={32} height={32}/>
+        <footer className="max-w-screen overflow-x-hidden px-2">
+            <div className="screen-line-top mx-auto border-x border-line md:max-w-3xl">
+                <div className="screen-line-bottom flex items-center justify-between gap-4 px-4 py-3 max-sm:flex-col">
+                    <div className="flex items-center gap-3">
+                        <Logo width={24} height={24} />
+                        <p className="font-mono text-xs text-muted-foreground">
+                            Thoughts, stories, and reflections from a wandering mind.
+                        </p>
                     </div>
-                    
-                    {/* Tagline */}
-                    <p className="text-gray-600 text-center text-sm italic max-w-md">
-                        Thoughts, stories, and reflections from a wandering mind
-                    </p>
-                    
-                    {/* Social Links */}
-                    <div className="flex items-center space-x-6">
-                        <Link 
-                            href={XPROFILE} 
-                            className="text-gray-500 hover:text-gray-700 transition-colors text-sm"
+
+                    <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground">
+                        <Link
+                            href={XPROFILE}
+                            className="transition-colors hover:text-foreground"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
                             Twitter
                         </Link>
-                        <span className="text-gray-300">•</span>
-                        <Link 
-                            href={GITHUB} 
-                            className="text-gray-500 hover:text-gray-700 transition-colors text-sm"
+                        <div className="h-3 w-px bg-line" />
+                        <Link
+                            href={GITHUB}
+                            className="transition-colors hover:text-foreground"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
                             GitHub
                         </Link>
-                        <span className="text-gray-300">•</span>
-                        <Link 
-                            href={PORTFOLIO} 
-                            className="text-gray-500 hover:text-gray-700 transition-colors text-sm"
+                        <div className="h-3 w-px bg-line" />
+                        <Link
+                            href={PORTFOLIO}
+                            className="transition-colors hover:text-foreground"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
                             Portfolio
                         </Link>
                     </div>
-                    
-                    {/* Copyright */}
-                    <div className="text-center text-xs text-gray-400 pt-4 border-t w-full">
-                        <p>© {new Date().getFullYear()} All rights reserved. Made with care and curiosity.</p>
-                    </div>
+                </div>
+
+                <div className="px-4 py-2 text-center font-mono text-[11px] text-muted-foreground">
+                    © {new Date().getFullYear()} Arun Kumar. All rights reserved.
                 </div>
             </div>
         </footer>

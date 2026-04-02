@@ -7,14 +7,18 @@ export default function PagesLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
+    <div className="group/layout">
       <Navbar />
 
-      <div className="max-w-3xl mx-auto mt-24 px-4 min-h-[60vh]">
-        {children}
+      <main className="max-w-screen overflow-x-hidden px-2">
+        <div className="mx-auto min-h-[60vh] md:max-w-3xl">{children}</div>
+      </main>
+
+      <div className="pb-[env(safe-area-inset-bottom,0px)]">
+        <div className="h-16 sm:h-8" />
       </div>
 
-       <Footer />
-    </>
+      <Footer />
+    </div>
   );
 }
