@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { Roboto, STIX_Two_Text } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import "katex/dist/katex.min.css";
 
 import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { siteConfig } from "@/config/site";
 
-const stixTwoTest = STIX_Two_Text({
+const inter = Inter({
+  subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  subsets: ["latin", "latin-ext", "greek"]
-})
+});
 
 import Script from "next/script";
 
@@ -66,7 +66,7 @@ export default function RootLayout({
         </Script>
       </head>
       <body
-        className={`${stixTwoTest.className} selection:bg-[#F0F5FE] selection:text-[#3579F6] dark:selection:bg-[#0E121F] dark:selection:text-[#5B86F4]`}
+        className={`${inter.className} selection:bg-[#F0F5FE] selection:text-[#3579F6] dark:selection:bg-[#0E121F] dark:selection:text-[#5B86F4]`}
       >
         <ThemeProvider
           attribute="class"
