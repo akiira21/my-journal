@@ -41,6 +41,7 @@ type CreatePostInput struct {
 	Slug        string
 	Title       string
 	Description *string
+	CoverURL    *string
 	Content     string
 	Categories  []string
 	Tags        []string
@@ -51,6 +52,7 @@ type CreatePostInput struct {
 type UpdatePostInput struct {
 	Title       *string
 	Description *string
+	CoverURL    *string
 	Content     *string
 	Categories  []string
 	Tags        []string
@@ -164,6 +166,7 @@ func (s *Service) Create(ctx context.Context, input CreatePostInput) (*Post, err
 		input.Title,
 		input.Slug+".mdx",
 		input.Description,
+		input.CoverURL,
 		input.Categories,
 		input.Tags,
 		input.Featured,
@@ -190,6 +193,9 @@ func (s *Service) Update(ctx context.Context, id uuid.UUID, input UpdatePostInpu
 	}
 	if input.Description != nil {
 		updates["description"] = input.Description
+	}
+	if input.CoverURL != nil {
+		updates["cover_url"] = input.CoverURL
 	}
 	if input.Content != nil {
 		readTime := calculateReadTime(*input.Content)

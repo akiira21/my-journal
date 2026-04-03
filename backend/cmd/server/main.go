@@ -39,6 +39,11 @@ func main() {
 	}
 	log.Println("Database connected successfully")
 
+	if _, err := db.Pool.Exec(ctx, `ALTER TABLE posts ADD COLUMN IF NOT EXISTS cover_url TEXT`); err != nil {
+		log.Fatalf("Failed to ensure posts schema compatibility: %v", err)
+	}
+	log.Println("Posts schema compatibility check passed")
+
 	var redisClient *redisPkg.Client
 	if cfg.RedisURL != "" {
 		redisClient, err = redisPkg.New(cfg.RedisURL)

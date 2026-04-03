@@ -1,12 +1,30 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 import { CommandMenu } from "@/components/command-menu";
 import { ModeToggle } from "@/components/mode-toggle";
 import { personalConfig } from "@/lib/personal-data";
+import { cn } from "@/lib/utils";
 import { GitHubStars } from "./github-stars/github-stars";
 
+function isActivePath(pathname: string, href: string): boolean {
+  if (!href.startsWith("/")) {
+    return false;
+  }
+
+  if (href === "/") {
+    return pathname === "/";
+  }
+
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function MainNavbar() {
+  const pathname = usePathname();
+
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
       <div className="mx-auto flex h-12 w-full max-w-3xl items-center justify-between border-l border-r border-border/70 px-3 sm:px-5">
@@ -27,7 +45,12 @@ export function MainNavbar() {
             <Link
               key={item.href}
               href={item.href}
-              className="font-mono text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className={cn(
+                "font-mono text-sm transition-colors",
+                isActivePath(pathname, item.href)
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
             >
               {item.label}
             </Link>

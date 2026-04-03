@@ -125,6 +125,7 @@ func (h *Handler) ChatStream(c *gin.Context) {
 	c.Header("Connection", "keep-alive")
 
 	var fullResponse string
+	streamCompleted := false
 	for chunk := range stream {
 		if chunk.Error != nil {
 			data, _ := json.Marshal(gin.H{"error": chunk.Error.Error()})
@@ -134,9 +135,7 @@ func (h *Handler) ChatStream(c *gin.Context) {
 		}
 
 		if chunk.Done {
-			data, _ := json.Marshal(gin.H{"done": true})
-			c.Writer.Write([]byte("event: done\ndata: " + string(data) + "\n\n"))
-			c.Writer.Flush()
+			streamCompleted = true
 			break
 		}
 
@@ -145,13 +144,6 @@ func (h *Handler) ChatStream(c *gin.Context) {
 		c.Writer.Write([]byte("event: message\ndata: " + string(data) + "\n\n"))
 		c.Writer.Flush()
 	}
-
-	newMessages := append(chatCtx.Session.Messages, []Message{
-		{Role: "user", Content: req.Message, CreatedAt: time.Now()},
-		{Role: "assistant", Content: fullResponse, CreatedAt: time.Now()},
-	}...)
-
-	h.service.SaveMessages(c.Request.Context(), req.SessionID, newMessages)
 
 	sources := make([]Source, 0, len(chatCtx.PostContents))
 	for _, pc := range chatCtx.PostContents {
@@ -168,6 +160,19 @@ func (h *Handler) ChatStream(c *gin.Context) {
 		c.Writer.Write([]byte("event: sources\ndata: " + string(data) + "\n\n"))
 		c.Writer.Flush()
 	}
+
+	if streamCompleted {
+		data, _ := json.Marshal(gin.H{"done": true})
+		c.Writer.Write([]byte("event: done\ndata: " + string(data) + "\n\n"))
+		c.Writer.Flush()
+	}
+
+	newMessages := append(chatCtx.Session.Messages, []Message{
+		{Role: "user", Content: req.Message, CreatedAt: time.Now()},
+		{Role: "assistant", Content: fullResponse, CreatedAt: time.Now()},
+	}...)
+
+	h.service.SaveMessages(c.Request.Context(), req.SessionID, newMessages)
 
 	_, _ = io.ReadAll(c.Request.Body)
 }

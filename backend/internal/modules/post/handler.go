@@ -22,6 +22,7 @@ type postResponse struct {
 	Slug            string    `json:"slug"`
 	Title           string    `json:"title"`
 	Description     *string   `json:"description"`
+	CoverURL        *string   `json:"cover_url"`
 	Content         *string   `json:"content,omitempty"`
 	ContentURL      string    `json:"content_url"`
 	Categories      []string  `json:"categories"`
@@ -39,6 +40,7 @@ type postSummaryResponse struct {
 	Slug            string    `json:"slug"`
 	Title           string    `json:"title"`
 	Description     *string   `json:"description"`
+	CoverURL        *string   `json:"cover_url"`
 	Categories      []string  `json:"categories"`
 	Tags            []string  `json:"tags"`
 	Featured        bool      `json:"featured"`
@@ -66,6 +68,7 @@ type createPostRequest struct {
 	Slug        string   `json:"slug" binding:"required"`
 	Title       string   `json:"title" binding:"required"`
 	Description *string  `json:"description"`
+	CoverURL    *string  `json:"cover_url"`
 	Content     string   `json:"content" binding:"required"`
 	Categories  []string `json:"categories"`
 	Tags        []string `json:"tags"`
@@ -76,6 +79,7 @@ type createPostRequest struct {
 type updatePostRequest struct {
 	Title       *string  `json:"title"`
 	Description *string  `json:"description"`
+	CoverURL    *string  `json:"cover_url"`
 	Content     *string  `json:"content"`
 	Categories  []string `json:"categories"`
 	Tags        []string `json:"tags"`
@@ -222,6 +226,7 @@ func (h *Handler) CreatePost(c *gin.Context) {
 		Slug:        req.Slug,
 		Title:       req.Title,
 		Description: req.Description,
+		CoverURL:    req.CoverURL,
 		Content:     req.Content,
 		Categories:  req.Categories,
 		Tags:        req.Tags,
@@ -269,6 +274,7 @@ func (h *Handler) UpdatePost(c *gin.Context) {
 	post, err := h.service.Update(c.Request.Context(), id, UpdatePostInput{
 		Title:       req.Title,
 		Description: req.Description,
+		CoverURL:    req.CoverURL,
 		Content:     req.Content,
 		Categories:  req.Categories,
 		Tags:        req.Tags,
@@ -353,6 +359,7 @@ func toPostResponse(p *Post) postResponse {
 		Slug:            p.Slug,
 		Title:           p.Title,
 		Description:     p.Description,
+		CoverURL:        p.CoverURL,
 		ContentURL:      p.ContentURL,
 		Categories:      p.Categories,
 		Tags:            p.Tags,
@@ -373,6 +380,7 @@ func toPostSummariesResponse(posts []PostSummary) []postSummaryResponse {
 			Slug:            p.Slug,
 			Title:           p.Title,
 			Description:     p.Description,
+			CoverURL:        p.CoverURL,
 			Categories:      p.Categories,
 			Tags:            p.Tags,
 			Featured:        p.Featured,

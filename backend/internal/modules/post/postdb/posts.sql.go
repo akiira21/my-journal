@@ -23,10 +23,10 @@ func (q *Queries) ArchivePost(ctx context.Context, id pgtype.UUID) error {
 
 const createPost = `-- name: CreatePost :one
 INSERT INTO posts (
-  slug, title, description, content_url, categories, tags, featured, read_time_minutes, published_at
+  slug, title, description, content_url, cover_url, categories, tags, featured, read_time_minutes, published_at
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9
-) RETURNING id, slug, title, description, content_url, categories, tags, featured, view_count, read_time_minutes, created_at, updated_at, published_at, is_archived
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+) RETURNING id, slug, title, description, content_url, categories, tags, featured, view_count, read_time_minutes, created_at, updated_at, published_at, is_archived, cover_url
 `
 
 type CreatePostParams struct {
@@ -34,6 +34,7 @@ type CreatePostParams struct {
 	Title           string             `json:"title"`
 	Description     pgtype.Text        `json:"description"`
 	ContentUrl      string             `json:"content_url"`
+	CoverUrl        pgtype.Text        `json:"cover_url"`
 	Categories      []string           `json:"categories"`
 	Tags            []string           `json:"tags"`
 	Featured        pgtype.Bool        `json:"featured"`
@@ -47,6 +48,7 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		arg.Title,
 		arg.Description,
 		arg.ContentUrl,
+		arg.CoverUrl,
 		arg.Categories,
 		arg.Tags,
 		arg.Featured,
@@ -69,6 +71,7 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		&i.UpdatedAt,
 		&i.PublishedAt,
 		&i.IsArchived,
+		&i.CoverUrl,
 	)
 	return i, err
 }
@@ -83,7 +86,7 @@ func (q *Queries) DeletePost(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getPostByID = `-- name: GetPostByID :one
-SELECT id, slug, title, description, content_url, categories, tags, featured, view_count, read_time_minutes, created_at, updated_at, published_at, is_archived FROM posts
+SELECT id, slug, title, description, content_url, categories, tags, featured, view_count, read_time_minutes, created_at, updated_at, published_at, is_archived, cover_url FROM posts
 WHERE id = $1
 `
 
@@ -105,12 +108,13 @@ func (q *Queries) GetPostByID(ctx context.Context, id pgtype.UUID) (Post, error)
 		&i.UpdatedAt,
 		&i.PublishedAt,
 		&i.IsArchived,
+		&i.CoverUrl,
 	)
 	return i, err
 }
 
 const getPostBySlug = `-- name: GetPostBySlug :one
-SELECT id, slug, title, description, content_url, categories, tags, featured, view_count, read_time_minutes, created_at, updated_at, published_at, is_archived FROM posts
+SELECT id, slug, title, description, content_url, categories, tags, featured, view_count, read_time_minutes, created_at, updated_at, published_at, is_archived, cover_url FROM posts
 WHERE slug = $1 AND is_archived = false
 `
 
@@ -132,6 +136,7 @@ func (q *Queries) GetPostBySlug(ctx context.Context, slug string) (Post, error) 
 		&i.UpdatedAt,
 		&i.PublishedAt,
 		&i.IsArchived,
+		&i.CoverUrl,
 	)
 	return i, err
 }
@@ -158,7 +163,7 @@ func (q *Queries) IncrementViewCount(ctx context.Context, id pgtype.UUID) error 
 }
 
 const listFeaturedPosts = `-- name: ListFeaturedPosts :many
-SELECT id, slug, title, description, categories, tags, featured, view_count, read_time_minutes, published_at
+SELECT id, slug, title, description, cover_url, categories, tags, featured, view_count, read_time_minutes, published_at
 FROM posts
 WHERE featured = true AND is_archived = false AND published_at IS NOT NULL
 ORDER BY published_at DESC
@@ -170,6 +175,7 @@ type ListFeaturedPostsRow struct {
 	Slug            string             `json:"slug"`
 	Title           string             `json:"title"`
 	Description     pgtype.Text        `json:"description"`
+	CoverUrl        pgtype.Text        `json:"cover_url"`
 	Categories      []string           `json:"categories"`
 	Tags            []string           `json:"tags"`
 	Featured        pgtype.Bool        `json:"featured"`
@@ -192,6 +198,7 @@ func (q *Queries) ListFeaturedPosts(ctx context.Context, limit int32) ([]ListFea
 			&i.Slug,
 			&i.Title,
 			&i.Description,
+			&i.CoverUrl,
 			&i.Categories,
 			&i.Tags,
 			&i.Featured,
@@ -210,7 +217,7 @@ func (q *Queries) ListFeaturedPosts(ctx context.Context, limit int32) ([]ListFea
 }
 
 const listPosts = `-- name: ListPosts :many
-SELECT id, slug, title, description, categories, tags, featured, view_count, read_time_minutes, published_at
+SELECT id, slug, title, description, cover_url, categories, tags, featured, view_count, read_time_minutes, published_at
 FROM posts
 WHERE is_archived = false
 ORDER BY published_at DESC NULLS LAST, created_at DESC
@@ -227,6 +234,7 @@ type ListPostsRow struct {
 	Slug            string             `json:"slug"`
 	Title           string             `json:"title"`
 	Description     pgtype.Text        `json:"description"`
+	CoverUrl        pgtype.Text        `json:"cover_url"`
 	Categories      []string           `json:"categories"`
 	Tags            []string           `json:"tags"`
 	Featured        pgtype.Bool        `json:"featured"`
@@ -249,6 +257,7 @@ func (q *Queries) ListPosts(ctx context.Context, arg ListPostsParams) ([]ListPos
 			&i.Slug,
 			&i.Title,
 			&i.Description,
+			&i.CoverUrl,
 			&i.Categories,
 			&i.Tags,
 			&i.Featured,
@@ -267,7 +276,7 @@ func (q *Queries) ListPosts(ctx context.Context, arg ListPostsParams) ([]ListPos
 }
 
 const listPostsByCategory = `-- name: ListPostsByCategory :many
-SELECT id, slug, title, description, categories, tags, featured, view_count, read_time_minutes, published_at
+SELECT id, slug, title, description, cover_url, categories, tags, featured, view_count, read_time_minutes, published_at
 FROM posts
 WHERE $1 = ANY(categories) AND is_archived = false AND published_at IS NOT NULL
 ORDER BY published_at DESC
@@ -285,6 +294,7 @@ type ListPostsByCategoryRow struct {
 	Slug            string             `json:"slug"`
 	Title           string             `json:"title"`
 	Description     pgtype.Text        `json:"description"`
+	CoverUrl        pgtype.Text        `json:"cover_url"`
 	Categories      []string           `json:"categories"`
 	Tags            []string           `json:"tags"`
 	Featured        pgtype.Bool        `json:"featured"`
@@ -307,6 +317,7 @@ func (q *Queries) ListPostsByCategory(ctx context.Context, arg ListPostsByCatego
 			&i.Slug,
 			&i.Title,
 			&i.Description,
+			&i.CoverUrl,
 			&i.Categories,
 			&i.Tags,
 			&i.Featured,
@@ -325,7 +336,7 @@ func (q *Queries) ListPostsByCategory(ctx context.Context, arg ListPostsByCatego
 }
 
 const listPostsByTag = `-- name: ListPostsByTag :many
-SELECT id, slug, title, description, categories, tags, featured, view_count, read_time_minutes, published_at
+SELECT id, slug, title, description, cover_url, categories, tags, featured, view_count, read_time_minutes, published_at
 FROM posts
 WHERE $1 = ANY(tags) AND is_archived = false AND published_at IS NOT NULL
 ORDER BY published_at DESC
@@ -343,6 +354,7 @@ type ListPostsByTagRow struct {
 	Slug            string             `json:"slug"`
 	Title           string             `json:"title"`
 	Description     pgtype.Text        `json:"description"`
+	CoverUrl        pgtype.Text        `json:"cover_url"`
 	Categories      []string           `json:"categories"`
 	Tags            []string           `json:"tags"`
 	Featured        pgtype.Bool        `json:"featured"`
@@ -365,6 +377,7 @@ func (q *Queries) ListPostsByTag(ctx context.Context, arg ListPostsByTagParams) 
 			&i.Slug,
 			&i.Title,
 			&i.Description,
+			&i.CoverUrl,
 			&i.Categories,
 			&i.Tags,
 			&i.Featured,
@@ -383,7 +396,7 @@ func (q *Queries) ListPostsByTag(ctx context.Context, arg ListPostsByTagParams) 
 }
 
 const searchPosts = `-- name: SearchPosts :many
-SELECT id, slug, title, description, categories, tags, featured, view_count, read_time_minutes, published_at
+SELECT id, slug, title, description, cover_url, categories, tags, featured, view_count, read_time_minutes, published_at
 FROM posts
 WHERE 
   (title ILIKE '%' || $1 || '%' OR description ILIKE '%' || $1 || '%')
@@ -404,6 +417,7 @@ type SearchPostsRow struct {
 	Slug            string             `json:"slug"`
 	Title           string             `json:"title"`
 	Description     pgtype.Text        `json:"description"`
+	CoverUrl        pgtype.Text        `json:"cover_url"`
 	Categories      []string           `json:"categories"`
 	Tags            []string           `json:"tags"`
 	Featured        pgtype.Bool        `json:"featured"`
@@ -426,6 +440,7 @@ func (q *Queries) SearchPosts(ctx context.Context, arg SearchPostsParams) ([]Sea
 			&i.Slug,
 			&i.Title,
 			&i.Description,
+			&i.CoverUrl,
 			&i.Categories,
 			&i.Tags,
 			&i.Featured,
@@ -448,15 +463,16 @@ UPDATE posts SET
   title = COALESCE($2, title),
   description = COALESCE($3, description),
   content_url = COALESCE($4, content_url),
-  categories = COALESCE($5, categories),
-  tags = COALESCE($6, tags),
-  featured = COALESCE($7, featured),
-  read_time_minutes = COALESCE($8, read_time_minutes),
-  published_at = COALESCE($9, published_at),
-  is_archived = COALESCE($10, is_archived),
+  cover_url = COALESCE($5, cover_url),
+  categories = COALESCE($6, categories),
+  tags = COALESCE($7, tags),
+  featured = COALESCE($8, featured),
+  read_time_minutes = COALESCE($9, read_time_minutes),
+  published_at = COALESCE($10, published_at),
+  is_archived = COALESCE($11, is_archived),
   updated_at = NOW()
 WHERE id = $1
-RETURNING id, slug, title, description, content_url, categories, tags, featured, view_count, read_time_minutes, created_at, updated_at, published_at, is_archived
+RETURNING id, slug, title, description, content_url, categories, tags, featured, view_count, read_time_minutes, created_at, updated_at, published_at, is_archived, cover_url
 `
 
 type UpdatePostParams struct {
@@ -464,6 +480,7 @@ type UpdatePostParams struct {
 	Title           pgtype.Text        `json:"title"`
 	Description     pgtype.Text        `json:"description"`
 	ContentUrl      pgtype.Text        `json:"content_url"`
+	CoverUrl        pgtype.Text        `json:"cover_url"`
 	Categories      []string           `json:"categories"`
 	Tags            []string           `json:"tags"`
 	Featured        pgtype.Bool        `json:"featured"`
@@ -478,6 +495,7 @@ func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, e
 		arg.Title,
 		arg.Description,
 		arg.ContentUrl,
+		arg.CoverUrl,
 		arg.Categories,
 		arg.Tags,
 		arg.Featured,
@@ -501,6 +519,7 @@ func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, e
 		&i.UpdatedAt,
 		&i.PublishedAt,
 		&i.IsArchived,
+		&i.CoverUrl,
 	)
 	return i, err
 }

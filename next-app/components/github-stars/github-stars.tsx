@@ -1,3 +1,7 @@
+"use client"
+
+import { useEffect, useState } from "react"
+
 import { Button } from "@/components/ui/button"
 import {
   Tooltip,
@@ -54,7 +58,6 @@ function normalizeRepo(repo: string): string | null {
 async function fetchStars(repo: string): Promise<number | null> {
   try {
     const response = await fetch(`https://api.github.com/repos/${repo}`, {
-      next: { revalidate: 3600 },
       headers: {
         Accept: "application/vnd.github+json",
       },
@@ -73,23 +76,41 @@ async function fetchStars(repo: string): Promise<number | null> {
   }
 }
 
-export async function GitHubStars({
+export function GitHubStars({
   repo,
   stargazersCount,
   locales = "en-US",
 }: GitHubStarsProps) {
   const repoPath = normalizeRepo(repo)
+  const [fetchedStars, setFetchedStars] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!repoPath) {
+      return
+    }
+
+    if (typeof stargazersCount === "number") {
+      return
+    }
+
+    let cancelled = false
+
+    void fetchStars(repoPath).then((value) => {
+      if (!cancelled && typeof value === "number") {
+        setFetchedStars(value)
+      }
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [repoPath, stargazersCount])
 
   if (!repoPath) {
     return null
   }
 
-  const stars =
-    typeof stargazersCount === "number"
-      ? stargazersCount
-      : await fetchStars(repoPath)
-
-  const starCount = stars ?? 0
+  const stars = typeof stargazersCount === "number" ? stargazersCount : (fetchedStars ?? 0)
 
   return (
     <Tooltip>
@@ -107,7 +128,7 @@ export async function GitHubStars({
                 notation: "compact",
                 compactDisplay: "short",
               })
-                .format(starCount)
+                .format(stars)
                 .toLowerCase()}
             </span>
           </a>
@@ -115,7 +136,7 @@ export async function GitHubStars({
       </TooltipTrigger>
 
       <TooltipContent className="font-sans">
-        {new Intl.NumberFormat(locales).format(starCount)} stars
+        {new Intl.NumberFormat(locales).format(stars)} stars
       </TooltipContent>
     </Tooltip>
   )

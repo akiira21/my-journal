@@ -17,6 +17,7 @@ type Post struct {
 	Title           string
 	Description     *string
 	ContentURL      string
+	CoverURL        *string
 	Categories      []string
 	Tags            []string
 	Featured        bool
@@ -33,6 +34,7 @@ type PostSummary struct {
 	Slug            string
 	Title           string
 	Description     *string
+	CoverURL        *string
 	Categories      []string
 	Tags            []string
 	Featured        bool
@@ -135,7 +137,7 @@ func (r *Repository) Search(ctx context.Context, query string, limit, offset int
 	return toPostSummariesFromSearch(posts), nil
 }
 
-func (r *Repository) Create(ctx context.Context, slug, title, contentURL string, description *string, categories, tags []string, featured bool, readTime *int, publishedAt *time.Time) (*Post, error) {
+func (r *Repository) Create(ctx context.Context, slug, title, contentURL string, description, coverURL *string, categories, tags []string, featured bool, readTime *int, publishedAt *time.Time) (*Post, error) {
 	params := postdb.CreatePostParams{
 		Slug:       slug,
 		Title:      title,
@@ -146,6 +148,9 @@ func (r *Repository) Create(ctx context.Context, slug, title, contentURL string,
 
 	if description != nil {
 		params.Description = pgtype.Text{String: *description, Valid: true}
+	}
+	if coverURL != nil {
+		params.CoverUrl = pgtype.Text{String: *coverURL, Valid: true}
 	}
 	if featured {
 		params.Featured = pgtype.Bool{Bool: true, Valid: true}
@@ -176,6 +181,9 @@ func (r *Repository) Update(ctx context.Context, id uuid.UUID, updates map[strin
 	}
 	if v, ok := updates["content_url"].(string); ok {
 		params.ContentUrl = pgtype.Text{String: v, Valid: true}
+	}
+	if v, ok := updates["cover_url"].(*string); ok && v != nil {
+		params.CoverUrl = pgtype.Text{String: *v, Valid: true}
 	}
 	if v, ok := updates["categories"].([]string); ok {
 		params.Categories = v
@@ -272,6 +280,7 @@ func toPost(p postdb.Post) *Post {
 		Title:           p.Title,
 		Description:     pgtypeTextToPtr(p.Description),
 		ContentURL:      p.ContentUrl,
+		CoverURL:        pgtypeTextToPtr(p.CoverUrl),
 		Categories:      p.Categories,
 		Tags:            p.Tags,
 		Featured:        p.Featured.Bool,
@@ -292,6 +301,7 @@ func toPostSummaries(posts []postdb.ListPostsRow) []PostSummary {
 			Slug:            p.Slug,
 			Title:           p.Title,
 			Description:     pgtypeTextToPtr(p.Description),
+			CoverURL:        pgtypeTextToPtr(p.CoverUrl),
 			Categories:      p.Categories,
 			Tags:            p.Tags,
 			Featured:        p.Featured.Bool,
@@ -311,6 +321,7 @@ func toPostSummariesFromFeatured(posts []postdb.ListFeaturedPostsRow) []PostSumm
 			Slug:            p.Slug,
 			Title:           p.Title,
 			Description:     pgtypeTextToPtr(p.Description),
+			CoverURL:        pgtypeTextToPtr(p.CoverUrl),
 			Categories:      p.Categories,
 			Tags:            p.Tags,
 			Featured:        p.Featured.Bool,
@@ -330,6 +341,7 @@ func toPostSummariesFromCategory(posts []postdb.ListPostsByCategoryRow) []PostSu
 			Slug:            p.Slug,
 			Title:           p.Title,
 			Description:     pgtypeTextToPtr(p.Description),
+			CoverURL:        pgtypeTextToPtr(p.CoverUrl),
 			Categories:      p.Categories,
 			Tags:            p.Tags,
 			Featured:        p.Featured.Bool,
@@ -349,6 +361,7 @@ func toPostSummariesFromTag(posts []postdb.ListPostsByTagRow) []PostSummary {
 			Slug:            p.Slug,
 			Title:           p.Title,
 			Description:     pgtypeTextToPtr(p.Description),
+			CoverURL:        pgtypeTextToPtr(p.CoverUrl),
 			Categories:      p.Categories,
 			Tags:            p.Tags,
 			Featured:        p.Featured.Bool,
@@ -368,6 +381,7 @@ func toPostSummariesFromSearch(posts []postdb.SearchPostsRow) []PostSummary {
 			Slug:            p.Slug,
 			Title:           p.Title,
 			Description:     pgtypeTextToPtr(p.Description),
+			CoverURL:        pgtypeTextToPtr(p.CoverUrl),
 			Categories:      p.Categories,
 			Tags:            p.Tags,
 			Featured:        p.Featured.Bool,

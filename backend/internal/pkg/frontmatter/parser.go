@@ -14,6 +14,7 @@ var frontmatterRegex = regexp.MustCompile(`(?s)^---\n(.*?)\n---\n(.*)$`)
 type Frontmatter struct {
 	Title       string   `yaml:"title"`
 	Description string   `yaml:"description"`
+	Cover       string   `yaml:"cover"`
 	Date        string   `yaml:"date"`
 	Slug        string   `yaml:"slug"`
 	Categories  []string `yaml:"categories"`
@@ -25,6 +26,7 @@ type Frontmatter struct {
 type ParsedContent struct {
 	Title       string
 	Description string
+	CoverURL    string
 	Slug        string
 	Categories  []string
 	Tags        []string
@@ -77,6 +79,7 @@ func Parse(content string) (*ParsedContent, error) {
 	return &ParsedContent{
 		Title:       fm.Title,
 		Description: fm.Description,
+		CoverURL:    fm.Cover,
 		Slug:        slug,
 		Categories:  categories,
 		Tags:        tags,

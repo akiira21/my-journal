@@ -56,6 +56,7 @@ type createWithMDXRequest struct {
 	Slug        string   `json:"slug"`
 	Title       string   `json:"title" binding:"required"`
 	Description string   `json:"description"`
+	CoverURL    string   `json:"cover_url"`
 	Content     string   `json:"content" binding:"required"`
 	Categories  []string `json:"categories"`
 	Tags        []string `json:"tags"`
@@ -76,10 +77,15 @@ func (h *AdminHandler) CreatePost(c *gin.Context) {
 	}
 
 	desc := req.Description
+	var coverURL *string
+	if req.CoverURL != "" {
+		coverURL = &req.CoverURL
+	}
 	post, err := h.service.Create(c.Request.Context(), CreatePostInput{
 		Slug:        req.Slug,
 		Title:       req.Title,
 		Description: &desc,
+		CoverURL:    coverURL,
 		Content:     req.Content,
 		Categories:  req.Categories,
 		Tags:        req.Tags,
@@ -150,10 +156,15 @@ func (h *AdminHandler) CreateFromMDX(c *gin.Context) {
 		return
 	}
 
+	var coverURL *string
+	if parsed.CoverURL != "" {
+		coverURL = &parsed.CoverURL
+	}
 	post, err := h.service.Create(c.Request.Context(), CreatePostInput{
 		Slug:        parsed.Slug,
 		Title:       parsed.Title,
 		Description: &parsed.Description,
+		CoverURL:    coverURL,
 		Content:     parsed.Content,
 		Categories:  parsed.Categories,
 		Tags:        parsed.Tags,
@@ -267,9 +278,14 @@ func (h *AdminHandler) Repost(c *gin.Context) {
 		return
 	}
 
+	var coverURL *string
+	if parsed.CoverURL != "" {
+		coverURL = &parsed.CoverURL
+	}
 	updated, err := h.service.Update(c.Request.Context(), post.ID, UpdatePostInput{
 		Title:       &parsed.Title,
 		Description: &parsed.Description,
+		CoverURL:    coverURL,
 		Content:     &parsed.Content,
 		Categories:  parsed.Categories,
 		Tags:        parsed.Tags,

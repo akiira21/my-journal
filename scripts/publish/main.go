@@ -26,6 +26,7 @@ type Config struct {
 type Frontmatter struct {
 	Title       string   `yaml:"title"`
 	Description string   `yaml:"description"`
+	Cover       string   `yaml:"cover"`
 	Date        string   `yaml:"date"`
 	Slug        string   `yaml:"slug"`
 	Categories  []string `yaml:"categories"`
@@ -113,6 +114,9 @@ func main() {
 	fmt.Printf("File: %s\n", *file)
 	fmt.Printf("Title: %s\n", frontmatter.Title)
 	fmt.Printf("Slug: %s\n", frontmatter.Slug)
+	if frontmatter.Cover != "" {
+		fmt.Printf("Cover: %s\n", frontmatter.Cover)
+	}
 	fmt.Printf("Categories: %v\n", frontmatter.Categories)
 	fmt.Printf("Tags: %v\n", frontmatter.Tags)
 	fmt.Printf("Publish: %v\n", *publish || !frontmatter.Draft)

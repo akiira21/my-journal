@@ -8,8 +8,12 @@
       "href": "/posts"
     },
     {
+      "label": "Assistant",
+      "href": "/assistant"
+    },
+    {
       "label": "About",
-      "href": "/about"
+      "href": "/#about"
     }
   ],
   "about": {

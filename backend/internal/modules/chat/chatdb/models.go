@@ -100,6 +100,7 @@ type Post struct {
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
 	PublishedAt     pgtype.Timestamptz `json:"published_at"`
 	IsArchived      pgtype.Bool        `json:"is_archived"`
+	CoverUrl        pgtype.Text        `json:"cover_url"`
 }
 
 type PostEmbedding struct {
