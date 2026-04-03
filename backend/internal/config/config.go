@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -30,7 +31,7 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
-	return &Config{
+	cfg := &Config{
 		Env:       getEnv("ENV", "development"),
 		ClientURL: getEnv("CLIENT_URL", "http://localhost:3000"),
 
@@ -53,7 +54,13 @@ func Load() (*Config, error) {
 
 		AssistantName: getEnv("ASSISTANT_NAME", "Assistant"),
 		AdminAPIKey:   os.Getenv("ADMIN_API_KEY"),
-	}, nil
+	}
+
+	if cfg.DatabaseURL == "" {
+		return nil, fmt.Errorf("DATABASE_URL environment variable is required")
+	}
+
+	return cfg, nil
 }
 
 func (c *Config) IsDevelopment() bool {

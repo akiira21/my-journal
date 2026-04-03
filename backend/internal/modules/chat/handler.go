@@ -46,7 +46,10 @@ type sessionResponse struct {
 
 func (h *Handler) CreateSession(c *gin.Context) {
 	var req createSessionRequest
-	c.ShouldBindJSON(&req)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		return
+	}
 
 	sessionID := req.SessionID
 	if sessionID == "" {
@@ -57,7 +60,8 @@ func (h *Handler) CreateSession(c *gin.Context) {
 
 	session, err := h.service.CreateSession(c.Request.Context(), sessionID, ipHash)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create session"})
+		// Debug
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create session", "details": err.Error()})
 		return
 	}
 
