@@ -1,15 +1,17 @@
-import type { ReactNode } from "react"
+import type { ReactNode, HTMLAttributes } from "react"
 
 import { cn } from "@/lib/utils"
 
 type TypographyProps = {
   children: ReactNode
   className?: string
+  id?: string
 }
 
-export function TypographyH1({ children, className }: TypographyProps) {
+export function TypographyH1({ children, className, id }: TypographyProps) {
   return (
     <h1
+      id={id}
       className={cn(
         "scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance",
         className,
@@ -19,9 +21,10 @@ export function TypographyH1({ children, className }: TypographyProps) {
     </h1>
   )
 }
-export function TypographyH2({ children, className }: TypographyProps) {
+export function TypographyH2({ children, className, id }: TypographyProps) {
   return (
     <h2
+      id={id}
       className={cn(
         "scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0",
         className,
@@ -32,17 +35,17 @@ export function TypographyH2({ children, className }: TypographyProps) {
   )
 }
 
-export function TypographyH3({ children, className }: TypographyProps) {
+export function TypographyH3({ children, className, id }: TypographyProps) {
   return (
-    <h3 className={cn("scroll-m-20 text-2xl font-semibold tracking-tight", className)}>
+    <h3 id={id} className={cn("scroll-m-20 text-2xl font-semibold tracking-tight", className)}>
       {children}
     </h3>
   )
 }
 
-export function TypographyH4({ children, className }: TypographyProps) {
+export function TypographyH4({ children, className, id }: TypographyProps) {
   return (
-    <h4 className={cn("scroll-m-20 text-xl font-semibold tracking-tight", className)}>
+    <h4 id={id} className={cn("scroll-m-20 text-xl font-semibold tracking-tight", className)}>
       {children}
     </h4>
   )

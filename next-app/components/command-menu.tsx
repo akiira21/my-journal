@@ -9,12 +9,15 @@ import {
   SearchIcon,
   UserIcon,
   BookOpenTextIcon,
+  Loader2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import instagramIcon from "@/assets/icons/icons8-instagram-96.png";
 
 import { personalConfig } from "@/lib/personal-data";
+import { apiFetch } from "@/lib/api";
+import type { PostSummary, PostsPageResponse } from "@/lib/blog-types";
 import {
   Command,
   CommandDialog,
@@ -75,20 +78,6 @@ const SECTION_LINKS: CommandLinkItem[] = [
   },
 ];
 
-function buildPostLinks() {
-  const links: CommandLinkItem[] = [];
-
-  for (let index = 1; index <= 10; index += 1) {
-    links.push({
-      title: `Post ${String(index).padStart(2, "0")}`,
-      href: "/posts",
-      icon: <BookOpenTextIcon />,
-    });
-  }
-
-  return links;
-}
-
 function GitHubIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="size-4">
@@ -112,8 +101,34 @@ function InstagramIcon() {
 export function CommandMenu() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [posts, setPosts] = useState<PostSummary[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const postLinks = useMemo(() => buildPostLinks(), []);
+  // Fetch posts when menu opens
+  useEffect(() => {
+    if (open && posts.length === 0) {
+      setIsLoading(true);
+      apiFetch<PostsPageResponse>("/posts?page=1&page_size=50")
+        .then((data) => {
+          setPosts(data.posts || []);
+        })
+        .catch(() => {
+          // Silently fail - posts just won't show
+          setPosts([]);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [open, posts.length]);
+
+  const postLinks = useMemo<CommandLinkItem[]>(() => {
+    return posts.map((post) => ({
+      title: post.title,
+      href: `/posts/${post.slug}`,
+      icon: <BookOpenTextIcon />,
+    }));
+  }, [posts]);
 
   const socialLinks = useMemo<CommandLinkItem[]>(
     () => [
@@ -190,13 +205,20 @@ export function CommandMenu() {
               ))}
             </CommandGroup>
 
-            <CommandGroup heading="Posts">
-              {postLinks.map((item) => (
-                <CommandItem key={item.title} onSelect={() => onOpenLink(item.href)}>
-                  {item.icon}
-                  {item.title}
+            <CommandGroup heading={`Posts (${posts.length})`}>
+              {isLoading ? (
+                <CommandItem disabled>
+                  <Loader2 className="size-4 animate-spin" />
+                  Loading posts...
                 </CommandItem>
-              ))}
+              ) : (
+                postLinks.map((item) => (
+                  <CommandItem key={item.href} onSelect={() => onOpenLink(item.href)}>
+                    {item.icon}
+                    {item.title}
+                  </CommandItem>
+                ))
+              )}
             </CommandGroup>
 
             <CommandGroup heading="Social Links">

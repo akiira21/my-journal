@@ -2,7 +2,7 @@
 
 import { SearchIcon, XIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   InputGroup,
@@ -16,11 +16,21 @@ export function PostSearchInput() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
+  const isUpdatingRef = useRef(false);
 
   useEffect(() => {
+    // Skip if we're already processing an update to avoid infinite loop
+    if (isUpdatingRef.current) return;
+
     const timer = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
       const trimmed = query.trim();
+      const currentQ = searchParams.get("q") ?? "";
+
+      // Only update if query actually changed
+      if (trimmed === currentQ) return;
+
+      isUpdatingRef.current = true;
 
       if (trimmed.length > 0) {
         params.set("q", trimmed);
@@ -30,8 +40,15 @@ export function PostSearchInput() {
       }
 
       const nextQuery = params.toString();
-      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname);
-    }, 250);
+      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+        scroll: false,
+      });
+
+      // Reset flag after navigation completes
+      setTimeout(() => {
+        isUpdatingRef.current = false;
+      }, 100);
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [query, pathname, router, searchParams]);

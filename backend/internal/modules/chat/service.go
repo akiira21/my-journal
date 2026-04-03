@@ -266,7 +266,7 @@ Response Guidelines:
 Writing Style:
 - Use clear, conversational language (match the blog's style)
 - Structure content with headers, bullet points, and numbered lists when helpful
-- Include code examples with proper markdown formatting
+- Include code examples with proper markdown formatting - ALWAYS specify the language identifier after the opening triple-backticks (e.g., python, go, javascript, typescript)
 - Use emphasis (bold/italic) to highlight key concepts
 - Break complex topics into digestible sections
 - Provide practical examples to illustrate concepts

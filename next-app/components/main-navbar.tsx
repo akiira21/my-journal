@@ -24,9 +24,10 @@ function isActivePath(pathname: string, href: string): boolean {
 
 export function MainNavbar() {
   const pathname = usePathname();
+  const isPostPage = pathname.startsWith("/posts/") && pathname.length > 7;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/70 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
       <div className="mx-auto flex h-12 w-full max-w-3xl items-center justify-between border-l border-r border-border/70 px-3 sm:px-5">
         <Link href="/" className="flex items-center gap-2 pr-3">
           <Image
