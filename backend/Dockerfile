@@ -1,17 +1,22 @@
 # Build stage
-FROM golang:1.24-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
+# Allow Go to download required toolchain version
+ENV GOTOOLCHAIN=auto
+
 # Install dependencies
-RUN apk add --no-cache git
+RUN apk add --no-cache git gcc musl-dev
 
 # Copy go mod files
-COPY go.mod go.sum ./
-RUN go mod download
+COPY go.mod go.sum* ./
 
 # Copy source code
 COPY . .
+
+# Download dependencies
+RUN go mod download || go mod tidy
 
 # Build binary
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o server ./cmd/server
