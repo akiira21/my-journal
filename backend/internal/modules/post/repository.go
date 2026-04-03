@@ -45,14 +45,12 @@ type Embedding struct {
 	ID         uuid.UUID
 	PostID     uuid.UUID
 	ChunkIndex int
-	ChunkText  string
 	Embedding  []float32
 }
 
 type SearchResult struct {
-	Post      PostSummary
-	Score     float64
-	ChunkText string
+	Post  PostSummary
+	Score float64
 }
 
 type Repository struct {
@@ -225,11 +223,10 @@ func (r *Repository) GetTotalCount(ctx context.Context) (int64, error) {
 	return count, nil
 }
 
-func (r *Repository) CreateEmbedding(ctx context.Context, postID uuid.UUID, chunkIndex int, chunkText string, embedding []float32) error {
+func (r *Repository) CreateEmbedding(ctx context.Context, postID uuid.UUID, chunkIndex int, embedding []float32) error {
 	_, err := r.q.CreateEmbedding(ctx, postdb.CreateEmbeddingParams{
 		PostID:     uuidToPgtype(postID),
 		ChunkIndex: int32(chunkIndex),
-		ChunkText:  chunkText,
 		Embedding:  pgvector.NewVector(embedding),
 	})
 	return err
@@ -246,7 +243,6 @@ func (r *Repository) GetEmbeddingsByPostID(ctx context.Context, postID uuid.UUID
 			ID:         pgtypeToUUID(e.ID),
 			PostID:     pgtypeToUUID(e.PostID),
 			ChunkIndex: int(e.ChunkIndex),
-			ChunkText:  e.ChunkText,
 			Embedding:  e.Embedding.Slice(),
 		}
 	}
@@ -393,8 +389,7 @@ func toSearchResults(results []postdb.SearchSimilarEmbeddingsRow) []SearchResult
 				Title:       r.Title,
 				Description: pgtypeTextToPtr(r.Description),
 			},
-			Score:     float64(r.Similarity),
-			ChunkText: r.ChunkText,
+			Score: float64(r.Similarity),
 		}
 	}
 	return searchResults

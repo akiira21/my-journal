@@ -246,8 +246,8 @@ func (s *Service) GetContent(ctx context.Context, contentURL string) (*string, e
 	return &content, nil
 }
 
-func (s *Service) CreateEmbedding(ctx context.Context, postID uuid.UUID, chunkIndex int, chunkText string, embedding []float32) error {
-	return s.repo.CreateEmbedding(ctx, postID, chunkIndex, chunkText, embedding)
+func (s *Service) CreateEmbedding(ctx context.Context, postID uuid.UUID, chunkIndex int, embedding []float32) error {
+	return s.repo.CreateEmbedding(ctx, postID, chunkIndex, embedding)
 }
 
 func (s *Service) GetEmbeddings(ctx context.Context, postID uuid.UUID) ([]Embedding, error) {

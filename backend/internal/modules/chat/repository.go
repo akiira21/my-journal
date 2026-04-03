@@ -25,21 +25,6 @@ type ChatSession struct {
 	LastMessageAt *time.Time `json:"last_message_at"`
 }
 
-type OwnerProfile struct {
-	ID               uuid.UUID
-	GithubUsername   string
-	LeetcodeUsername string
-	DisplayName      string
-	Bio              string
-	Skills           []string
-	CurrentLearning  []string
-	SocialLinks      map[string]string
-	ResumeURL        string
-	RawReadme        string
-	AiSummary        string
-	AssistantName    string
-}
-
 type Repository struct {
 	q *chatdb.Queries
 }
@@ -88,15 +73,6 @@ func (r *Repository) UpdateMessages(ctx context.Context, sessionID string, messa
 	})
 }
 
-func (r *Repository) GetOwnerProfile(ctx context.Context) (*OwnerProfile, error) {
-	profile, err := r.q.GetOwnerProfile(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return toOwnerProfile(profile), nil
-}
-
 func toChatSession(s chatdb.ChatSession) *ChatSession {
 	var messages []Message
 	if len(s.Messages) > 0 {
@@ -114,37 +90,5 @@ func toChatSession(s chatdb.ChatSession) *ChatSession {
 		Messages:      messages,
 		CreatedAt:     s.CreatedAt.Time,
 		LastMessageAt: lastMsgAt,
-	}
-}
-
-func toOwnerProfile(p chatdb.OwnerProfile) *OwnerProfile {
-	var skills []string
-	if len(p.Skills) > 0 {
-		json.Unmarshal(p.Skills, &skills)
-	}
-
-	var currentLearning []string
-	if len(p.CurrentLearning) > 0 {
-		json.Unmarshal(p.CurrentLearning, &currentLearning)
-	}
-
-	var socialLinks map[string]string
-	if len(p.SocialLinks) > 0 {
-		json.Unmarshal(p.SocialLinks, &socialLinks)
-	}
-
-	return &OwnerProfile{
-		ID:               p.ID.Bytes,
-		GithubUsername:   p.GithubUsername.String,
-		LeetcodeUsername: p.LeetcodeUsername.String,
-		DisplayName:      p.DisplayName.String,
-		Bio:              p.Bio.String,
-		Skills:           skills,
-		CurrentLearning:  currentLearning,
-		SocialLinks:      socialLinks,
-		ResumeURL:        p.ResumeUrl.String,
-		RawReadme:        p.RawReadme.String,
-		AiSummary:        p.AiSummary.String,
-		AssistantName:    p.AssistantName.String,
 	}
 }

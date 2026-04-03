@@ -58,34 +58,6 @@ func (q *Queries) GetChatSession(ctx context.Context, sessionID string) (ChatSes
 	return i, err
 }
 
-const getOwnerProfile = `-- name: GetOwnerProfile :one
-SELECT id, github_username, leetcode_username, display_name, bio, skills, current_learning, social_links, resume_url, raw_readme, ai_summary, ai_summary_generated_at, assistant_name, updated_at
-FROM owner_profile
-LIMIT 1
-`
-
-func (q *Queries) GetOwnerProfile(ctx context.Context) (OwnerProfile, error) {
-	row := q.db.QueryRow(ctx, getOwnerProfile)
-	var i OwnerProfile
-	err := row.Scan(
-		&i.ID,
-		&i.GithubUsername,
-		&i.LeetcodeUsername,
-		&i.DisplayName,
-		&i.Bio,
-		&i.Skills,
-		&i.CurrentLearning,
-		&i.SocialLinks,
-		&i.ResumeUrl,
-		&i.RawReadme,
-		&i.AiSummary,
-		&i.AiSummaryGeneratedAt,
-		&i.AssistantName,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
 const updateChatMessages = `-- name: UpdateChatMessages :exec
 UPDATE chat_sessions
 SET messages = $2,

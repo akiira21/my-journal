@@ -22,11 +22,6 @@ type Config struct {
 
 	OpenAIKey string
 
-	GithubToken    string
-	GithubUsername string
-
-	LeetcodeUsername string
-
 	RateLimitRequests int
 	RateLimitWindow   string
 
@@ -52,11 +47,6 @@ func Load() (*Config, error) {
 		R2PublicURL:   os.Getenv("R2_PUBLIC_URL"),
 
 		OpenAIKey: os.Getenv("OPENAI_API_KEY"),
-
-		GithubToken:    os.Getenv("GITHUB_TOKEN"),
-		GithubUsername: os.Getenv("GITHUB_USERNAME"),
-
-		LeetcodeUsername: os.Getenv("LC_USERNAME"),
 
 		RateLimitRequests: 100,
 		RateLimitWindow:   "24h",

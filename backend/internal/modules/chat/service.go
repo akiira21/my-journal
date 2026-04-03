@@ -13,16 +13,21 @@ import (
 const MinSimilarityThreshold = 0.25
 
 type Service struct {
-	repo    *Repository
-	openai  *openai.Client
-	postSvc *post.Service
+	repo          *Repository
+	openai        *openai.Client
+	postSvc       *post.Service
+	assistantName string
 }
 
-func NewService(repo *Repository, openaiClient *openai.Client, postSvc *post.Service) *Service {
+func NewService(repo *Repository, openaiClient *openai.Client, postSvc *post.Service, assistantName string) *Service {
+	if assistantName == "" {
+		assistantName = "Assistant"
+	}
 	return &Service{
-		repo:    repo,
-		openai:  openaiClient,
-		postSvc: postSvc,
+		repo:          repo,
+		openai:        openaiClient,
+		postSvc:       postSvc,
+		assistantName: assistantName,
 	}
 }
 
@@ -54,7 +59,6 @@ type ChatContext struct {
 	Session        *ChatSession
 	QueryEmbedding []float32
 	PostContents   []PostContent
-	OwnerProfile   *OwnerProfile
 	SystemPrompt   string
 	IsRelated      bool
 	BestScore      float64
@@ -82,12 +86,6 @@ func (s *Service) PrepareChatContext(ctx context.Context, req ChatRequest) (*Cha
 	results, err := s.postSvc.SearchSimilar(ctx, queryEmbedding, 10)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search similar posts: %w", err)
-	}
-
-
-	ownerProfile, err := s.repo.GetOwnerProfile(ctx)
-	if err != nil {
-		ownerProfile = &OwnerProfile{AssistantName: "Assistant"}
 	}
 
 	isRelated := false
@@ -133,16 +131,15 @@ func (s *Service) PrepareChatContext(ctx context.Context, req ChatRequest) (*Cha
 				})
 			}
 		}
-	} 
+	}
 
 	contextText := s.buildContext(postContents)
-	systemPrompt := s.buildSystemPrompt(ownerProfile, contextText, isRelated)
+	systemPrompt := s.buildSystemPrompt(contextText, isRelated)
 
 	return &ChatContext{
 		Session:        session,
 		QueryEmbedding: queryEmbedding,
 		PostContents:   postContents,
-		OwnerProfile:   ownerProfile,
 		SystemPrompt:   systemPrompt,
 		IsRelated:      isRelated,
 		BestScore:      bestScore,
@@ -241,51 +238,20 @@ func (s *Service) buildContext(postContents []PostContent) string {
 	return sb.String()
 }
 
-func (s *Service) buildSystemPrompt(owner *OwnerProfile, context string, isRelated bool) string {
-	assistantName := owner.AssistantName
-	if assistantName == "" {
-		assistantName = "Assistant"
-	}
-
-	var ownerInfo strings.Builder
-	if owner.DisplayName != "" {
-		ownerInfo.WriteString(fmt.Sprintf("Name: %s\n", owner.DisplayName))
-	}
-	if owner.Bio != "" {
-		ownerInfo.WriteString(fmt.Sprintf("Bio: %s\n", owner.Bio))
-	}
-	if len(owner.Skills) > 0 {
-		ownerInfo.WriteString(fmt.Sprintf("Skills: %s\n", strings.Join(owner.Skills, ", ")))
-	}
-	if len(owner.CurrentLearning) > 0 {
-		ownerInfo.WriteString(fmt.Sprintf("Currently learning: %s\n", strings.Join(owner.CurrentLearning, ", ")))
-	}
-	if owner.GithubUsername != "" {
-		ownerInfo.WriteString(fmt.Sprintf("GitHub: %s\n", owner.GithubUsername))
-	}
-	if owner.LeetcodeUsername != "" {
-		ownerInfo.WriteString(fmt.Sprintf("LeetCode: %s\n", owner.LeetcodeUsername))
-	}
-
+func (s *Service) buildSystemPrompt(context string, isRelated bool) string {
 	if !isRelated {
-		return fmt.Sprintf(`You are %s, an AI assistant for a personal blog and portfolio. You help visitors learn about the owner's work, blog posts, projects, and skills.
+		return fmt.Sprintf(`You are %s, an AI assistant for a personal blog. You help visitors learn about the topics covered in the blog posts.
 
-Owner Profile:
-%s
+The user's query does not appear to be related to any of the blog posts. You should politely explain:
 
-The user's query does not appear to be related to any of the owner's blog posts or content. You should politely explain:
-
-1. You are an assistant for this specific blog and can only answer questions about topics the owner has written about
+1. You are an assistant for this specific blog and can only answer questions about topics covered in the blog
 2. Suggest the user browse the blog to see what topics are covered
-3. Offer to help with any questions about the owner's blog posts, projects, skills, or experiences
+3. Offer to help with any questions about the blog's content
 
-Be friendly and helpful, but do not attempt to answer questions outside the scope of the blog content. Keep your response concise.`, assistantName, ownerInfo.String())
+Be friendly and helpful, but do not attempt to answer questions outside the scope of the blog content. Keep your response concise.`, s.assistantName)
 	}
 
-	return fmt.Sprintf(`You are %s, an AI assistant for a personal blog and portfolio. You help visitors learn about the owner's work, blog posts, projects, and skills.
-
-Owner Profile:
-%s
+	return fmt.Sprintf(`You are %s, an AI assistant for a personal blog. You help visitors learn about the topics covered in the blog posts.
 
 %s
 
@@ -305,5 +271,5 @@ Writing Style (match the blog's style):
 - Break down complex topics into digestible sections
 - Provide practical examples when explaining concepts
 - Keep paragraphs focused and not overly long
-- Use transition words to improve flow between ideas`, assistantName, ownerInfo.String(), context)
+- Use transition words to improve flow between ideas`, s.assistantName, context)
 }

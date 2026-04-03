@@ -128,7 +128,7 @@ func (w *EmbeddingWorker) processEmbeddingJob(ctx context.Context, job *queue.Em
 			continue
 		}
 
-		if err := w.postRepo.CreateEmbedding(ctx, postID, i, chunk, embedding); err != nil {
+		if err := w.postRepo.CreateEmbedding(ctx, postID, i, embedding); err != nil {
 			log.Printf("Error saving embedding for chunk %d: %v", i, err)
 			lastErr = err
 			continue

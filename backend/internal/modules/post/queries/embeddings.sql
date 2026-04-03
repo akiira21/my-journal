@@ -1,27 +1,20 @@
 -- name: GetEmbeddingsByPostID :many
-SELECT id, post_id, chunk_index, chunk_text, embedding
+SELECT id, post_id, chunk_index, embedding
 FROM post_embeddings
 WHERE post_id = $1
 ORDER BY chunk_index;
 
 -- name: GetEmbeddingByID :one
-SELECT id, post_id, chunk_index, chunk_text, embedding
+SELECT id, post_id, chunk_index, embedding
 FROM post_embeddings
 WHERE id = $1;
 
 -- name: CreateEmbedding :one
 INSERT INTO post_embeddings (
-  post_id, chunk_index, chunk_text, embedding
+  post_id, chunk_index, embedding
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3
 ) RETURNING *;
-
--- name: CreateEmbeddings :copyfrom
-INSERT INTO post_embeddings (
-  post_id, chunk_index, chunk_text, embedding
-) VALUES (
-  $1, $2, $3, $4
-);
 
 -- name: DeleteEmbeddingsByPostID :exec
 DELETE FROM post_embeddings WHERE post_id = $1;
@@ -31,7 +24,6 @@ SELECT
   e.id,
   e.post_id,
   e.chunk_index,
-  e.chunk_text,
   e.embedding,
   p.slug,
   p.title,
@@ -48,7 +40,6 @@ SELECT
   e.id,
   e.post_id,
   e.chunk_index,
-  e.chunk_text,
   e.embedding,
   p.slug,
   p.title,

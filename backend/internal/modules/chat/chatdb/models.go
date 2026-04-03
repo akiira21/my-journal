@@ -85,58 +85,6 @@ type EmbeddingJob struct {
 	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
 }
 
-type GithubActivity struct {
-	ID          pgtype.UUID        `json:"id"`
-	EventType   string             `json:"event_type"`
-	RepoName    pgtype.Text        `json:"repo_name"`
-	Title       pgtype.Text        `json:"title"`
-	Description pgtype.Text        `json:"description"`
-	Url         pgtype.Text        `json:"url"`
-	EventData   []byte             `json:"event_data"`
-	OccurredAt  pgtype.Timestamptz `json:"occurred_at"`
-	FetchedAt   pgtype.Timestamptz `json:"fetched_at"`
-}
-
-type LeetcodeProblem struct {
-	ID          pgtype.UUID        `json:"id"`
-	ProblemSlug string             `json:"problem_slug"`
-	Title       pgtype.Text        `json:"title"`
-	Difficulty  pgtype.Text        `json:"difficulty"`
-	Tags        []string           `json:"tags"`
-	Solved      pgtype.Bool        `json:"solved"`
-	SolvedAt    pgtype.Timestamptz `json:"solved_at"`
-	SolutionUrl pgtype.Text        `json:"solution_url"`
-}
-
-type LeetcodeStat struct {
-	ID                pgtype.UUID        `json:"id"`
-	TotalSolved       pgtype.Int4        `json:"total_solved"`
-	EasySolved        pgtype.Int4        `json:"easy_solved"`
-	MediumSolved      pgtype.Int4        `json:"medium_solved"`
-	HardSolved        pgtype.Int4        `json:"hard_solved"`
-	Ranking           pgtype.Int4        `json:"ranking"`
-	RecentSubmissions []byte             `json:"recent_submissions"`
-	CreatedAt         pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
-}
-
-type OwnerProfile struct {
-	ID                   pgtype.UUID        `json:"id"`
-	GithubUsername       pgtype.Text        `json:"github_username"`
-	LeetcodeUsername     pgtype.Text        `json:"leetcode_username"`
-	DisplayName          pgtype.Text        `json:"display_name"`
-	Bio                  pgtype.Text        `json:"bio"`
-	Skills               []byte             `json:"skills"`
-	CurrentLearning      []byte             `json:"current_learning"`
-	SocialLinks          []byte             `json:"social_links"`
-	ResumeUrl            pgtype.Text        `json:"resume_url"`
-	RawReadme            pgtype.Text        `json:"raw_readme"`
-	AiSummary            pgtype.Text        `json:"ai_summary"`
-	AiSummaryGeneratedAt pgtype.Timestamptz `json:"ai_summary_generated_at"`
-	AssistantName        pgtype.Text        `json:"assistant_name"`
-	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
-}
-
 type Post struct {
 	ID              pgtype.UUID        `json:"id"`
 	Slug            string             `json:"slug"`
@@ -158,26 +106,8 @@ type PostEmbedding struct {
 	ID         pgtype.UUID        `json:"id"`
 	PostID     pgtype.UUID        `json:"post_id"`
 	ChunkIndex int32              `json:"chunk_index"`
-	ChunkText  string             `json:"chunk_text"`
 	Embedding  pgvector.Vector    `json:"embedding"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
-}
-
-type Project struct {
-	ID                   pgtype.UUID        `json:"id"`
-	Title                string             `json:"title"`
-	Description          pgtype.Text        `json:"description"`
-	TechStack            []string           `json:"tech_stack"`
-	GithubUrl            pgtype.Text        `json:"github_url"`
-	LiveUrl              pgtype.Text        `json:"live_url"`
-	ImageUrl             pgtype.Text        `json:"image_url"`
-	Featured             pgtype.Bool        `json:"featured"`
-	SortOrder            pgtype.Int4        `json:"sort_order"`
-	RawReadme            pgtype.Text        `json:"raw_readme"`
-	AiSummary            pgtype.Text        `json:"ai_summary"`
-	AiSummaryGeneratedAt pgtype.Timestamptz `json:"ai_summary_generated_at"`
-	CreatedAt            pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
 }
 
 type RateLimit struct {

@@ -14,43 +14,29 @@ import (
 
 const createEmbedding = `-- name: CreateEmbedding :one
 INSERT INTO post_embeddings (
-  post_id, chunk_index, chunk_text, embedding
+  post_id, chunk_index, embedding
 ) VALUES (
-  $1, $2, $3, $4
-) RETURNING id, post_id, chunk_index, chunk_text, embedding, created_at
+  $1, $2, $3
+) RETURNING id, post_id, chunk_index, embedding, created_at
 `
 
 type CreateEmbeddingParams struct {
 	PostID     pgtype.UUID     `json:"post_id"`
 	ChunkIndex int32           `json:"chunk_index"`
-	ChunkText  string          `json:"chunk_text"`
 	Embedding  pgvector.Vector `json:"embedding"`
 }
 
 func (q *Queries) CreateEmbedding(ctx context.Context, arg CreateEmbeddingParams) (PostEmbedding, error) {
-	row := q.db.QueryRow(ctx, createEmbedding,
-		arg.PostID,
-		arg.ChunkIndex,
-		arg.ChunkText,
-		arg.Embedding,
-	)
+	row := q.db.QueryRow(ctx, createEmbedding, arg.PostID, arg.ChunkIndex, arg.Embedding)
 	var i PostEmbedding
 	err := row.Scan(
 		&i.ID,
 		&i.PostID,
 		&i.ChunkIndex,
-		&i.ChunkText,
 		&i.Embedding,
 		&i.CreatedAt,
 	)
 	return i, err
-}
-
-type CreateEmbeddingsParams struct {
-	PostID     pgtype.UUID     `json:"post_id"`
-	ChunkIndex int32           `json:"chunk_index"`
-	ChunkText  string          `json:"chunk_text"`
-	Embedding  pgvector.Vector `json:"embedding"`
 }
 
 const deleteEmbeddingsByPostID = `-- name: DeleteEmbeddingsByPostID :exec
@@ -63,7 +49,7 @@ func (q *Queries) DeleteEmbeddingsByPostID(ctx context.Context, postID pgtype.UU
 }
 
 const getEmbeddingByID = `-- name: GetEmbeddingByID :one
-SELECT id, post_id, chunk_index, chunk_text, embedding
+SELECT id, post_id, chunk_index, embedding
 FROM post_embeddings
 WHERE id = $1
 `
@@ -72,7 +58,6 @@ type GetEmbeddingByIDRow struct {
 	ID         pgtype.UUID     `json:"id"`
 	PostID     pgtype.UUID     `json:"post_id"`
 	ChunkIndex int32           `json:"chunk_index"`
-	ChunkText  string          `json:"chunk_text"`
 	Embedding  pgvector.Vector `json:"embedding"`
 }
 
@@ -83,14 +68,13 @@ func (q *Queries) GetEmbeddingByID(ctx context.Context, id pgtype.UUID) (GetEmbe
 		&i.ID,
 		&i.PostID,
 		&i.ChunkIndex,
-		&i.ChunkText,
 		&i.Embedding,
 	)
 	return i, err
 }
 
 const getEmbeddingsByPostID = `-- name: GetEmbeddingsByPostID :many
-SELECT id, post_id, chunk_index, chunk_text, embedding
+SELECT id, post_id, chunk_index, embedding
 FROM post_embeddings
 WHERE post_id = $1
 ORDER BY chunk_index
@@ -100,7 +84,6 @@ type GetEmbeddingsByPostIDRow struct {
 	ID         pgtype.UUID     `json:"id"`
 	PostID     pgtype.UUID     `json:"post_id"`
 	ChunkIndex int32           `json:"chunk_index"`
-	ChunkText  string          `json:"chunk_text"`
 	Embedding  pgvector.Vector `json:"embedding"`
 }
 
@@ -117,7 +100,6 @@ func (q *Queries) GetEmbeddingsByPostID(ctx context.Context, postID pgtype.UUID)
 			&i.ID,
 			&i.PostID,
 			&i.ChunkIndex,
-			&i.ChunkText,
 			&i.Embedding,
 		); err != nil {
 			return nil, err
@@ -135,7 +117,6 @@ SELECT
   e.id,
   e.post_id,
   e.chunk_index,
-  e.chunk_text,
   e.embedding,
   p.slug,
   p.title,
@@ -157,7 +138,6 @@ type SearchSimilarEmbeddingsRow struct {
 	ID          pgtype.UUID     `json:"id"`
 	PostID      pgtype.UUID     `json:"post_id"`
 	ChunkIndex  int32           `json:"chunk_index"`
-	ChunkText   string          `json:"chunk_text"`
 	Embedding   pgvector.Vector `json:"embedding"`
 	Slug        string          `json:"slug"`
 	Title       string          `json:"title"`
@@ -178,7 +158,6 @@ func (q *Queries) SearchSimilarEmbeddings(ctx context.Context, arg SearchSimilar
 			&i.ID,
 			&i.PostID,
 			&i.ChunkIndex,
-			&i.ChunkText,
 			&i.Embedding,
 			&i.Slug,
 			&i.Title,
@@ -200,7 +179,6 @@ SELECT
   e.id,
   e.post_id,
   e.chunk_index,
-  e.chunk_text,
   e.embedding,
   p.slug,
   p.title,
@@ -224,7 +202,6 @@ type SearchSimilarEmbeddingsByCategoryRow struct {
 	ID          pgtype.UUID     `json:"id"`
 	PostID      pgtype.UUID     `json:"post_id"`
 	ChunkIndex  int32           `json:"chunk_index"`
-	ChunkText   string          `json:"chunk_text"`
 	Embedding   pgvector.Vector `json:"embedding"`
 	Slug        string          `json:"slug"`
 	Title       string          `json:"title"`
@@ -245,7 +222,6 @@ func (q *Queries) SearchSimilarEmbeddingsByCategory(ctx context.Context, arg Sea
 			&i.ID,
 			&i.PostID,
 			&i.ChunkIndex,
-			&i.ChunkText,
 			&i.Embedding,
 			&i.Slug,
 			&i.Title,
