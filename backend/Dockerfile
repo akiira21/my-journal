@@ -9,6 +9,9 @@ ENV GOTOOLCHAIN=auto
 # Install dependencies
 RUN apk add --no-cache git gcc musl-dev
 
+# Install goose for migrations
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+
 # Copy go mod files
 COPY go.mod go.sum* ./
 
@@ -26,13 +29,19 @@ FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates
 
-WORKDIR /root/
+WORKDIR /app
 
-# Copy binary from builder
+# Copy binary, goose, migrations, and start script from builder
 COPY --from=builder /app/server .
+COPY --from=builder /go/bin/goose /usr/local/bin/goose
+COPY --from=builder /app/migrations ./migrations
+COPY --from=builder /app/start.sh .
+
+# Make start script executable
+RUN chmod +x /app/start.sh
 
 # Expose port
 EXPOSE 8080
 
-# Run
-CMD ["./server"]
+# Run with migrations
+CMD ["/app/start.sh"]
