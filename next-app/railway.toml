@@ -1,0 +1,27 @@
+# Railway Deployment Configuration
+# https://docs.railway.app/deploy/config-as-code
+
+[build]
+# Use the Dockerfile in the next-app directory
+dockerfilePath = "./Dockerfile"
+
+[deploy]
+# Health check configuration
+healthcheckPath = "/api/health"
+healthcheckTimeout = 100
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+# Number of replicas (optional, defaults to 1)
+# numReplicas = 1
+
+[deploy.env]
+# Environment variables that will be set in Railway
+# These should match your .env variables
+NEXT_PUBLIC_API_URL = "${NEXT_PUBLIC_API_URL}"
+ASSISTANT_NAME = "${ASSISTANT_NAME}"
+GITHUB_CONTRIBUTIONS_API_URL = "${GITHUB_CONTRIBUTIONS_API_URL}"
+
+# Runtime environment
+NODE_ENV = "production"
+PORT = "3000"
