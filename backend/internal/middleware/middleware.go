@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -35,8 +36,23 @@ func CORS(clientURL string) gin.HandlerFunc {
 			allowedOrigin = "http://localhost:3000"
 		}
 
-		if origin != "" && allowedOrigin != "" && origin == allowedOrigin {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+		if origin != "" {
+			// Support comma-separated list of allowed origins
+			allowedOrigins := []string{allowedOrigin}
+			if strings.Contains(allowedOrigin, ",") {
+				allowedOrigins = strings.Split(allowedOrigin, ",")
+				for i := range allowedOrigins {
+					allowedOrigins[i] = strings.TrimSpace(allowedOrigins[i])
+				}
+			}
+
+			// Check if the request origin is in the allowed list
+			for _, allowed := range allowedOrigins {
+				if origin == allowed {
+					c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+					break
+				}
+			}
 		}
 
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
