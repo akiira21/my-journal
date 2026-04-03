@@ -34,6 +34,7 @@ type Server struct {
 	chatHdlr        *chat.Handler
 	queue           *queue.Queue
 	embeddingWorker *jobs.EmbeddingWorker
+	rateLimiter     *middleware.RateLimiter
 }
 
 func New(cfg *config.Config, db *database.DB, redis *redis.Client, r2 *storage.R2Client, openaiClient *openai.Client) *Server {
@@ -71,6 +72,15 @@ func (s *Server) initModules() {
 	if s.redis != nil {
 		s.queue = queue.NewQueue(s.redis)
 		s.adminHdlr = post.NewAdminHandler(s.postSvc, s.queue)
+		if s.config.RateLimitRequests > 0 {
+			window := 24 * time.Hour
+			if s.config.RateLimitWindow != "" {
+				if parsed, err := time.ParseDuration(s.config.RateLimitWindow); err == nil {
+					window = parsed
+				}
+			}
+			s.rateLimiter = middleware.NewRateLimiter(s.redis, s.config.RateLimitRequests, window, "rate_limit")
+		}
 	} else {
 		s.adminHdlr = post.NewAdminHandler(s.postSvc, nil)
 	}
@@ -107,6 +117,9 @@ func (s *Server) registerRoutes() {
 	}
 
 	posts := v1.Group("/posts")
+	if s.rateLimiter != nil {
+		posts.Use(s.rateLimiter.Middleware())
+	}
 	{
 		posts.GET("", s.postHdlr.ListPosts)
 		posts.GET("/featured", s.postHdlr.ListFeatured)
@@ -129,6 +142,9 @@ func (s *Server) registerRoutes() {
 	}
 
 	chatGroup := v1.Group("/chat")
+	if s.rateLimiter != nil {
+		chatGroup.Use(s.rateLimiter.Middleware())
+	}
 	{
 		chatGroup.POST("/sessions", s.chatHdlr.CreateSession)
 		chatGroup.GET("/sessions/:id", s.chatHdlr.GetSession)
