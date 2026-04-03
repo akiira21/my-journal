@@ -6,8 +6,8 @@
 dockerfilePath = "./Dockerfile"
 
 [deploy]
-# Health check configuration
-healthcheckPath = "/api/health"
+# Health check configuration - checking root path as Next.js has no /api/health endpoint
+healthcheckPath = "/"
 healthcheckTimeout = 100
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
