@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Highlight, themes, type Language } from "prism-react-renderer";
 import { Check, Copy } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 
 interface CodeBlockProps {

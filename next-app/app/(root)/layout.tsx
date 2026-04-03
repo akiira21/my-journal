@@ -7,10 +7,10 @@ export default function RootPagesLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="grid min-h-screen grid-rows-[auto_1fr_auto] bg-background text-foreground pt-12">
+    <div className="flex min-h-dvh flex-col bg-background pt-12 text-foreground">
       <MainNavbar />
 
-      <main className="mx-auto w-full max-w-3xl border-l border-r border-border/70 pb-14 sm:pb-16">
+      <main className="mx-auto flex w-full max-w-3xl flex-1 border-l border-r border-border/70 pb-14 sm:pb-16">
         {children}
       </main>
 
