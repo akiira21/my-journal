@@ -1,0 +1,41 @@
+{
+  "siteName": "Journal",
+  "copyrightName": "Arun Journal",
+  "avatar": "https://avatars.githubusercontent.com/u/135523348?v=4",
+  "navigation": [
+    {
+      "label": "Posts",
+      "href": "/posts"
+    },
+    {
+      "label": "Assistant",
+      "href": "/assistant"
+    },
+    {
+      "label": "About",
+      "href": "/#about"
+    }
+  ],
+  "about": {
+    "name": "Arun Kumar",
+    "expertise": [
+      "Open Source Contributor",
+      "Frontend Engineer",
+      "Backend Engineer"
+    ],
+    "github": "https://github.com/akiira21",
+    "X": "https://x.com/arundotspace",
+    "Instagram": "https://instagram.com/arundotspace",
+    "pronoun": "he/him",
+    "email": "work.arun.space@gmail.com",
+    "location": "Delhi, India",
+    "timezone": "Asia/Kolkata",
+    "description": [
+      "I specialize in frontend engineering with Next.js, React, and Tailwind CSS, and I commonly use shadcn/ui to build clean, accessible interfaces.",
+      "On the backend, I work with Node.js, Express, and Go, and I typically use PostgreSQL and MongoDB for production-ready applications.",
+      "I have a strong foundation in machine learning and deep learning, with hands-on experience implementing research papers in computer vision, including object detection, image super-resolution, and Attention Is All You Need.",
+      "I am deeply interested in practical AI and enjoy building personal projects that turn emerging ideas into useful products."
+    ]
+  },
+  "repo": "https://github.com/akiira21/my-journal"
+}

@@ -1,0 +1,35 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+tmp/
+
+# Test binaries
+*.test
+
+# Output of go coverage
+*.out
+coverage.txt
+
+# Dependency directories
+vendor/
+
+# Go workspace
+go.work
+
+# Environment
+.env
+.env*.local
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Migration files (keep them)
+!migrations/*.sql

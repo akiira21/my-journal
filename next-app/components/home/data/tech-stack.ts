@@ -1,0 +1,28 @@
+import type { TechStack } from "../types/tech-stack";
+
+export const TECH_STACK: TechStack[] = [
+  { key: "typescript", title: "TypeScript", href: "https://www.typescriptlang.org/", categories: ["Language"] },
+  { key: "js", title: "JavaScript", href: "https://developer.mozilla.org/en-US/docs/Web/JavaScript", categories: ["Language"] },
+  { key: "python", title: "Python", href: "https://www.python.org/", categories: ["Language"] },
+  { key: "numpy", title: "NumPy", href: "https://numpy.org/", categories: ["Library"] },
+  { key: "jupyter", title: "Jupyter", href: "https://jupyter.org/", categories: ["Tools"] },
+  { key: "pytorch", title: "PyTorch", href: "https://pytorch.org/", categories: ["Framework"] },
+  { key: "go", title: "Go", href: "https://go.dev/", categories: ["Language"] },
+  { key: "nodejs", title: "Node.js", href: "https://nodejs.org/", categories: ["Runtime Environment"] },
+  { key: "react", title: "React", href: "https://react.dev/", categories: ["Library", "UI Library"] },
+  { key: "nextjs2", title: "Next.js", href: "https://nextjs.org/", categories: ["Framework"] },
+  { key: "tailwindcss", title: "Tailwind CSS", href: "https://tailwindcss.com/", categories: ["Framework"] },
+  { key: "github", title: "GitHub", href: "https://github.com/", categories: ["Version Control"] },
+  { key: "git", title: "Git", href: "https://git-scm.com/", categories: ["Version Control"] },
+  { key: "docker", title: "Docker", href: "https://www.docker.com/", categories: ["Containerization"] },
+  { key: "linux", title: "Linux", href: "https://kernel.org/", categories: ["Platform"] },
+  { key: "archlinux", title: "Arch Linux", href: "https://archlinux.org/", categories: ["Platform"] },
+  { key: "vscode", title: "VS Code", href: "https://code.visualstudio.com/", categories: ["Tools"] },
+  { key: "vim", title: "Vim", href: "https://www.vim.org/", categories: ["Tools"] },
+  { key: "postman", title: "Postman", href: "https://www.postman.com/", categories: ["Tools"] },
+  { key: "fastapi", title: "FastAPI", href: "https://fastapi.tiangolo.com/", categories: ["Framework"] },
+  { key: "mysql", title: "MySQL", href: "https://www.mysql.com/", categories: ["Database"] },
+  { key: "postgresql", title: "PostgreSQL", href: "https://www.postgresql.org/", categories: ["Database"] },
+  { key: "mongodb", title: "MongoDB", href: "https://www.mongodb.com/", categories: ["Database"] },
+  { key: "redis", title: "Redis", href: "https://redis.io/", categories: ["Database"] },
+];
