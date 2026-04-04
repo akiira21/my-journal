@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -23,6 +24,10 @@ func New(ctx context.Context) (*DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse database URL: %w", err)
 	}
+
+	// Fix for Supabase/Railway connection poolers - use describe mode instead of prepared statements
+	// This prevents "prepared statement already exists" errors
+	poolConfig.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeDescribeExec
 
 	poolConfig.MaxConns = 25
 	poolConfig.MinConns = 5
