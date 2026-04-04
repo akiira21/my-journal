@@ -355,7 +355,8 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
                   void onSendMessage();
                 }
               }}
-              disabled={!sessionId || isStreaming}
+              disabled={Boolean(!sessionId || isStreaming)}
+              suppressHydrationWarning
             />
 
             <Button

@@ -83,7 +83,7 @@ export default async function PostsPage(props: { searchParams: SearchParams }) {
         </Suspense>
       </div>
 
-      <div className="border-x border-line px-2 pb-2">
+      <div className="border-x border-line px-2 pb-2 ">
         <PostList posts={data.posts} />
         <PostsPagination currentPage={currentPage} totalPages={totalPages} query={query} />
       </div>

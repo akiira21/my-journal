@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
@@ -60,7 +61,7 @@ func (h *Handler) CreateSession(c *gin.Context) {
 
 	session, err := h.service.CreateSession(c.Request.Context(), sessionID, ipHash)
 	if err != nil {
-		// Debug
+		log.Printf("[CreateSession] error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create session", "details": err.Error()})
 		return
 	}

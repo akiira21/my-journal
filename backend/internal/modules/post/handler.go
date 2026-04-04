@@ -1,6 +1,7 @@
 package post
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -99,6 +100,7 @@ func (h *Handler) GetPost(c *gin.Context) {
 
 	post, content, err := h.service.GetBySlug(c.Request.Context(), slug)
 	if err != nil {
+		log.Printf("[GetPost] error: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
 		return
 	}
@@ -122,6 +124,7 @@ func (h *Handler) ListPosts(c *gin.Context) {
 
 	posts, total, err := h.service.List(c.Request.Context(), pageSize, offset)
 	if err != nil {
+		log.Printf("[ListPosts] error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list posts"})
 		return
 	}

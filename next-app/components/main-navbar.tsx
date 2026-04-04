@@ -24,12 +24,13 @@ function isActivePath(pathname: string, href: string): boolean {
 
 export function MainNavbar() {
   const pathname = usePathname();
-  const isPostPage = pathname.startsWith("/posts/") && pathname.length > 7;
+  const mobileNavigation = personalConfig.navigation.filter((item) => item.href === "/posts" || item.href === "/assistant");
+  const desktopNavigation = personalConfig.navigation.filter((item) => item.href !== "/#about");
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/70 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
-      <div className="mx-auto flex h-12 w-full max-w-3xl items-center justify-between border-l border-r border-border/70 px-3 sm:px-5">
-        <Link href="/" className="flex items-center gap-2 pr-3">
+      <div className="mx-auto flex h-12 w-full max-w-3xl items-center border-l border-r border-border/70 px-2 sm:px-5">
+        <Link href="/" className="mr-2 flex items-center gap-2 pr-1 sm:pr-3">
           <Image
             src="/logo.svg"
             alt="Logo"
@@ -39,10 +40,28 @@ export function MainNavbar() {
             priority
             loading="eager"
           />
-          <span className="font-medium tracking-tight">{personalConfig.siteName}</span>
+          <span className="hidden font-medium tracking-tight sm:inline">{personalConfig.siteName}</span>
         </Link>
+
+        <nav className="flex items-center gap-3 pr-2 sm:hidden">
+          {mobileNavigation.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "font-mono text-xs transition-colors",
+                isActivePath(pathname, item.href)
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
         <nav className="hidden items-center gap-4 pr-3 sm:flex">
-          {personalConfig.navigation.map((item) => (
+          {desktopNavigation.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -61,7 +80,9 @@ export function MainNavbar() {
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           <CommandMenu />
 
-          <GitHubStars repo={personalConfig.repo} />
+          <div className="hidden sm:block">
+            <GitHubStars repo={personalConfig.repo} />
+          </div>
 
           <ModeToggle />
         </div>

@@ -46,8 +46,8 @@ func New(cfg *config.Config, db *database.DB, redis *redis.Client, r2 *storage.R
 	router := gin.New()
 
 	router.Use(middleware.Logger())
+	router.Use(middleware.Recovery())
 	router.Use(middleware.CORS(cfg.ClientURL))
-	router.Use(gin.Recovery())
 
 	srv := &Server{
 		config: cfg,

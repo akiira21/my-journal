@@ -16,10 +16,10 @@ export function PostList({ posts }: PostListProps) {
   }
 
   return (
-    <div className="pt-0">
-      <div className="grid grid-cols-1 border-y border-line sm:grid-cols-2">
+    <div className="mx-auto w-full max-w-full pt-4">
+      <div className="grid grid-cols-1 border-y border-line sm:grid-cols-2 sm:gap-x-3 sm:[&>*:nth-child(odd)]:border-r sm:[&>*:nth-child(odd)]:border-line sm:[&>*:nth-child(odd)]:pr-3 sm:[&>*:nth-child(even)]:border-l sm:[&>*:nth-child(even)]:border-line sm:[&>*:nth-child(even)]:pl-3">
         {posts.map((post, index) => (
-          <PostItem key={post.id} post={post} shouldPreloadImage={index <= 4} />
+          <PostItem key={post.id} post={post} shouldPreloadImage={index === 0} />
         ))}
       </div>
     </div>

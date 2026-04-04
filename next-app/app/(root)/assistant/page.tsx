@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { AssistantChatClient } from "@/components/assistant/chat-client";
 
 const title = "AI Assistant";
-const description = "A blog-aware assistant that answers using your published post knowledge.";
+const description = "An AI assistant that answers questions using knowledge from my published blog posts.";
 
 export const metadata: Metadata = {
   title,

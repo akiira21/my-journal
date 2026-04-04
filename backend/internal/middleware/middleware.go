@@ -1,6 +1,9 @@
 package middleware
 
 import (
+	"log"
+	"net/http"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -17,13 +20,19 @@ func Logger() gin.HandlerFunc {
 		latency := time.Since(start)
 		status := c.Writer.Status()
 
-		gin.DefaultWriter.Write([]byte(
-			"[" + time.Now().Format(time.RFC3339) + "] " +
-				c.Request.Method + " " +
-				path + " " +
-				string(rune(status)) + " " +
-				latency.String() + "\n",
-		))
+		log.Printf("[%s] %s %s %d %v", time.Now().Format(time.RFC3339), c.Request.Method, path, status, latency)
+	}
+}
+
+func Recovery() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Printf("[PANIC] %v\n%s", err, debug.Stack())
+				c.AbortWithStatus(http.StatusInternalServerError)
+			}
+		}()
+		c.Next()
 	}
 }
 
@@ -31,28 +40,35 @@ func CORS(clientURL string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
 
-		allowedOrigin := clientURL
-		if allowedOrigin == "" {
-			allowedOrigin = "http://localhost:3000"
+		// Default allowed origins
+		defaultOrigins := []string{
+			"http://localhost:3000",
+			"http://127.0.0.1:3000",
+			"http://localhost:8080",
 		}
 
-		if origin != "" {
-			// Support comma-separated list of allowed origins
-			allowedOrigins := []string{allowedOrigin}
-			if strings.Contains(allowedOrigin, ",") {
-				allowedOrigins = strings.Split(allowedOrigin, ",")
-				for i := range allowedOrigins {
-					allowedOrigins[i] = strings.TrimSpace(allowedOrigins[i])
+		// Add configured client URL(s)
+		if clientURL != "" {
+			if strings.Contains(clientURL, ",") {
+				for _, u := range strings.Split(clientURL, ",") {
+					defaultOrigins = append(defaultOrigins, strings.TrimSpace(u))
 				}
+			} else {
+				defaultOrigins = append(defaultOrigins, clientURL)
 			}
+		}
 
-			// Check if the request origin is in the allowed list
-			for _, allowed := range allowedOrigins {
-				if origin == allowed {
-					c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-					break
-				}
+		// Check if origin is allowed
+		originAllowed := false
+		for _, allowed := range defaultOrigins {
+			if origin == allowed {
+				originAllowed = true
+				break
 			}
+		}
+
+		if originAllowed && origin != "" {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 		}
 
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -61,7 +77,7 @@ func CORS(clientURL string) gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
 
 		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
+			c.AbortWithStatus(http.StatusNoContent)
 			return
 		}
 

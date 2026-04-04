@@ -103,24 +103,27 @@ export function CommandMenu() {
   const [open, setOpen] = useState(false);
   const [posts, setPosts] = useState<PostSummary[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasLoadedPosts, setHasLoadedPosts] = useState(false);
 
-  // Fetch posts when menu opens
-  useEffect(() => {
-    if (open && posts.length === 0) {
-      setIsLoading(true);
-      apiFetch<PostsPageResponse>("/posts?page=1&page_size=50")
-        .then((data) => {
-          setPosts(data.posts || []);
-        })
-        .catch(() => {
-          // Silently fail - posts just won't show
-          setPosts([]);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+  const loadPosts = useCallback(() => {
+    if (hasLoadedPosts || isLoading) {
+      return;
     }
-  }, [open, posts.length]);
+
+    setIsLoading(true);
+    apiFetch<PostsPageResponse>("/posts?page=1&page_size=50")
+      .then((data) => {
+        setPosts(data.posts || []);
+        setHasLoadedPosts(true);
+      })
+      .catch(() => {
+        // Silently fail - posts just won't show
+        setPosts([]);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [hasLoadedPosts, isLoading]);
 
   const postLinks = useMemo<CommandLinkItem[]>(() => {
     return posts.map((post) => ({
@@ -153,6 +156,22 @@ export function CommandMenu() {
     [router],
   );
 
+  const onOpenMenu = useCallback(() => {
+    setOpen(true);
+    loadPosts();
+  }, [loadPosts]);
+
+  const onOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      setOpen(nextOpen);
+
+      if (nextOpen) {
+        loadPosts();
+      }
+    },
+    [loadPosts],
+  );
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const isK = event.key.toLowerCase() === "k";
@@ -173,14 +192,24 @@ export function CommandMenu() {
         variant="outline"
         size="sm"
         className="hidden gap-2 font-mono text-xs text-muted-foreground sm:inline-flex"
-        onClick={() => setOpen(true)}
+        onClick={onOpenMenu}
       >
         <SearchIcon className="size-3.5" />
         Search
         <CommandShortcut className="tracking-normal">Ctrl K</CommandShortcut>
       </Button>
 
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <Button
+        variant="outline"
+        size="icon"
+        className="size-8 sm:hidden"
+        onClick={onOpenMenu}
+        aria-label="Open command menu"
+      >
+        <SearchIcon className="size-4" />
+      </Button>
+
+      <CommandDialog open={open} onOpenChange={onOpenChange}>
         <Command>
           <CommandInput placeholder="Type a command or search..." />
           <CommandList>

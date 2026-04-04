@@ -47,7 +47,6 @@ export function PostItem({ post, shouldPreloadImage }: PostItemProps) {
       href={`/posts/${post.slug}`}
       className={cn(
         "group flex h-full flex-col gap-2 border-b border-line p-2 transition-[background-color] ease-out hover:bg-accent/35",
-        "sm:nth-[2n+1]:border-r",
       )}
     >
       <div className="relative select-none">
