@@ -1,7 +1,7 @@
 import { apiFetch } from "@/lib/api";
 import type { PostsPageResponse } from "@/lib/blog-types";
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://arun.space";
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL
 
 export async function GET() {
   try {

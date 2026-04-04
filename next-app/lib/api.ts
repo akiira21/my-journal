@@ -1,23 +1,26 @@
 import axios, { type AxiosRequestConfig } from "axios";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+function getApiBaseUrl(): string {
+  if (typeof window === "undefined") {
+    return process.env.API_URL ?? process.env.INTERNAL_API_URL ?? "http://localhost:8080";
+  }
 
-const apiClient = axios.create({
-  baseURL: new URL("/api/v1", API_BASE_URL).toString(),
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+  return process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+}
 
 function toApiUrl(path: string): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return new URL(`/api/v1${normalizedPath}`, API_BASE_URL).toString();
+  return new URL(`/api/v1${normalizedPath}`, getApiBaseUrl()).toString();
 }
 
 export async function apiFetch<T>(path: string, init?: AxiosRequestConfig): Promise<T> {
-  const response = await apiClient.request<T>({
-    url: path,
+  const response = await axios.request<T>({
+    url: toApiUrl(path),
     ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
+    },
   });
 
   return response.data;
