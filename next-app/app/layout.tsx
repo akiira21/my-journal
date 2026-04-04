@@ -16,9 +16,48 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const siteTitle = "Arun Journal";
+const siteDescription = "A journal of things I learn and build.";
+
 export const metadata: Metadata = {
-  title: "Arun Journal",
-  description: "A journal of things I learn and build.",
+  metadataBase: new URL(appUrl),
+  title: siteTitle,
+  description: siteDescription,
+  keywords: [
+    "Arun Kumar",
+    "journal",
+    "blog",
+    "software engineering",
+    "frontend",
+    "backend",
+    "Next.js",
+    "Go",
+    "AI",
+    "RAG",
+  ],
+  openGraph: {
+    title: siteTitle,
+    description: siteDescription,
+    url: appUrl,
+    siteName: siteTitle,
+    type: "website",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Arun Journal",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
+    images: ["/og.png"],
+    creator: "@arundotspace",
+  },
 };
 
 export default function RootLayout({

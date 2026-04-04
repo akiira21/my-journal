@@ -78,7 +78,8 @@ func (s *Service) PrepareChatContext(ctx context.Context, req ChatRequest) (*Cha
 		return nil, fmt.Errorf("session not found: %w", err)
 	}
 
-	queryEmbedding, err := s.openai.GenerateEmbedding(ctx, req.Message)
+	enrichedQuery := s.buildContextualQuery(session.Messages, req.Message)
+	queryEmbedding, err := s.openai.GenerateEmbedding(ctx, enrichedQuery)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate query embedding: %w", err)
 	}
@@ -133,8 +134,16 @@ func (s *Service) PrepareChatContext(ctx context.Context, req ChatRequest) (*Cha
 		}
 	}
 
+	if !isRelated && len(session.Messages) > 0 {
+		postContents = s.getRecentPostContexts(ctx, session.Messages)
+		if len(postContents) > 0 {
+			isRelated = true
+		}
+	}
+
 	contextText := s.buildContext(postContents)
-	systemPrompt := s.buildSystemPrompt(contextText, isRelated)
+	isNewSession := len(session.Messages) == 0
+	systemPrompt := s.buildSystemPrompt(contextText, isRelated, isNewSession)
 
 	return &ChatContext{
 		Session:        session,
@@ -238,11 +247,12 @@ func (s *Service) buildContext(postContents []PostContent) string {
 	return sb.String()
 }
 
-func (s *Service) buildSystemPrompt(context string, isRelated bool) string {
+func (s *Service) buildSystemPrompt(context string, isRelated bool, isNewSession bool) string {
 	if !isRelated {
-		return fmt.Sprintf(`You are %s, Arun Kumar's personal AI assistant. You have a warm, anime-inspired personality that makes learning enjoyable.
+		if isNewSession {
+			return fmt.Sprintf(`You are %s, Arun Kumar's personal AI assistant. You have a warm, anime-inspired personality that makes learning enjoyable.
 
-The user's query doesn't seem to match any blog posts right now. Respond in a friendly way:
+I don't have relevant blog posts for this topic. Please respond in a friendly way:
 
 1. Introduce yourself as %s, Arun Kumar's personal assistant ~
 2. Gently explain you can help with topics covered in the blog posts
@@ -250,6 +260,11 @@ The user's query doesn't seem to match any blog posts right now. Respond in a fr
 4. Offer to answer any questions about the blog's content
 
 Keep it light and friendly, but don't make things up. Stay focused on the blog topics.`, s.assistantName, s.assistantName)
+		}
+
+		return fmt.Sprintf(`You are %s, Arun Kumar's personal AI assistant. You have a warm, anime-inspired personality.
+
+I don't have relevant blog posts for this topic. Let the user know politely and suggest they explore blog topics you can help with. Keep it brief and friendly.`, s.assistantName)
 	}
 
 	return fmt.Sprintf(`You are %s, Arun Kumar's personal AI assistant. You help visitors learn about the topics covered in the blog posts with a warm, anime-inspired personality.
@@ -277,4 +292,71 @@ Personality Notes:
 - Feel free to use a warm, helpful tone (e.g., "I'd be happy to help ~", "Let me explain that for you")
 - Remember you're Arun Kumar's personal assistant, here to help visitors learn
 - Stay professional while being approachable ~`, s.assistantName, context)
+}
+
+func (s *Service) buildContextualQuery(messages []Message, currentQuery string) string {
+	if len(messages) == 0 {
+		return currentQuery
+	}
+
+	recentMessages := messages
+	if len(messages) > 4 {
+		recentMessages = messages[len(messages)-4:]
+	}
+
+	var parts []string
+	for _, m := range recentMessages {
+		if m.Role == "user" || m.Role == "assistant" {
+			parts = append(parts, m.Content)
+		}
+	}
+	parts = append(parts, currentQuery)
+
+	return strings.Join(parts, " ")
+}
+
+func (s *Service) getRecentPostContexts(ctx context.Context, messages []Message) []PostContent {
+	for i := len(messages) - 1; i >= 0; i-- {
+		if messages[i].Role == "user" {
+			prevEmbedding, err := s.openai.GenerateEmbedding(ctx, messages[i].Content)
+			if err != nil {
+				continue
+			}
+
+			results, err := s.postSvc.SearchSimilar(ctx, prevEmbedding, 3)
+			if err != nil {
+				continue
+			}
+
+			if len(results) > 0 && results[0].Score >= MinSimilarityThreshold {
+				var postContents []PostContent
+				seenPosts := make(map[uuid.UUID]bool)
+				for _, r := range results {
+					if r.Score >= MinSimilarityThreshold && !seenPosts[r.Post.ID] {
+						seenPosts[r.Post.ID] = true
+						postDetail, content, err := s.postSvc.GetBySlug(ctx, r.Post.Slug)
+						if err != nil {
+							continue
+						}
+						postContents = append(postContents, PostContent{
+							Post: &post.PostSummary{
+								ID:          postDetail.ID,
+								Slug:        postDetail.Slug,
+								Title:       postDetail.Title,
+								Description: postDetail.Description,
+								Categories:  postDetail.Categories,
+								Tags:        postDetail.Tags,
+								Featured:    postDetail.Featured,
+								ViewCount:   postDetail.ViewCount,
+							},
+							Content: *content,
+							Score:   r.Score,
+						})
+					}
+				}
+				return postContents
+			}
+		}
+	}
+	return nil
 }
