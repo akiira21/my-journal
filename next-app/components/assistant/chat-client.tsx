@@ -132,7 +132,7 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
       try {
         const stored = window.localStorage.getItem(SESSION_STORAGE_KEY);
 
-        const session = await apiFetch<{ session_id: string }>("/chat/sessions", {
+        const session = await apiFetch<ChatSessionResponse>("/chat/sessions", {
           method: "POST",
           data: stored ? { session_id: stored } : {},
         });
@@ -141,10 +141,8 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
         setSessionId(nextSessionId);
         window.localStorage.setItem(SESSION_STORAGE_KEY, nextSessionId);
 
-        const existing = await apiFetch<ChatSessionResponse>(`/chat/sessions/${nextSessionId}`).catch(() => null);
-
-        if (existing) {
-          setMessages(toUiMessages(existing.messages));
+        if (session.messages && session.messages.length > 0) {
+          setMessages(toUiMessages(session.messages));
         }
       } catch {
         setError("Failed to initialize assistant session.");

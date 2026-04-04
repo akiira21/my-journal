@@ -101,6 +101,7 @@ func (s *Service) GetBySlug(ctx context.Context, slug string) (*Post, *string, e
 
 	content, err := s.GetContent(ctx, post.ContentURL)
 	if err != nil {
+		log.Printf("[PostService] GetContent error for %s: %v", slug, err)
 		return post, nil, err
 	}
 

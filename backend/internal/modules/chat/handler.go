@@ -26,7 +26,8 @@ type createSessionRequest struct {
 }
 
 type createSessionResponse struct {
-	SessionID string `json:"session_id"`
+	SessionID string    `json:"session_id"`
+	Messages  []Message `json:"messages"`
 }
 
 type chatRequest struct {
@@ -68,6 +69,7 @@ func (h *Handler) CreateSession(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, createSessionResponse{
 		SessionID: session.SessionID,
+		Messages:  session.Messages,
 	})
 }
 

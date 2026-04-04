@@ -145,6 +145,7 @@ func (h *Handler) ListFeatured(c *gin.Context) {
 
 	posts, err := h.service.ListFeatured(c.Request.Context(), limit)
 	if err != nil {
+		log.Printf("[ListFeatured] error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list featured posts"})
 		return
 	}
