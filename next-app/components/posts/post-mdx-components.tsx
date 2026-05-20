@@ -14,20 +14,20 @@ function OrderedList({ items, children }: OrderedListProps) {
   const normalizedItems = Array.isArray(items) ? items : [];
 
   return (
-    <div className="my-4 border border-line rounded-md overflow-hidden">
-      <ol className="divide-y divide-line">
-        {normalizedItems.length > 0
-          ? normalizedItems.map((item, index) => (
-              <li key={`ordered-${index}-${String(item)}`} className="flex items-start gap-3 px-4 py-3 text-sm leading-6">
-                <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded bg-muted font-mono text-xs font-medium text-muted-foreground">
-                  {index + 1}
-                </span>
-                <span className="text-foreground/90 pt-0.5">{item}</span>
-              </li>
-            ))
-          : children}
-      </ol>
-    </div>
+    <ol className="my-5 ml-0 list-none space-y-2">
+      {normalizedItems.length > 0
+        ? normalizedItems.map((item, index) => (
+            <li key={`ordered-${index}-${String(item)}`} className="flex items-start gap-3 text-[0.9375rem] leading-[1.75] text-foreground/75">
+              <span
+                className="flex-shrink-0 mt-0.5 w-5 h-5 flex items-center justify-center rounded-sm bg-muted font-mono text-[11px] font-medium text-muted-foreground"
+              >
+                {index + 1}
+              </span>
+              <span>{item}</span>
+            </li>
+          ))
+        : children}
+    </ol>
   );
 }
 
@@ -40,18 +40,16 @@ function UnorderedList({ items, children }: UnorderedListProps) {
   const normalizedItems = Array.isArray(items) ? items : [];
 
   return (
-    <div className="my-4 border border-line rounded-md overflow-hidden">
-      <ul className="divide-y divide-line">
-        {normalizedItems.length > 0
-          ? normalizedItems.map((item, index) => (
-              <li key={`unordered-${index}-${String(item)}`} className="flex items-start gap-3 px-4 py-3 text-sm leading-6">
-                <span className="flex-shrink-0 w-1.5 h-1.5 mt-2 rounded-full bg-primary/60" />
-                <span className="text-foreground/90">{item}</span>
-              </li>
-            ))
-          : children}
-      </ul>
-    </div>
+    <ul className="my-5 ml-0 list-none space-y-2">
+      {normalizedItems.length > 0
+        ? normalizedItems.map((item, index) => (
+            <li key={`unordered-${index}-${String(item)}`} className="flex items-start gap-3 text-[0.9375rem] leading-[1.75] text-foreground/75">
+              <span className="flex-shrink-0 mt-[0.55rem] h-[5px] w-[5px] rounded-full bg-foreground/30" />
+              <span>{item}</span>
+            </li>
+          ))
+        : children}
+    </ul>
   );
 }
 
@@ -220,15 +218,15 @@ export const postMdxComponents = {
   h1: ({ children }: { children: ReactNode }) => {
     const id = generateId(getTextContent(children));
     return (
-      <TypographyH3 id={id} className="mt-10 mb-4 pb-2 border-b border-line">
+      <h1 id={id} className="mt-14 mb-6 text-[1.75rem] font-bold leading-tight tracking-tight text-foreground">
         {children}
-      </TypographyH3>
+      </h1>
     );
   },
   h2: ({ children }: { children: ReactNode }) => {
     const id = generateId(getTextContent(children));
     return (
-      <h2 id={id} className="mt-10 mb-4 text-xl leading-tight font-semibold tracking-tight pb-2 border-b border-line">
+      <h2 id={id} className="mt-12 mb-5 text-xl font-semibold leading-snug tracking-tight text-foreground">
         {children}
       </h2>
     );
@@ -236,38 +234,24 @@ export const postMdxComponents = {
   h3: ({ children }: { children: ReactNode }) => {
     const id = generateId(getTextContent(children));
     return (
-      <h3 id={id} className="mt-8 mb-3 text-lg leading-tight font-medium tracking-tight text-foreground/90">
+      <h3 id={id} className="mt-10 mb-4 text-lg font-semibold leading-snug tracking-tight text-foreground/90">
         {children}
       </h3>
     );
   },
   p: ({ children }: { children: ReactNode }) => (
-    <p className="my-4 text-sm leading-7 text-foreground/90">
+    <p className="my-5 text-[1rem] leading-[1.85] text-foreground/80">
       {children}
     </p>
   ),
   blockquote: ({ children }: { children: ReactNode }) => (
-    <blockquote className="my-6 border-l-4 border-primary/30 bg-muted/30 pl-4 pr-4 py-3 text-sm text-foreground/80 italic">
+    <blockquote className="pull-quote">
       {children}
     </blockquote>
   ),
-  ul: ({ children }: { children: ReactNode }) => (
-    <ul className="my-4 ml-5 space-y-2 text-sm leading-7">
-      {children}
-    </ul>
+  hr: () => (
+    <div className="section-divider" aria-hidden="true" />
   ),
-  ol: ({ children }: { children: ReactNode }) => (
-    <ol className="my-4 ml-5 space-y-2 text-sm leading-7">
-      {children}
-    </ol>
-  ),
-  li: ({ children }: { children: ReactNode }) => (
-    <li className="flex items-start gap-2">
-      <span className="mt-2 w-1 h-1 rounded-full bg-primary/60 flex-shrink-0" />
-      <span className="text-foreground/90">{children}</span>
-    </li>
-  ),
-  hr: () => <div className="my-8 border-t border-line" />,
   a: ({ children, href }: { children: ReactNode; href?: string }) => {
     const safeHref = href ?? "#";
     const isExternal = /^https?:\/\//i.test(safeHref);

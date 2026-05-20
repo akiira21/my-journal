@@ -171,8 +171,8 @@ export function TableOfContent({ sections }: TableOfContentProps) {
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 toc-container">
       <div
         className={cn(
-          "bg-background/95 backdrop-blur-xl border border-line shadow-2xl overflow-hidden transition-all duration-300 ease-out",
-          "dark:bg-background/80",
+          "bg-background border border-foreground/20 shadow-2xl overflow-hidden transition-all duration-300 ease-out",
+          "dark:bg-background dark:border-foreground/25",
           isExpanded ? "w-[380px] rounded-xl" : "rounded-2xl"
         )}
         style={{
@@ -185,22 +185,22 @@ export function TableOfContent({ sections }: TableOfContentProps) {
         <div
           onClick={() => setIsExpanded(true)}
           className={cn(
-            "absolute inset-0 px-4 py-3 cursor-pointer hover:bg-accent/50 transition-colors flex items-center",
+            "absolute inset-0 px-4 py-3 cursor-pointer hover:bg-muted transition-colors flex items-center",
             isExpanded ? "opacity-0 pointer-events-none" : "opacity-100"
           )}
         >
           <div className="flex items-center space-x-3 w-full min-w-0">
-            <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 animate-pulse" />
-            <span className="text-sm font-medium truncate flex-1 min-w-0">
+            <div className="w-2 h-2 bg-foreground/70 rounded-full flex-shrink-0 animate-pulse" />
+            <span className="text-sm font-semibold text-foreground truncate flex-1 min-w-0">
               {displaySection ? formatTitle(displaySection.title) : "Table of Contents"}
             </span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider flex-shrink-0">
+            <span className="text-[10px] text-foreground/50 uppercase tracking-wider flex-shrink-0 font-medium">
               Press T
             </span>
             <svg
               viewBox="0 0 16 16"
               fill="currentColor"
-              className="w-4 h-4 text-muted-foreground flex-shrink-0"
+              className="w-4 h-4 text-foreground/50 flex-shrink-0"
             >
               <path d="M3.5 6.5L8 11L12.5 6.5L11.5 5.5L8 9L4.5 5.5L3.5 6.5Z" />
             </svg>
@@ -215,11 +215,11 @@ export function TableOfContent({ sections }: TableOfContentProps) {
           )}
         >
           {/* Header */}
-          <div className="flex items-center justify-between mb-3 flex-shrink-0 border-b border-line pb-3">
-            <h3 className="font-semibold text-sm">Table of Contents</h3>
+          <div className="flex items-center justify-between mb-3 flex-shrink-0 border-b border-foreground/10 pb-3">
+            <h3 className="font-semibold text-sm text-foreground">Table of Contents</h3>
             <button
               onClick={() => setIsExpanded(false)}
-              className="w-6 h-6 text-muted-foreground hover:text-foreground transition-colors rounded hover:bg-accent flex items-center justify-center"
+              className="w-6 h-6 text-foreground/60 hover:text-foreground transition-colors rounded hover:bg-muted flex items-center justify-center"
               aria-label="Close table of contents"
             >
               <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
@@ -229,7 +229,7 @@ export function TableOfContent({ sections }: TableOfContentProps) {
           </div>
 
           {/* Instructions */}
-          <p className="text-muted-foreground text-xs mb-3 flex-shrink-0">
+          <p className="text-foreground/50 text-xs mb-3 flex-shrink-0">
             Use ↑↓ arrows to navigate • Enter to select • Esc to close
           </p>
 
@@ -244,28 +244,28 @@ export function TableOfContent({ sections }: TableOfContentProps) {
                   className={cn(
                     "w-full text-left px-3 py-2 transition-colors flex items-center space-x-3 group rounded-md",
                     activeSection === section.id
-                      ? "bg-accent text-accent-foreground"
+                      ? "bg-muted text-foreground"
                       : selectedIndex === index
                       ? "bg-muted"
-                      : "hover:bg-accent/50"
+                      : "hover:bg-muted"
                   )}
                 >
                   <div
                     className={cn(
                       "w-1.5 h-1.5 rounded-full flex-shrink-0",
                       activeSection === section.id
-                        ? "bg-primary"
-                        : "bg-muted-foreground/40 group-hover:bg-muted-foreground/60"
+                        ? "bg-foreground"
+                        : "bg-foreground/30 group-hover:bg-foreground/50"
                     )}
                   />
-                  <span className="text-sm flex-1 text-left leading-tight min-w-0 break-words">
+                  <span className="text-sm flex-1 text-left leading-tight min-w-0 break-words text-foreground/80">
                     {section.title}
                   </span>
                   {activeSection === section.id && (
                     <svg
                       viewBox="0 0 16 16"
                       fill="currentColor"
-                      className="w-3 h-3 flex-shrink-0"
+                      className="w-3 h-3 flex-shrink-0 text-foreground"
                     >
                       <path d="M8 3.5L12.5 8L8 12.5L7.086 11.586L10.172 8.5H3.5V7.5H10.172L7.086 4.414L8 3.5Z" />
                     </svg>
@@ -276,8 +276,8 @@ export function TableOfContent({ sections }: TableOfContentProps) {
           </div>
 
           {/* Footer */}
-          <div className="mt-3 pt-3 border-t border-line flex-shrink-0">
-            <p className="text-muted-foreground text-xs text-center">
+          <div className="mt-3 pt-3 border-t border-foreground/10 flex-shrink-0">
+            <p className="text-foreground/40 text-xs text-center font-medium">
               {sections.length} sections
             </p>
           </div>

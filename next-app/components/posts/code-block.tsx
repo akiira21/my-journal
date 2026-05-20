@@ -112,59 +112,55 @@ function CodeBlock({ children, className }: CodeBlockProps) {
     setTimeout(() => setHasCopied(false), 2000);
   };
 
-  // Use dark theme by default, or light theme if explicitly in light mode
   const theme = mounted && resolvedTheme === "light" ? customLightTheme : customDarkTheme;
 
   return (
-    <div className="group relative my-6 border border-line">
-      {/* Header with language and copy button - no rounded corners */}
-      <div className="flex items-center justify-between border-b border-line bg-muted/40 px-4 py-2">
-        <span className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-          {language ?? "CODE"}
-        </span>
+    <div className="code-journal group relative my-8">
+      {/* Journal-style header */}
+      <div className="flex items-center justify-between border-b border-line/60 bg-muted/30 px-4 py-2.5">
+        <div className="flex items-center gap-2.5">
+          <span className="h-2 w-2 rounded-full bg-muted-foreground/20" />
+          <span
+            className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60"
+          >
+            {language ?? "text"}
+          </span>
+        </div>
         <button
           onClick={copyToClipboard}
-          className="flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
+          className="flex items-center gap-1.5 text-muted-foreground/50 transition-colors hover:text-foreground/70"
           aria-label={hasCopied ? "Copied!" : "Copy code"}
         >
           {hasCopied ? (
-            <>
-              <Check className="h-3.5 w-3.5 text-green-500" />
-              <span className="font-mono text-[10px] uppercase tracking-wider">Copied</span>
-            </>
+            <Check className="h-3 w-3 text-emerald-500" />
           ) : (
-            <>
-              <Copy className="h-3.5 w-3.5" />
-              <span className="font-mono text-[10px] uppercase tracking-wider opacity-0 transition-opacity group-hover:opacity-100">
-                Copy
-              </span>
-            </>
+            <Copy className="h-3 w-3" />
           )}
         </button>
       </div>
 
-      {/* Code with syntax highlighting - no rounded corners */}
+      {/* Code body */}
       <div className="relative">
         <Highlight theme={theme} code={code} language={normalizedLang}>
           {({ className: highlightClassName, style, tokens, getLineProps, getTokenProps }) => (
             <pre
               className={cn(
                 highlightClassName,
-                "overflow-x-auto p-4 text-xs leading-6 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20"
+                "overflow-x-auto p-4 text-[13px] leading-[1.7] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/15"
               )}
               style={{
                 ...style,
-                backgroundColor: "hsl(var(--muted))",
+                backgroundColor: "transparent",
                 margin: 0,
               }}
             >
               {tokens.map((line, i) => (
                 <div key={i} {...getLineProps({ line })} className="table-row">
-                  {/* Line numbers */}
-                  <span className="table-cell select-none pr-4 text-right font-mono text-[10px] text-muted-foreground/40 w-8">
+                  <span
+                    className="table-cell select-none pr-5 text-right font-mono text-[11px] tabular-nums text-muted-foreground/25 w-10"
+                  >
                     {i + 1}
                   </span>
-                  {/* Code line */}
                   <span className="table-cell">
                     {line.map((token, key) => (
                       <span key={key} {...getTokenProps({ token })} />
@@ -180,10 +176,12 @@ function CodeBlock({ children, className }: CodeBlockProps) {
   );
 }
 
-// Inline code component - sharp edges
+// Inline code — academic style
 function InlineCode({ children }: { children: React.ReactNode }) {
   return (
-    <code className="border border-line bg-muted/50 px-1.5 py-0.5 font-mono text-[0.8rem]">
+    <code
+      className="rounded-sm bg-muted/60 px-[0.25em] py-[0.1em] font-mono text-[0.85em] text-foreground/80"
+    >
       {children}
     </code>
   );
