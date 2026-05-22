@@ -10,6 +10,7 @@ import (
 	"github.com/akiira21/my-journal-backend/internal/middleware"
 	"github.com/akiira21/my-journal-backend/internal/modules/chat"
 	"github.com/akiira21/my-journal-backend/internal/modules/post"
+	"github.com/akiira21/my-journal-backend/internal/pkg/cache"
 	"github.com/akiira21/my-journal-backend/internal/pkg/database"
 	"github.com/akiira21/my-journal-backend/internal/pkg/openai"
 	"github.com/akiira21/my-journal-backend/internal/pkg/queue"
@@ -66,7 +67,8 @@ func New(cfg *config.Config, db *database.DB, redis *redis.Client, r2 *storage.R
 
 func (s *Server) initModules() {
 	s.postRepo = post.NewRepository(s.db)
-	s.postSvc = post.NewService(s.postRepo, s.r2)
+	postCache := post.NewPostCache(cache.New(s.redis, "post"))
+	s.postSvc = post.NewService(s.postRepo, s.r2, postCache)
 	s.postHdlr = post.NewHandler(s.postSvc)
 
 	if s.redis != nil {

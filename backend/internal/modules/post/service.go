@@ -286,6 +286,14 @@ func (s *Service) Create(ctx context.Context, input CreatePostInput) (*Post, err
 		return nil, err
 	}
 
+	// Invalidate list and search caches so new post appears
+	if cacheErr := s.cache.InvalidateLists(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateLists error: %v", cacheErr)
+	}
+	if cacheErr := s.cache.InvalidateSearch(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateSearch error: %v", cacheErr)
+	}
+
 	return post, nil
 }
 
@@ -326,7 +334,23 @@ func (s *Service) Update(ctx context.Context, id uuid.UUID, input UpdatePostInpu
 		updates["is_archived"] = *input.IsArchived
 	}
 
-	return s.repo.Update(ctx, id, updates)
+	updated, err := s.repo.Update(ctx, id, updates)
+	if err != nil {
+		return nil, err
+	}
+
+	// Invalidate post-specific and list caches
+	if cacheErr := s.cache.InvalidatePost(ctx, updated.Slug); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidatePost error for %s: %v", updated.Slug, cacheErr)
+	}
+	if cacheErr := s.cache.InvalidateLists(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateLists error: %v", cacheErr)
+	}
+	if cacheErr := s.cache.InvalidateSearch(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateSearch error: %v", cacheErr)
+	}
+
+	return updated, nil
 }
 
 func (s *Service) Delete(ctx context.Context, id uuid.UUID) error {
@@ -340,11 +364,46 @@ func (s *Service) Delete(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 
-	return s.repo.Delete(ctx, id)
+	if err := s.repo.Delete(ctx, id); err != nil {
+		return err
+	}
+
+	// Invalidate caches
+	if cacheErr := s.cache.InvalidatePost(ctx, post.Slug); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidatePost error for %s: %v", post.Slug, cacheErr)
+	}
+	if cacheErr := s.cache.InvalidateLists(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateLists error: %v", cacheErr)
+	}
+	if cacheErr := s.cache.InvalidateSearch(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateSearch error: %v", cacheErr)
+	}
+
+	return nil
 }
 
 func (s *Service) Archive(ctx context.Context, id uuid.UUID) error {
-	return s.repo.Archive(ctx, id)
+	post, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := s.repo.Archive(ctx, id); err != nil {
+		return err
+	}
+
+	// Invalidate caches
+	if cacheErr := s.cache.InvalidatePost(ctx, post.Slug); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidatePost error for %s: %v", post.Slug, cacheErr)
+	}
+	if cacheErr := s.cache.InvalidateLists(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateLists error: %v", cacheErr)
+	}
+	if cacheErr := s.cache.InvalidateSearch(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateSearch error: %v", cacheErr)
+	}
+
+	return nil
 }
 
 func (s *Service) IncrementViewCount(ctx context.Context, id uuid.UUID) error {
