@@ -1,6 +1,7 @@
 package post
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -94,6 +95,10 @@ type searchRequest struct {
 	Offset int    `form:"offset"`
 }
 
+func setCacheHeaders(c *gin.Context, maxAge time.Duration) {
+	c.Header("Cache-Control", fmt.Sprintf("public, s-maxage=%d, stale-while-revalidate=86400", int(maxAge.Seconds())))
+}
+
 func (h *Handler) GetPost(c *gin.Context) {
 	slug := c.Param("slug")
 	includeContent := c.Query("content") == "true"
@@ -110,6 +115,7 @@ func (h *Handler) GetPost(c *gin.Context) {
 		response.Content = content
 	}
 
+	setCacheHeaders(c, 1*time.Hour)
 	c.JSON(http.StatusOK, response)
 }
 
@@ -129,6 +135,7 @@ func (h *Handler) ListPosts(c *gin.Context) {
 		return
 	}
 
+	setCacheHeaders(c, 15*time.Minute)
 	c.JSON(http.StatusOK, listResponse{
 		Posts:    toPostSummariesResponse(posts),
 		Total:    total,
@@ -150,6 +157,7 @@ func (h *Handler) ListFeatured(c *gin.Context) {
 		return
 	}
 
+	setCacheHeaders(c, 15*time.Minute)
 	c.JSON(http.StatusOK, toPostSummariesResponse(posts))
 }
 
@@ -169,6 +177,7 @@ func (h *Handler) ListByCategory(c *gin.Context) {
 		return
 	}
 
+	setCacheHeaders(c, 15*time.Minute)
 	c.JSON(http.StatusOK, toPostSummariesResponse(posts))
 }
 
@@ -188,6 +197,7 @@ func (h *Handler) ListByTag(c *gin.Context) {
 		return
 	}
 
+	setCacheHeaders(c, 15*time.Minute)
 	c.JSON(http.StatusOK, toPostSummariesResponse(posts))
 }
 
@@ -211,6 +221,7 @@ func (h *Handler) Search(c *gin.Context) {
 		return
 	}
 
+	setCacheHeaders(c, 5*time.Minute)
 	c.JSON(http.StatusOK, toPostSummariesResponse(posts))
 }
 
@@ -354,6 +365,7 @@ func (h *Handler) GetRelated(c *gin.Context) {
 		return
 	}
 
+	setCacheHeaders(c, 30*time.Minute)
 	c.JSON(http.StatusOK, toRelatedPostsResponse(results))
 }
 
