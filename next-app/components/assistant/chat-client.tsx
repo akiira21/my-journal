@@ -144,8 +144,12 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
         if (session.messages && session.messages.length > 0) {
           setMessages(toUiMessages(session.messages));
         }
-      } catch {
-        setError("Failed to initialize assistant session.");
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Failed to initialize assistant session.",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -263,8 +267,12 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
           }
         }
       }
-    } catch {
-      setError("Failed to receive assistant response.");
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to receive assistant response.",
+      );
     } finally {
       setIsStreaming(false);
     }

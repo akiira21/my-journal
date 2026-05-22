@@ -153,7 +153,7 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
         } as React.CSSProperties}
       >
         {/* Minimal back link */}
-        <div className="px-6 pt-8 pb-4">
+        <div className="px-6 pt-6 pb-2">
           <Link
             href="/posts"
             className="group inline-flex items-center gap-1.5 text-[13px] text-muted-foreground/70 transition-colors hover:text-foreground"
@@ -164,10 +164,10 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
         </div>
 
         {/* Magazine Hero Header */}
-        <header className="px-6 pb-10 pt-2">
+        <header className="px-6 pb-7 pt-1">
           {/* Category as journal section label */}
           {post.categories && post.categories.length > 0 && (
-            <div className="mb-6">
+            <div className="mb-4">
               <span
                 className="inline-block border-b-2 border-primary/30 pb-1 font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-primary/70"
               >
@@ -178,7 +178,7 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
 
           {/* Title — large, editorial */}
           <h1
-            className="text-balance text-[2.25rem] font-bold leading-[1.1] tracking-tight text-foreground sm:text-[2.75rem]"
+            className="text-balance text-[2rem] font-bold leading-[1.1] tracking-tight text-foreground sm:text-[2.4rem]"
             style={{ fontFamily: "var(--font-post-heading), Georgia, serif" }}
           >
             {post.title}
@@ -186,13 +186,13 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
 
           {/* Subtitle / description */}
           {post.description && (
-            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground/80">
+            <p className="mt-3.5 max-w-2xl text-base leading-relaxed text-muted-foreground/80">
               {post.description}
             </p>
           )}
 
           {/* Academic-style metadata row */}
-          <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line pt-5 text-[13px] text-muted-foreground/70">
+          <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line pt-4 text-[13px] text-muted-foreground/70">
             <div className="flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5" />
               <span className="font-mono">{formatDate(post.published_at)}</span>
@@ -206,13 +206,13 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
         </header>
 
         {/* Content with magazine styling */}
-        <div className="px-6 pb-16">
+        <div className="px-6 pb-12">
           <div className="drop-cap prose-magazine">{content}</div>
         </div>
 
         {/* Tags — academic footnote style */}
         {post.tags && post.tags.length > 0 && (
-          <div className="mx-6 mb-10 border-t border-line pt-5">
+          <div className="mx-6 mb-8 border-t border-line pt-4">
             <div className="flex flex-wrap items-center gap-2">
               <Tag className="h-3 w-3 text-muted-foreground/40" />
               {post.tags.map((tag, i) => (
@@ -233,22 +233,22 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
 
         {/* Related Posts — journal references style */}
         {relatedPosts.length > 0 && (
-          <div className="mx-6 mb-10 border-t border-line pt-6">
+          <div className="mx-6 mb-8 border-t border-line pt-5">
             <h2
-              className="mb-4 font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60"
+              className="mb-3 font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60"
             >
               Related Reading
             </h2>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
               {relatedPosts.map((related) => (
                 <Link
                   key={related.id}
                   href={`/posts/${related.slug}`}
-                  className="group flex items-start gap-3 py-2 transition-colors"
+                  className="group flex items-start gap-3 py-1.5 transition-colors"
                 >
                   <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-primary/40 transition-colors group-hover:bg-primary" />
                   <div>
-                    <span className="text-[15px] font-medium text-foreground/85 transition-colors group-hover:text-foreground">
+                    <span className="text-[14px] font-medium text-foreground/85 transition-colors group-hover:text-foreground">
                       {related.title}
                     </span>
                     {related.description && (
@@ -264,7 +264,7 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
         )}
 
         {/* Bottom navigation */}
-        <div className="mx-6 mb-12 border-t border-line pt-6">
+        <div className="mx-6 mb-10 border-t border-line pt-5">
           <Link
             href="/posts"
             className="group inline-flex items-center gap-2 text-[13px] text-muted-foreground/60 transition-colors hover:text-foreground"

@@ -73,7 +73,7 @@ func (s *Server) initModules() {
 		s.queue = queue.NewQueue(s.redis)
 		s.adminHdlr = post.NewAdminHandler(s.postSvc, s.queue)
 		if s.config.RateLimitRequests > 0 {
-			window := 24 * time.Hour
+			window := 1 * time.Hour
 			if s.config.RateLimitWindow != "" {
 				if parsed, err := time.ParseDuration(s.config.RateLimitWindow); err == nil {
 					window = parsed

@@ -85,7 +85,7 @@ export function PostsPageContent({ currentPage, query }: PostsPageContentProps) 
         if (!cancelled) {
           setData(response);
         }
-      } catch {
+      } catch (error) {
         if (!cancelled) {
           setData({
             posts: [],
@@ -93,7 +93,11 @@ export function PostsPageContent({ currentPage, query }: PostsPageContentProps) 
             page: currentPage,
             page_size: PAGE_SIZE,
           });
-          setError("Failed to load posts from server.");
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Failed to load posts from server.",
+          );
         }
       } finally {
         if (!cancelled) {
