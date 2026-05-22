@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { cache } from "react";
 import { compileMDX } from "next-mdx-remote/rsc";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import { Playfair_Display, Inter } from "next/font/google";
 import { Calendar, Clock, ArrowLeft, Tag } from "lucide-react";
 
-import { apiFetch } from "@/lib/api";
+import { apiFetchServer } from "@/lib/api-server";
 import { postMdxComponents } from "@/components/posts/post-mdx-components";
 import { TableOfContent } from "@/components/posts/table-of-content";
 
@@ -93,6 +94,21 @@ function formatDate(value?: string | null): string {
   }).format(date);
 }
 
+const compileMdxCached = cache(async (source: string) => {
+  return compileMDX({
+    source,
+    options: {
+      parseFrontmatter: false,
+      blockJS: false,
+      mdxOptions: {
+        remarkPlugins: [remarkMath],
+        rehypePlugins: [rehypeKatex],
+      },
+    },
+    components: postMdxComponents,
+  });
+});
+
 export async function PostSlugContent({ slug }: PostSlugContentProps) {
   let post: PostDetail | null = null;
   let relatedPosts: RelatedPost[] = [];
@@ -100,8 +116,29 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
 
   try {
     const encodedSlug = encodeURIComponent(slug);
-    post = await apiFetch<PostDetail>(`/posts/${encodedSlug}?content=true`);
-    relatedPosts = await apiFetch<RelatedPost[]>(`/posts/${encodedSlug}/related?limit=5`).catch(() => []);
+    const cacheTag = `post-${slug}`;
+
+    const [postResult, relatedResult] = await Promise.allSettled([
+      apiFetchServer<PostDetail>(`/posts/${encodedSlug}?content=true`, {
+        next: { tags: [cacheTag, "posts"] },
+      }),
+      apiFetchServer<RelatedPost[]>(`/posts/${encodedSlug}/related?limit=5`, {
+        next: { tags: [cacheTag, "posts-related"] },
+      }),
+    ]);
+
+    if (postResult.status === "fulfilled") {
+      post = postResult.value;
+    } else {
+      loadError =
+        postResult.reason instanceof Error
+          ? `Failed to load this post from server. ${postResult.reason.message}`
+          : "Failed to load this post from server.";
+    }
+
+    if (relatedResult.status === "fulfilled") {
+      relatedPosts = relatedResult.value;
+    }
   } catch (error) {
     if (error instanceof Error && error.message) {
       loadError = `Failed to load this post from server. ${error.message}`;
@@ -130,18 +167,7 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
 
   const sections = extractSections(post.content);
 
-  const { content } = await compileMDX({
-    source: post.content,
-    options: {
-      parseFrontmatter: false,
-      blockJS: false,
-      mdxOptions: {
-        remarkPlugins: [remarkMath],
-        rehypePlugins: [rehypeKatex],
-      },
-    },
-    components: postMdxComponents,
-  });
+  const { content } = await compileMdxCached(post.content);
 
   return (
     <>
@@ -246,7 +272,7 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
                   href={`/posts/${related.slug}`}
                   className="group flex items-start gap-3 py-1.5 transition-colors"
                 >
-                  <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-primary/40 transition-colors group-hover:bg-primary" />
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/40 transition-colors group-hover:bg-primary" />
                   <div>
                     <span className="text-[14px] font-medium text-foreground/85 transition-colors group-hover:text-foreground">
                       {related.title}

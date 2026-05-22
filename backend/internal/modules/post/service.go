@@ -65,12 +65,14 @@ type UpdatePostInput struct {
 type Service struct {
 	repo    *Repository
 	storage *storage.R2Client
+	cache   *PostCache
 }
 
-func NewService(repo *Repository, storage *storage.R2Client) *Service {
+func NewService(repo *Repository, storage *storage.R2Client, cache *PostCache) *Service {
 	return &Service{
 		repo:    repo,
 		storage: storage,
+		cache:   cache,
 	}
 }
 
@@ -94,12 +96,22 @@ func (s *Service) validateCreateInput(input *CreatePostInput) error {
 }
 
 func (s *Service) GetBySlug(ctx context.Context, slug string) (*Post, *string, error) {
-	post, err := s.repo.GetBySlug(ctx, slug)
+	// Try cache for post metadata
+	post, found, err := s.cache.GetPostMeta(ctx, slug)
 	if err != nil {
-		return nil, nil, err
+		log.Printf("[PostService] cache GetPostMeta error for %s: %v", slug, err)
+	}
+	if !found {
+		post, err = s.repo.GetBySlug(ctx, slug)
+		if err != nil {
+			return nil, nil, err
+		}
+		if cacheErr := s.cache.SetPostMeta(ctx, slug, post); cacheErr != nil {
+			log.Printf("[PostService] cache SetPostMeta error for %s: %v", slug, cacheErr)
+		}
 	}
 
-	content, err := s.GetContent(ctx, post.ContentURL)
+	content, err := s.GetContent(ctx, slug, post.ContentURL)
 	if err != nil {
 		log.Printf("[PostService] GetContent error for %s: %v", slug, err)
 		return post, nil, err
@@ -113,6 +125,20 @@ func (s *Service) GetByID(ctx context.Context, id uuid.UUID) (*Post, error) {
 }
 
 func (s *Service) List(ctx context.Context, limit, offset int) ([]PostSummary, int64, error) {
+	page := 1
+	if limit > 0 {
+		page = (offset / limit) + 1
+	}
+
+	// Try cache
+	cached, found, err := s.cache.GetPostList(ctx, page, limit)
+	if err != nil {
+		log.Printf("[PostService] cache GetPostList error: %v", err)
+	}
+	if found {
+		return cached.Posts, cached.Total, nil
+	}
+
 	posts, err := s.repo.List(ctx, limit, offset)
 	if err != nil {
 		return nil, 0, err
@@ -123,23 +149,105 @@ func (s *Service) List(ctx context.Context, limit, offset int) ([]PostSummary, i
 		return posts, 0, err
 	}
 
+	if cacheErr := s.cache.SetPostList(ctx, page, limit, posts, total); cacheErr != nil {
+		log.Printf("[PostService] cache SetPostList error: %v", cacheErr)
+	}
+
 	return posts, total, nil
 }
 
 func (s *Service) ListFeatured(ctx context.Context, limit int) ([]PostSummary, error) {
-	return s.repo.ListFeatured(ctx, limit)
+	posts, found, err := s.cache.GetFeaturedPosts(ctx, limit)
+	if err != nil {
+		log.Printf("[PostService] cache GetFeaturedPosts error: %v", err)
+	}
+	if found {
+		return posts, nil
+	}
+
+	posts, err = s.repo.ListFeatured(ctx, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	if cacheErr := s.cache.SetFeaturedPosts(ctx, limit, posts); cacheErr != nil {
+		log.Printf("[PostService] cache SetFeaturedPosts error: %v", cacheErr)
+	}
+
+	return posts, nil
 }
 
 func (s *Service) ListByCategory(ctx context.Context, category string, limit, offset int) ([]PostSummary, error) {
-	return s.repo.ListByCategory(ctx, category, limit, offset)
+	page := 1
+	if limit > 0 {
+		page = (offset / limit) + 1
+	}
+
+	posts, found, err := s.cache.GetCategoryPosts(ctx, category, page, limit)
+	if err != nil {
+		log.Printf("[PostService] cache GetCategoryPosts error: %v", err)
+	}
+	if found {
+		return posts, nil
+	}
+
+	posts, err = s.repo.ListByCategory(ctx, category, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	if cacheErr := s.cache.SetCategoryPosts(ctx, category, page, limit, posts); cacheErr != nil {
+		log.Printf("[PostService] cache SetCategoryPosts error: %v", cacheErr)
+	}
+
+	return posts, nil
 }
 
 func (s *Service) ListByTag(ctx context.Context, tag string, limit, offset int) ([]PostSummary, error) {
-	return s.repo.ListByTag(ctx, tag, limit, offset)
+	page := 1
+	if limit > 0 {
+		page = (offset / limit) + 1
+	}
+
+	posts, found, err := s.cache.GetTagPosts(ctx, tag, page, limit)
+	if err != nil {
+		log.Printf("[PostService] cache GetTagPosts error: %v", err)
+	}
+	if found {
+		return posts, nil
+	}
+
+	posts, err = s.repo.ListByTag(ctx, tag, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	if cacheErr := s.cache.SetTagPosts(ctx, tag, page, limit, posts); cacheErr != nil {
+		log.Printf("[PostService] cache SetTagPosts error: %v", cacheErr)
+	}
+
+	return posts, nil
 }
 
 func (s *Service) Search(ctx context.Context, query string, limit, offset int) ([]PostSummary, error) {
-	return s.repo.Search(ctx, query, limit, offset)
+	posts, found, err := s.cache.GetSearchResults(ctx, query, limit, offset)
+	if err != nil {
+		log.Printf("[PostService] cache GetSearchResults error: %v", err)
+	}
+	if found {
+		return posts, nil
+	}
+
+	posts, err = s.repo.Search(ctx, query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	if cacheErr := s.cache.SetSearchResults(ctx, query, limit, offset, posts); cacheErr != nil {
+		log.Printf("[PostService] cache SetSearchResults error: %v", cacheErr)
+	}
+
+	return posts, nil
 }
 
 func (s *Service) Create(ctx context.Context, input CreatePostInput) (*Post, error) {
@@ -176,6 +284,14 @@ func (s *Service) Create(ctx context.Context, input CreatePostInput) (*Post, err
 	)
 	if err != nil {
 		return nil, err
+	}
+
+	// Invalidate list and search caches so new post appears
+	if cacheErr := s.cache.InvalidateLists(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateLists error: %v", cacheErr)
+	}
+	if cacheErr := s.cache.InvalidateSearch(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateSearch error: %v", cacheErr)
 	}
 
 	return post, nil
@@ -218,7 +334,23 @@ func (s *Service) Update(ctx context.Context, id uuid.UUID, input UpdatePostInpu
 		updates["is_archived"] = *input.IsArchived
 	}
 
-	return s.repo.Update(ctx, id, updates)
+	updated, err := s.repo.Update(ctx, id, updates)
+	if err != nil {
+		return nil, err
+	}
+
+	// Invalidate post-specific and list caches
+	if cacheErr := s.cache.InvalidatePost(ctx, updated.Slug); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidatePost error for %s: %v", updated.Slug, cacheErr)
+	}
+	if cacheErr := s.cache.InvalidateLists(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateLists error: %v", cacheErr)
+	}
+	if cacheErr := s.cache.InvalidateSearch(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateSearch error: %v", cacheErr)
+	}
+
+	return updated, nil
 }
 
 func (s *Service) Delete(ctx context.Context, id uuid.UUID) error {
@@ -232,24 +364,71 @@ func (s *Service) Delete(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 
-	return s.repo.Delete(ctx, id)
+	if err := s.repo.Delete(ctx, id); err != nil {
+		return err
+	}
+
+	// Invalidate caches
+	if cacheErr := s.cache.InvalidatePost(ctx, post.Slug); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidatePost error for %s: %v", post.Slug, cacheErr)
+	}
+	if cacheErr := s.cache.InvalidateLists(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateLists error: %v", cacheErr)
+	}
+	if cacheErr := s.cache.InvalidateSearch(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateSearch error: %v", cacheErr)
+	}
+
+	return nil
 }
 
 func (s *Service) Archive(ctx context.Context, id uuid.UUID) error {
-	return s.repo.Archive(ctx, id)
+	post, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := s.repo.Archive(ctx, id); err != nil {
+		return err
+	}
+
+	// Invalidate caches
+	if cacheErr := s.cache.InvalidatePost(ctx, post.Slug); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidatePost error for %s: %v", post.Slug, cacheErr)
+	}
+	if cacheErr := s.cache.InvalidateLists(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateLists error: %v", cacheErr)
+	}
+	if cacheErr := s.cache.InvalidateSearch(ctx); cacheErr != nil {
+		log.Printf("[PostService] cache InvalidateSearch error: %v", cacheErr)
+	}
+
+	return nil
 }
 
 func (s *Service) IncrementViewCount(ctx context.Context, id uuid.UUID) error {
 	return s.repo.IncrementViewCount(ctx, id)
 }
 
-func (s *Service) GetContent(ctx context.Context, contentURL string) (*string, error) {
+func (s *Service) GetContent(ctx context.Context, slug, contentURL string) (*string, error) {
+	// Try cache for post content
+	content, found, err := s.cache.GetPostContent(ctx, slug)
+	if err != nil {
+		log.Printf("[PostService] cache GetPostContent error for %s: %v", slug, err)
+	}
+	if found {
+		return &content, nil
+	}
+
 	data, err := s.storage.Download(ctx, "posts/"+contentURL)
 	if err != nil {
 		return nil, err
 	}
 
-	content := string(data)
+	content = string(data)
+	if cacheErr := s.cache.SetPostContent(ctx, slug, content); cacheErr != nil {
+		log.Printf("[PostService] cache SetPostContent error for %s: %v", slug, cacheErr)
+	}
 	return &content, nil
 }
 
@@ -275,6 +454,18 @@ func (s *Service) SearchSimilar(ctx context.Context, embedding []float32, limit 
 }
 
 func (s *Service) GetRelated(ctx context.Context, slug string, limit int) ([]SearchResult, error) {
+	// Try cache for related posts
+	results, found, err := s.cache.GetRelatedPosts(ctx, slug)
+	if err != nil {
+		log.Printf("[PostService] cache GetRelatedPosts error for %s: %v", slug, err)
+	}
+	if found {
+		if len(results) > limit {
+			return results[:limit], nil
+		}
+		return results, nil
+	}
+
 	post, err := s.repo.GetBySlug(ctx, slug)
 	if err != nil {
 		return nil, err
@@ -285,7 +476,7 @@ func (s *Service) GetRelated(ctx context.Context, slug string, limit int) ([]Sea
 		return nil, err
 	}
 
-	results, err := s.repo.SearchSimilar(ctx, embeddings[0].Embedding, limit+1)
+	results, err = s.repo.SearchSimilar(ctx, embeddings[0].Embedding, limit+1)
 	if err != nil {
 		return nil, err
 	}
@@ -298,6 +489,10 @@ func (s *Service) GetRelated(ctx context.Context, slug string, limit int) ([]Sea
 				break
 			}
 		}
+	}
+
+	if cacheErr := s.cache.SetRelatedPosts(ctx, slug, filtered); cacheErr != nil {
+		log.Printf("[PostService] cache SetRelatedPosts error for %s: %v", slug, cacheErr)
 	}
 
 	return filtered, nil

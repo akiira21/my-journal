@@ -1,11 +1,13 @@
-import { apiFetch } from "@/lib/api";
+import { apiFetchServer } from "@/lib/api-server";
 import type { PostsPageResponse } from "@/lib/blog-types";
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL
 
 export async function GET() {
   try {
-    const response = await apiFetch<PostsPageResponse>("/posts?page=1&page_size=100");
+    const response = await apiFetchServer<PostsPageResponse>("/posts?page=1&page_size=100", {
+      next: { tags: ["posts", "rss"] },
+    });
     const posts = response.posts || [];
 
     const itemsXml = posts
