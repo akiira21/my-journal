@@ -212,7 +212,7 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
 
           {/* Subtitle / description */}
           {post.description && (
-            <p className="mt-3.5 max-w-2xl text-base leading-relaxed text-muted-foreground/80">
+            <p className="mt-3.5 max-w-2xl text-sm leading-relaxed text-muted-foreground/80">
               {post.description}
             </p>
           )}

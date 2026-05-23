@@ -19,7 +19,7 @@ function OrderedList({ items, children }: OrderedListProps) {
         ? normalizedItems.map((item, index) => (
             <li key={`ordered-${index}-${String(item)}`} className="flex items-start gap-3 text-[0.9375rem] leading-[1.75] text-foreground/75">
               <span
-                className="flex-shrink-0 mt-0.5 w-5 h-5 flex items-center justify-center rounded-sm bg-muted font-mono text-[11px] font-medium text-muted-foreground"
+                className="shrink-0 mt-0.5 w-5 h-5 flex items-center justify-center rounded-sm bg-muted font-mono text-[11px] font-medium text-muted-foreground"
               >
                 {index + 1}
               </span>
@@ -109,7 +109,7 @@ function Callout({ type = "info", title, children }: CalloutProps) {
           {label}
         </span>
       </div>
-      <div className="px-4 py-3 text-sm leading-6 text-foreground/90">
+      <div className="px-4 text-sm leading-6 text-foreground/90">
         {children}
       </div>
     </div>
