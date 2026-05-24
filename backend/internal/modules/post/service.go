@@ -432,8 +432,12 @@ func (s *Service) GetContent(ctx context.Context, slug, contentURL string) (*str
 	return &content, nil
 }
 
-func (s *Service) CreateEmbedding(ctx context.Context, postID uuid.UUID, chunkIndex int, embedding []float32) error {
-	return s.repo.CreateEmbedding(ctx, postID, chunkIndex, embedding)
+func (s *Service) CreateEmbedding(ctx context.Context, postID uuid.UUID, chunkIndex int, chunkText string, embedding []float32) error {
+	return s.repo.CreateEmbedding(ctx, postID, chunkIndex, chunkText, embedding)
+}
+
+func (s *Service) SearchHybrid(ctx context.Context, queryText string, embedding []float32, limit int) ([]SearchResult, error) {
+	return s.repo.SearchHybrid(ctx, queryText, embedding, limit)
 }
 
 func (s *Service) GetEmbeddings(ctx context.Context, postID uuid.UUID) ([]Embedding, error) {

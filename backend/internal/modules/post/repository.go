@@ -127,9 +127,9 @@ func (r *Repository) ListByTag(ctx context.Context, tag string, limit, offset in
 
 func (r *Repository) Search(ctx context.Context, query string, limit, offset int) ([]PostSummary, error) {
 	posts, err := r.q.SearchPosts(ctx, postdb.SearchPostsParams{
-		Column1: pgtype.Text{String: query, Valid: true},
-		Limit:   int32(limit),
-		Offset:  int32(offset),
+		PlaintoTsquery: query,
+		Limit:          int32(limit),
+		Offset:         int32(offset),
 	})
 	if err != nil {
 		return nil, err
@@ -231,10 +231,11 @@ func (r *Repository) GetTotalCount(ctx context.Context) (int64, error) {
 	return count, nil
 }
 
-func (r *Repository) CreateEmbedding(ctx context.Context, postID uuid.UUID, chunkIndex int, embedding []float32) error {
+func (r *Repository) CreateEmbedding(ctx context.Context, postID uuid.UUID, chunkIndex int, chunkText string, embedding []float32) error {
 	_, err := r.q.CreateEmbedding(ctx, postdb.CreateEmbeddingParams{
 		PostID:     uuidToPgtype(postID),
 		ChunkIndex: int32(chunkIndex),
+		ChunkText:  pgtype.Text{String: chunkText, Valid: true},
 		Embedding:  pgvector.NewVector(embedding),
 	})
 	return err
@@ -271,6 +272,18 @@ func (r *Repository) SearchSimilar(ctx context.Context, embedding []float32, lim
 		return nil, err
 	}
 	return toSearchResults(results), nil
+}
+
+func (r *Repository) SearchHybrid(ctx context.Context, queryText string, embedding []float32, limit int) ([]SearchResult, error) {
+	results, err := r.q.SearchHybrid(ctx, postdb.SearchHybridParams{
+		PlaintoTsquery: queryText,
+		Embedding:      pgvector.NewVector(embedding),
+		Limit:          int32(limit),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return toSearchResultsFromHybrid(results), nil
 }
 
 func toPost(p postdb.Post) *Post {
@@ -394,16 +407,45 @@ func toPostSummariesFromSearch(posts []postdb.SearchPostsRow) []PostSummary {
 }
 
 func toSearchResults(results []postdb.SearchSimilarEmbeddingsRow) []SearchResult {
-	searchResults := make([]SearchResult, len(results))
-	for i, r := range results {
-		searchResults[i] = SearchResult{
+	seen := make(map[uuid.UUID]bool)
+	searchResults := make([]SearchResult, 0, len(results))
+	for _, r := range results {
+		postID := pgtypeToUUID(r.PostID)
+		if seen[postID] {
+			continue
+		}
+		seen[postID] = true
+		searchResults = append(searchResults, SearchResult{
 			Post: PostSummary{
-				ID:          pgtypeToUUID(r.ID),
+				ID:          postID,
 				Slug:        r.Slug,
 				Title:       r.Title,
 				Description: pgtypeTextToPtr(r.Description),
 			},
 			Score: float64(r.Similarity),
+		})
+	}
+	return searchResults
+}
+
+func toSearchResultsFromHybrid(results []postdb.SearchHybridRow) []SearchResult {
+	searchResults := make([]SearchResult, len(results))
+	for i, r := range results {
+		searchResults[i] = SearchResult{
+			Post: PostSummary{
+				ID:              pgtypeToUUID(r.ID),
+				Slug:            r.Slug,
+				Title:           r.Title,
+				Description:     pgtypeTextToPtr(r.Description),
+				CoverURL:        pgtypeTextToPtr(r.CoverUrl),
+				Categories:      r.Categories,
+				Tags:            r.Tags,
+				Featured:        r.Featured.Bool,
+				ViewCount:       int(r.ViewCount.Int32),
+				ReadTimeMinutes: pgtypeInt4ToPtr(r.ReadTimeMinutes),
+				PublishedAt:     pgtypeTimestamptzToPtr(r.PublishedAt),
+			},
+			Score: r.RrfScore,
 		}
 	}
 	return searchResults

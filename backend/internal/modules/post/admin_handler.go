@@ -1,6 +1,7 @@
 package post
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -109,7 +110,8 @@ func (h *AdminHandler) CreatePost(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "content exceeds maximum size"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create post"})
+		log.Printf("[AdminHandler] CreatePost error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create post: " + err.Error()})
 		return
 	}
 
@@ -176,7 +178,8 @@ func (h *AdminHandler) CreateFromMDX(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid slug format"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create post"})
+		log.Printf("[AdminHandler] CreateFromMDX error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create post: " + err.Error()})
 		return
 	}
 

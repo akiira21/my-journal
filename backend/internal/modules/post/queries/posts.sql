@@ -35,13 +35,27 @@ ORDER BY published_at DESC
 LIMIT $2 OFFSET $3;
 
 -- name: SearchPosts :many
+WITH ranked_posts AS (
+  SELECT 
+    id, slug, title, description, cover_url, categories, tags, featured, view_count, read_time_minutes, published_at,
+    CASE 
+      WHEN search_vector @@ plainto_tsquery('english', $1) 
+      THEN ts_rank_cd(search_vector, plainto_tsquery('english', $1))
+      ELSE 0
+    END AS search_rank
+  FROM posts
+  WHERE 
+    (
+      search_vector @@ plainto_tsquery('english', $1)
+      OR title ILIKE '%' || $1 || '%'
+      OR description ILIKE '%' || $1 || '%'
+    )
+    AND is_archived = false 
+    AND published_at IS NOT NULL
+)
 SELECT id, slug, title, description, cover_url, categories, tags, featured, view_count, read_time_minutes, published_at
-FROM posts
-WHERE 
-  (title ILIKE '%' || $1 || '%' OR description ILIKE '%' || $1 || '%')
-  AND is_archived = false 
-  AND published_at IS NOT NULL
-ORDER BY published_at DESC
+FROM ranked_posts
+ORDER BY search_rank DESC, published_at DESC
 LIMIT $2 OFFSET $3;
 
 -- name: CreatePost :one

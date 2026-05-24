@@ -215,11 +215,16 @@ func (h *Handler) Search(c *gin.Context) {
 		req.Limit = 50
 	}
 
+	log.Printf("[Search] query=%q limit=%d offset=%d", req.Query, req.Limit, req.Offset)
+
 	posts, err := h.service.Search(c.Request.Context(), req.Query, req.Limit, req.Offset)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "search failed"})
+		log.Printf("[Search] error for query=%q: %v", req.Query, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "search failed", "details": err.Error()})
 		return
 	}
+
+	log.Printf("[Search] query=%q returned %d posts", req.Query, len(posts))
 
 	setCacheHeaders(c, 5*time.Minute)
 	c.JSON(http.StatusOK, toPostSummariesResponse(posts))
