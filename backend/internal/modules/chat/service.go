@@ -10,30 +10,34 @@ import (
 	"github.com/google/uuid"
 )
 
-const MinSimilarityThreshold = 0.25
-
 type Service struct {
-	repo          *Repository
-	openai        *openai.Client
-	postSvc       *post.Service
-	assistantName string
+	repo                  *Repository
+	openai                *openai.Client
+	postSvc               *post.Service
+	assistantName         string
+	maxMessagesPerSession int
 }
 
-func NewService(repo *Repository, openaiClient *openai.Client, postSvc *post.Service, assistantName string) *Service {
+func NewService(repo *Repository, openaiClient *openai.Client, postSvc *post.Service, assistantName string, maxMessages int) *Service {
 	if assistantName == "" {
 		assistantName = "Assistant"
 	}
+	if maxMessages <= 0 {
+		maxMessages = 50
+	}
 	return &Service{
-		repo:          repo,
-		openai:        openaiClient,
-		postSvc:       postSvc,
-		assistantName: assistantName,
+		repo:                  repo,
+		openai:                openaiClient,
+		postSvc:               postSvc,
+		assistantName:         assistantName,
+		maxMessagesPerSession: maxMessages,
 	}
 }
 
 type ChatRequest struct {
-	SessionID string `json:"session_id"`
-	Message   string `json:"message"`
+	SessionID      string   `json:"session_id"`
+	Message        string   `json:"message"`
+	MentionedPosts []string `json:"mentioned_posts,omitempty"`
 }
 
 type ChatResponse struct {
@@ -62,14 +66,30 @@ type ChatContext struct {
 	SystemPrompt   string
 	IsRelated      bool
 	BestScore      float64
+	IsNewSession   bool
 }
 
 func (s *Service) CreateSession(ctx context.Context, sessionID string, ipHash *string) (*ChatSession, error) {
+	// If no session_id provided and we have an IP, try to find a recent session for this IP
+	if sessionID == "" && ipHash != nil && *ipHash != "" {
+		sessions, err := s.repo.GetSessionsByIPHash(ctx, *ipHash, 1)
+		if err == nil && len(sessions) > 0 {
+			return &sessions[0], nil
+		}
+	}
+
 	return s.repo.CreateSession(ctx, sessionID, ipHash)
 }
 
 func (s *Service) GetSession(ctx context.Context, sessionID string) (*ChatSession, error) {
 	return s.repo.GetSession(ctx, sessionID)
+}
+
+func (s *Service) GetHistoryByIP(ctx context.Context, ipHash string) ([]ChatSession, error) {
+	if ipHash == "" {
+		return nil, fmt.Errorf("ip_hash is required")
+	}
+	return s.repo.GetSessionsByIPHash(ctx, ipHash, 20)
 }
 
 func (s *Service) PrepareChatContext(ctx context.Context, req ChatRequest) (*ChatContext, error) {
@@ -84,38 +104,55 @@ func (s *Service) PrepareChatContext(ctx context.Context, req ChatRequest) (*Cha
 		return nil, fmt.Errorf("failed to generate query embedding: %w", err)
 	}
 
-	results, err := s.postSvc.SearchSimilar(ctx, queryEmbedding, 10)
-	if err != nil {
-		return nil, fmt.Errorf("failed to search similar posts: %w", err)
-	}
-
 	isRelated := false
 	bestScore := 0.0
 	var postContents []PostContent
+	seenPosts := make(map[uuid.UUID]bool)
 
-	if len(results) > 0 {
-		bestScore = results[0].Score
+	// 1. Fetch explicitly mentioned posts first (highest priority)
+	for _, slug := range req.MentionedPosts {
+		postDetail, content, err := s.postSvc.GetBySlug(ctx, slug)
+		if err != nil {
+			continue
+		}
+		if seenPosts[postDetail.ID] {
+			continue
+		}
+		seenPosts[postDetail.ID] = true
+		postContents = append(postContents, PostContent{
+			Post: &post.PostSummary{
+				ID:          postDetail.ID,
+				Slug:        postDetail.Slug,
+				Title:       postDetail.Title,
+				Description: postDetail.Description,
+				Categories:  postDetail.Categories,
+				Tags:        postDetail.Tags,
+				Featured:    postDetail.Featured,
+				ViewCount:   postDetail.ViewCount,
+			},
+			Content: *content,
+			Score:   1.0, // Mentioned posts get max score
+		})
+		isRelated = true
+		bestScore = 1.0
+	}
 
-		if bestScore >= MinSimilarityThreshold {
-			isRelated = true
-
-			seenPosts := make(map[uuid.UUID]bool)
-			var uniqueResults []post.SearchResult
+	// 2. Supplement with hybrid search (up to 3 total, mentioned first)
+	if len(postContents) < 3 {
+		results, err := s.postSvc.SearchHybrid(ctx, enrichedQuery, queryEmbedding, 10)
+		if err == nil {
 			for _, r := range results {
-				if r.Score >= MinSimilarityThreshold && !seenPosts[r.Post.ID] {
-					seenPosts[r.Post.ID] = true
-					uniqueResults = append(uniqueResults, r)
-					if len(uniqueResults) >= 3 {
-						break
-					}
+				if len(postContents) >= 3 {
+					break
 				}
-			}
-
-			for _, r := range uniqueResults {
+				if seenPosts[r.Post.ID] {
+					continue
+				}
 				postDetail, content, err := s.postSvc.GetBySlug(ctx, r.Post.Slug)
 				if err != nil {
 					continue
 				}
+				seenPosts[postDetail.ID] = true
 				postContents = append(postContents, PostContent{
 					Post: &post.PostSummary{
 						ID:          postDetail.ID,
@@ -130,10 +167,15 @@ func (s *Service) PrepareChatContext(ctx context.Context, req ChatRequest) (*Cha
 					Content: *content,
 					Score:   r.Score,
 				})
+				if !isRelated {
+					isRelated = true
+					bestScore = r.Score
+				}
 			}
 		}
 	}
 
+	// 3. Fallback to previous context if nothing found
 	if !isRelated && len(session.Messages) > 0 {
 		postContents = s.getRecentPostContexts(ctx, session.Messages)
 		if len(postContents) > 0 {
@@ -152,6 +194,7 @@ func (s *Service) PrepareChatContext(ctx context.Context, req ChatRequest) (*Cha
 		SystemPrompt:   systemPrompt,
 		IsRelated:      isRelated,
 		BestScore:      bestScore,
+		IsNewSession:   isNewSession,
 	}, nil
 }
 
@@ -161,17 +204,35 @@ func (s *Service) Chat(ctx context.Context, req ChatRequest) (*ChatResponse, err
 		return nil, err
 	}
 
-	history := make([]openai.ChatMessage, len(chatCtx.Session.Messages))
-	for i, m := range chatCtx.Session.Messages {
-		history[i] = openai.ChatMessage{Role: m.Role, Content: m.Content}
-	}
+	var response string
+	var sources []Source
 
-	response, err := s.openai.ChatWithHistory(ctx, chatCtx.SystemPrompt, append(history, openai.ChatMessage{
-		Role:    "user",
-		Content: req.Message,
-	}))
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate response: %w", err)
+	if !chatCtx.IsRelated {
+		response = s.buildFallbackResponse(req.Message, chatCtx.IsNewSession)
+	} else {
+		history := make([]openai.ChatMessage, len(chatCtx.Session.Messages))
+		for i, m := range chatCtx.Session.Messages {
+			history[i] = openai.ChatMessage{Role: m.Role, Content: m.Content}
+		}
+
+		var err error
+		response, err = s.openai.ChatWithHistory(ctx, chatCtx.SystemPrompt, append(history, openai.ChatMessage{
+			Role:    "user",
+			Content: req.Message,
+		}))
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate response: %w", err)
+		}
+
+		sources = make([]Source, 0, len(chatCtx.PostContents))
+		for _, pc := range chatCtx.PostContents {
+			sources = append(sources, Source{
+				PostID:   pc.Post.ID,
+				PostSlug: pc.Post.Slug,
+				Title:    pc.Post.Title,
+				Score:    pc.Score,
+			})
+		}
 	}
 
 	newMessages := append(chatCtx.Session.Messages, []Message{
@@ -183,16 +244,6 @@ func (s *Service) Chat(ctx context.Context, req ChatRequest) (*ChatResponse, err
 		return nil, fmt.Errorf("failed to update session: %w", err)
 	}
 
-	sources := make([]Source, 0, len(chatCtx.PostContents))
-	for _, pc := range chatCtx.PostContents {
-		sources = append(sources, Source{
-			PostID:   pc.Post.ID,
-			PostSlug: pc.Post.Slug,
-			Title:    pc.Post.Title,
-			Score:    pc.Score,
-		})
-	}
-
 	return &ChatResponse{
 		Message:   response,
 		Sources:   sources,
@@ -200,10 +251,40 @@ func (s *Service) Chat(ctx context.Context, req ChatRequest) (*ChatResponse, err
 	}, nil
 }
 
+func (s *Service) buildFallbackResponse(query string, isNewSession bool) string {
+	if isNewSession {
+		return fmt.Sprintf(`Hey there! I'm %s, Arun Kumar's personal assistant ~
+
+I couldn't find any blog posts that match your question about "%s". 
+
+I can help you with topics covered in the blog. Feel free to ask about:
+- Posts, tutorials, and guides
+- Architecture decisions and concepts
+- Code explanations and walkthroughs
+
+What would you like to explore?`, s.assistantName, query)
+	}
+
+	return fmt.Sprintf(`I don't have any blog posts that match your question about "%s" right now.
+
+I'm here to help with topics from the blog. Try asking about something covered in the published posts, or browse the posts page to see what's available ~`, query)
+}
+
 func (s *Service) ChatStream(ctx context.Context, req ChatRequest) (<-chan openai.StreamChunk, *ChatContext, error) {
 	chatCtx, err := s.PrepareChatContext(ctx, req)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	if !chatCtx.IsRelated {
+		// Return a single-chunk stream with the fallback response
+		stream := make(chan openai.StreamChunk, 1)
+		stream <- openai.StreamChunk{
+			Content: s.buildFallbackResponse(req.Message, chatCtx.IsNewSession),
+			Done:    true,
+		}
+		close(stream)
+		return stream, chatCtx, nil
 	}
 
 	history := make([]openai.ChatMessage, len(chatCtx.Session.Messages))
@@ -220,6 +301,9 @@ func (s *Service) ChatStream(ctx context.Context, req ChatRequest) (<-chan opena
 }
 
 func (s *Service) SaveMessages(ctx context.Context, sessionID string, messages []Message) error {
+	if len(messages) > s.maxMessagesPerSession {
+		messages = messages[len(messages)-s.maxMessagesPerSession:]
+	}
 	return s.repo.UpdateMessages(ctx, sessionID, messages)
 }
 
@@ -323,36 +407,35 @@ func (s *Service) getRecentPostContexts(ctx context.Context, messages []Message)
 				continue
 			}
 
-			results, err := s.postSvc.SearchSimilar(ctx, prevEmbedding, 3)
+			results, err := s.postSvc.SearchHybrid(ctx, messages[i].Content, prevEmbedding, 3)
 			if err != nil {
 				continue
 			}
 
-			if len(results) > 0 && results[0].Score >= MinSimilarityThreshold {
+			if len(results) > 0 {
 				var postContents []PostContent
-				seenPosts := make(map[uuid.UUID]bool)
 				for _, r := range results {
-					if r.Score >= MinSimilarityThreshold && !seenPosts[r.Post.ID] {
-						seenPosts[r.Post.ID] = true
-						postDetail, content, err := s.postSvc.GetBySlug(ctx, r.Post.Slug)
-						if err != nil {
-							continue
-						}
-						postContents = append(postContents, PostContent{
-							Post: &post.PostSummary{
-								ID:          postDetail.ID,
-								Slug:        postDetail.Slug,
-								Title:       postDetail.Title,
-								Description: postDetail.Description,
-								Categories:  postDetail.Categories,
-								Tags:        postDetail.Tags,
-								Featured:    postDetail.Featured,
-								ViewCount:   postDetail.ViewCount,
-							},
-							Content: *content,
-							Score:   r.Score,
-						})
+					if len(postContents) >= 3 {
+						break
 					}
+					postDetail, content, err := s.postSvc.GetBySlug(ctx, r.Post.Slug)
+					if err != nil {
+						continue
+					}
+					postContents = append(postContents, PostContent{
+						Post: &post.PostSummary{
+							ID:          postDetail.ID,
+							Slug:        postDetail.Slug,
+							Title:       postDetail.Title,
+							Description: postDetail.Description,
+							Categories:  postDetail.Categories,
+							Tags:        postDetail.Tags,
+							Featured:    postDetail.Featured,
+							ViewCount:   postDetail.ViewCount,
+						},
+						Content: *content,
+						Score:   r.Score,
+					})
 				}
 				return postContents
 			}

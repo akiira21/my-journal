@@ -31,8 +31,9 @@ type createSessionResponse struct {
 }
 
 type chatRequest struct {
-	SessionID string `json:"session_id" binding:"required"`
-	Message   string `json:"message" binding:"required"`
+	SessionID      string   `json:"session_id" binding:"required"`
+	Message        string   `json:"message" binding:"required"`
+	MentionedPosts []string `json:"mentioned_posts"`
 }
 
 type chatResponse struct {
@@ -88,6 +89,55 @@ func (h *Handler) GetSession(c *gin.Context) {
 	})
 }
 
+type historySession struct {
+	SessionID       string    `json:"session_id"`
+	MessageCount    int       `json:"message_count"`
+	FirstMessage    string    `json:"first_message"`
+	LastMessageAt   time.Time `json:"last_message_at"`
+	CreatedAt       time.Time `json:"created_at"`
+}
+
+func (h *Handler) GetHistory(c *gin.Context) {
+	ipHash := hashIP(c.ClientIP())
+	if ipHash == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "unable to determine client IP"})
+		return
+	}
+
+	sessions, err := h.service.GetHistoryByIP(c.Request.Context(), *ipHash)
+	if err != nil {
+		log.Printf("[GetHistory] error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load history"})
+		return
+	}
+
+	result := make([]historySession, 0, len(sessions))
+	for _, s := range sessions {
+		firstMsg := ""
+		for _, m := range s.Messages {
+			if m.Role == "user" {
+				firstMsg = m.Content
+				if len(firstMsg) > 100 {
+					firstMsg = firstMsg[:97] + "..."
+				}
+				break
+			}
+		}
+		hs := historySession{
+			SessionID:    s.SessionID,
+			MessageCount: len(s.Messages),
+			FirstMessage: firstMsg,
+			CreatedAt:    s.CreatedAt,
+		}
+		if s.LastMessageAt != nil {
+			hs.LastMessageAt = *s.LastMessageAt
+		}
+		result = append(result, hs)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"sessions": result})
+}
+
 func (h *Handler) Chat(c *gin.Context) {
 	var req chatRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -96,8 +146,9 @@ func (h *Handler) Chat(c *gin.Context) {
 	}
 
 	response, err := h.service.Chat(c.Request.Context(), ChatRequest{
-		SessionID: req.SessionID,
-		Message:   req.Message,
+		SessionID:      req.SessionID,
+		Message:        req.Message,
+		MentionedPosts: req.MentionedPosts,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to process message"})
@@ -119,8 +170,9 @@ func (h *Handler) ChatStream(c *gin.Context) {
 	}
 
 	stream, chatCtx, err := h.service.ChatStream(c.Request.Context(), ChatRequest{
-		SessionID: req.SessionID,
-		Message:   req.Message,
+		SessionID:      req.SessionID,
+		Message:        req.Message,
+		MentionedPosts: req.MentionedPosts,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to start stream"})

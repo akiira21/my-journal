@@ -15,3 +15,10 @@ UPDATE chat_sessions
 SET messages = $2,
     last_message_at = NOW()
 WHERE session_id = $1;
+
+-- name: ListChatSessionsByIP :many
+SELECT id, session_id, ip_hash, messages, created_at, last_message_at
+FROM chat_sessions
+WHERE ip_hash = $1
+ORDER BY last_message_at DESC NULLS LAST, created_at DESC
+LIMIT $2;

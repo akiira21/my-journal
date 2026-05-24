@@ -88,7 +88,7 @@ func (s *Server) initModules() {
 	}
 
 	s.chatRepo = chat.NewRepository(s.db)
-	s.chatSvc = chat.NewService(s.chatRepo, s.openai, s.postSvc, s.config.AssistantName)
+	s.chatSvc = chat.NewService(s.chatRepo, s.openai, s.postSvc, s.config.AssistantName, s.config.MaxMessagesPerSession)
 	s.chatHdlr = chat.NewHandler(s.chatSvc)
 
 	if s.openai != nil && s.redis != nil {
@@ -150,6 +150,7 @@ func (s *Server) registerRoutes() {
 	{
 		chatGroup.POST("/sessions", s.chatHdlr.CreateSession)
 		chatGroup.GET("/sessions/:id", s.chatHdlr.GetSession)
+		chatGroup.GET("/history", s.chatHdlr.GetHistory)
 		chatGroup.POST("/message", s.chatHdlr.Chat)
 		chatGroup.POST("/stream", s.chatHdlr.ChatStream)
 	}

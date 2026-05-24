@@ -11,6 +11,10 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+func pgtext(s string) pgtype.Text {
+	return pgtype.Text{String: s, Valid: s != ""}
+}
+
 type Message struct {
 	Role      string    `json:"role"`
 	Content   string    `json:"content"`
@@ -71,6 +75,22 @@ func (r *Repository) UpdateMessages(ctx context.Context, sessionID string, messa
 		SessionID: sessionID,
 		Messages:  msgBytes,
 	})
+}
+
+func (r *Repository) GetSessionsByIPHash(ctx context.Context, ipHash string, limit int) ([]ChatSession, error) {
+	sessions, err := r.q.ListChatSessionsByIP(ctx, chatdb.ListChatSessionsByIPParams{
+		IpHash: pgtext(ipHash),
+		Limit:  int32(limit),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]ChatSession, len(sessions))
+	for i, s := range sessions {
+		result[i] = *toChatSession(s)
+	}
+	return result, nil
 }
 
 func toChatSession(s chatdb.ChatSession) *ChatSession {

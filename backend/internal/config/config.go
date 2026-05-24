@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -28,6 +29,8 @@ type Config struct {
 
 	AssistantName string
 	AdminAPIKey   string
+
+	MaxMessagesPerSession int
 }
 
 func Load() (*Config, error) {
@@ -54,10 +57,18 @@ func Load() (*Config, error) {
 
 		AssistantName: getEnv("ASSISTANT_NAME", "Assistant"),
 		AdminAPIKey:   os.Getenv("ADMIN_API_KEY"),
+
+		MaxMessagesPerSession: 50,
 	}
 
 	if cfg.DatabaseURL == "" {
 		return nil, fmt.Errorf("DATABASE_URL environment variable is required")
+	}
+
+	if v := os.Getenv("MAX_MESSAGES_PER_SESSION"); v != "" {
+		if parsed, err := strconv.Atoi(v); err == nil && parsed > 0 {
+			cfg.MaxMessagesPerSession = parsed
+		}
 	}
 
 	return cfg, nil
