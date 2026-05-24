@@ -25,37 +25,6 @@ The easiest way to publish is through the built-in admin web interface:
 
 The page validates frontmatter client-side and shows a preview before publishing.
 
-### Publish via CLI
-
-For bulk uploads or CI/CD pipelines, use the publish script:
-
-```bash
-cd scripts/publish
-
-export API_URL="https://your-api.com"
-export ADMIN_API_KEY="your-admin-key"
-
-go run main.go --file ../../next-app/content/my-post.mdx --publish
-
-# Dry-run to validate frontmatter without publishing
-go run main.go --file ../../next-app/content/my-post.mdx --dry-run
-
-# Override slug
-go run main.go --file ../../next-app/content/my-post.mdx --slug custom-slug --publish
-```
-
-### Publish All Posts (Bulk Upload)
-
-```bash
-cd scripts/publish
-
-for file in ../../next-app/content/*.mdx; do
-  echo "Publishing: $file"
-  go run main.go --file "$file" --publish
-  sleep 1  # Rate limit between uploads
-done
-```
-
 ### What Happens When You Publish
 
 1. The script parses YAML frontmatter and validates required fields

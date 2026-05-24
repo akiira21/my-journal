@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { LoaderCircleIcon, SendIcon, SparklesIcon, UserIcon, PlusIcon, HistoryIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { LoaderCircleIcon, SendIcon, SparklesIcon, UserIcon, PlusIcon, HistoryIcon, ChevronDownIcon, ChevronUpIcon, XIcon } from "lucide-react";
 
 import { apiFetch, apiStream } from "@/lib/api";
 import type { ChatMessage, ChatSessionResponse, ChatSource, PostsPageResponse } from "@/lib/blog-types";
@@ -241,6 +241,7 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
   const [error, setError] = useState<string | null>(null);
   const messagesViewportRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const historyDropdownRef = useRef<HTMLDivElement | null>(null);
 
   // Mention autocomplete state
   const [showMentions, setShowMentions] = useState(false);
@@ -261,6 +262,12 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
 
   // Collapsible context section
   const [showContextDetails, setShowContextDetails] = useState(false);
+
+  // Collapsible entire header on small screens
+  const [headerCollapsed, setHeaderCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("journal-assistant-header-collapsed") === "true";
+  });
 
   // Load post list for mentions
   useEffect(() => {
@@ -326,6 +333,24 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
       behavior: "smooth",
     });
   }, [messages, isStreaming]);
+
+  // Persist header collapsed state
+  useEffect(() => {
+    window.localStorage.setItem("journal-assistant-header-collapsed", String(headerCollapsed));
+  }, [headerCollapsed]);
+
+  // Close history dropdown on click outside
+  useEffect(() => {
+    if (!showHistory) return;
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (historyDropdownRef.current && !historyDropdownRef.current.contains(target)) {
+        setShowHistory(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showHistory]);
 
   // Persist latest sources whenever messages change
   useEffect(() => {
@@ -558,8 +583,8 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden border-x border-line">
       {/* ── Header ── */}
-      <div className="screen-line-bottom relative border-b border-line bg-muted/30 px-4 py-3">
-        {/* Top row: badge + action */}
+      <div className="screen-line-bottom relative shrink-0 border-b border-line bg-muted/30 px-4 py-3">
+        {/* Top row: badge + actions */}
         <div className="flex items-center justify-between gap-3">
           <div className="inline-flex items-center gap-1.5 rounded-md border border-line bg-background/60 px-2 py-1">
             <SparklesIcon className="size-3 text-violet-500" />
@@ -570,13 +595,31 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
 
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => void loadHistory()}
+              onClick={() => setHeaderCollapsed((p) => !p)}
+              className="inline-flex items-center gap-1 rounded-md border border-line bg-background/60 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+              title={headerCollapsed ? "Expand header" : "Collapse header"}
+            >
+              {headerCollapsed ? (
+                <ChevronDownIcon className="size-3" />
+              ) : (
+                <ChevronUpIcon className="size-3" />
+              )}
+              <span className="hidden sm:inline">{headerCollapsed ? "Show" : "Hide"}</span>
+            </button>
+            <button
+              onClick={() => {
+                if (showHistory) {
+                  setShowHistory(false);
+                } else {
+                  void loadHistory();
+                }
+              }}
               disabled={isLoading || isStreaming || isLoadingHistory}
               className="inline-flex items-center gap-1 rounded-md border border-line bg-background/60 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-40"
               title="View conversation history"
             >
               <HistoryIcon className="size-3" />
-              History
+              <span className="hidden sm:inline">History</span>
             </button>
             <button
               onClick={() => void handleNewSession()}
@@ -585,14 +628,27 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
               title="Start a new conversation"
             >
               <PlusIcon className="size-3" />
-              New
+              <span className="hidden sm:inline">New</span>
             </button>
           </div>
         </div>
 
         {/* History dropdown */}
         {showHistory && (
-          <div className="absolute right-4 top-12 z-50 w-72 max-h-60 overflow-y-auto rounded-lg border border-line bg-background shadow-xl">
+          <div ref={historyDropdownRef} className="absolute right-4 top-12 z-50 w-72 max-h-60 overflow-y-auto rounded-lg border border-line bg-background shadow-xl">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-line/50">
+              <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                Previous Conversations
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowHistory(false)}
+                className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                title="Close"
+              >
+                <XIcon className="size-3.5" />
+              </button>
+            </div>
             {historySessions.length === 0 ? (
               <div className="px-3 py-2 text-sm text-muted-foreground">
                 No previous conversations.
@@ -624,54 +680,59 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
           </div>
         )}
 
-        {/* Description */}
-        <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground/80">
-          Ask about posts, architecture decisions, and concepts from this journal.
-        </p>
+        {/* Collapsible header content */}
+        {!headerCollapsed && (
+          <>
+            {/* Description */}
+            <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground/80">
+              Ask about posts, architecture decisions, and concepts from this journal.
+            </p>
 
-        {/* Hint */}
-        <div className="mt-1.5 flex items-center gap-1.5">
-          <span className="text-[11px] text-muted-foreground/50">Tip:</span>
-          <span className="text-[11px] text-muted-foreground/60">
-            Mention a post with
-          </span>
-          <code className="rounded border border-line bg-muted/50 px-1.5 py-0.5 font-mono text-[10px] text-foreground/70">
-            @post-slug
-          </code>
-        </div>
-
-        {/* Sources — collapsible */}
-        {latestContextSources.length > 0 ? (
-          <div className="mt-2.5 border-t border-line/50 pt-2">
-            <button
-              type="button"
-              onClick={() => setShowContextDetails((p) => !p)}
-              className="flex w-full items-center justify-between gap-2"
-            >
-              <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
-                Using {latestContextSources.length} source{latestContextSources.length > 1 ? "s" : ""}
+            {/* Hint */}
+            <div className="mt-1.5 flex items-center gap-1.5">
+              <span className="text-[11px] text-muted-foreground/50">Tip:</span>
+              <span className="text-[11px] text-muted-foreground/60">
+                Mention a post with
               </span>
-              {showContextDetails ? (
-                <ChevronUpIcon className="size-3 text-muted-foreground/50" />
-              ) : (
-                <ChevronDownIcon className="size-3 text-muted-foreground/50" />
-              )}
-            </button>
-            {showContextDetails && (
-              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                {latestContextSources.map((source, index) => (
-                  <Link
-                    key={`context-${source.post_id}-${index}`}
-                    href={`/posts/${source.post_slug}`}
-                    className="rounded-sm border border-line bg-background/50 px-2 py-0.5 font-mono text-[10px] text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
-                  >
-                    {source.title}
-                  </Link>
-                ))}
+              <code className="rounded border border-line bg-muted/50 px-1.5 py-0.5 font-mono text-[10px] text-foreground/70">
+                @post-slug
+              </code>
+            </div>
+
+            {/* Sources — collapsible */}
+            {latestContextSources.length > 0 ? (
+              <div className="mt-2.5 border-t border-line/50 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowContextDetails((p) => !p)}
+                  className="flex w-full items-center justify-between gap-2"
+                >
+                  <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                    Using {latestContextSources.length} source{latestContextSources.length > 1 ? "s" : ""}
+                  </span>
+                  {showContextDetails ? (
+                    <ChevronUpIcon className="size-3 text-muted-foreground/50" />
+                  ) : (
+                    <ChevronDownIcon className="size-3 text-muted-foreground/50" />
+                  )}
+                </button>
+                {showContextDetails && (
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                    {latestContextSources.map((source, index) => (
+                      <Link
+                        key={`context-${source.post_id}-${index}`}
+                        href={`/posts/${source.post_slug}`}
+                        className="rounded-sm border border-line bg-background/50 px-2 py-0.5 font-mono text-[10px] text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
+                      >
+                        {source.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        ) : null}
+            ) : null}
+          </>
+        )}
       </div>
 
       <div ref={messagesViewportRef} className="min-h-0 flex-1 space-y-0 overflow-y-auto overflow-x-hidden overscroll-contain">
