@@ -137,7 +137,15 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
     }
 
     if (relatedResult.status === "fulfilled") {
-      relatedPosts = relatedResult.value;
+      // Deduplicate by slug (safety net in case backend returns duplicates)
+      const seen = new Set<string>();
+      relatedPosts = relatedResult.value.filter((r) => {
+        if (seen.has(r.slug)) {
+          return false;
+        }
+        seen.add(r.slug);
+        return true;
+      });
     }
   } catch (error) {
     if (error instanceof Error && error.message) {
@@ -171,7 +179,6 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
 
   return (
     <>
-      <TableOfContent sections={sections} />
       <article
         className={`${playfair.variable} ${inter.variable} mx-auto w-full max-w-3xl`}
         style={{
@@ -304,6 +311,8 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
           </Link>
         </div>
       </article>
+
+      <TableOfContent sections={sections} />
     </>
   );
 }
