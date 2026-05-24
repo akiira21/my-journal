@@ -10,8 +10,9 @@ import {
   UserIcon,
   BookOpenTextIcon,
   Loader2,
+  FileTextIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import instagramIcon from "@/assets/icons/icons8-instagram-96.png";
 
@@ -105,6 +106,12 @@ export function CommandMenu() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoadedPosts, setHasLoadedPosts] = useState(false);
 
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<PostSummary[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const loadPosts = useCallback(() => {
     if (hasLoadedPosts || isLoading) {
       return;
@@ -117,13 +124,54 @@ export function CommandMenu() {
         setHasLoadedPosts(true);
       })
       .catch(() => {
-        // Silently fail - posts just won't show
         setPosts([]);
       })
       .finally(() => {
         setIsLoading(false);
       });
   }, [hasLoadedPosts, isLoading]);
+
+  const performSearch = useCallback((query: string) => {
+    if (query.trim().length < 2) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    apiFetch<PostSummary[]>(`/posts/search?q=${encodeURIComponent(query)}&limit=10`)
+      .then((data) => {
+        setSearchResults(data || []);
+      })
+      .catch(() => {
+        setSearchResults([]);
+      })
+      .finally(() => {
+        setIsSearching(false);
+      });
+  }, []);
+
+  const onSearchChange = useCallback(
+    (value: string) => {
+      setSearchQuery(value);
+
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+
+      if (value.trim().length < 2) {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
+
+      setIsSearching(true);
+      searchTimeoutRef.current = setTimeout(() => {
+        performSearch(value);
+      }, 250);
+    },
+    [performSearch],
+  );
 
   const postLinks = useMemo<CommandLinkItem[]>(() => {
     return posts.map((post) => ({
@@ -132,6 +180,14 @@ export function CommandMenu() {
       icon: <BookOpenTextIcon />,
     }));
   }, [posts]);
+
+  const searchLinks = useMemo<CommandLinkItem[]>(() => {
+    return searchResults.map((post) => ({
+      title: post.title,
+      href: `/posts/${post.slug}`,
+      icon: <FileTextIcon />,
+    }));
+  }, [searchResults]);
 
   const socialLinks = useMemo<CommandLinkItem[]>(
     () => [
@@ -145,6 +201,8 @@ export function CommandMenu() {
   const onOpenLink = useCallback(
     (href: string, openInNewTab = false) => {
       setOpen(false);
+      setSearchQuery("");
+      setSearchResults([]);
 
       if (openInNewTab) {
         window.open(href, "_blank", "noopener");
@@ -164,6 +222,11 @@ export function CommandMenu() {
   const onOpenChange = useCallback(
     (nextOpen: boolean) => {
       setOpen(nextOpen);
+
+      if (!nextOpen) {
+        setSearchQuery("");
+        setSearchResults([]);
+      }
 
       if (nextOpen) {
         loadPosts();
@@ -185,6 +248,16 @@ export function CommandMenu() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const isSearchActive = searchQuery.trim().length >= 2;
 
   return (
     <>
@@ -210,54 +283,86 @@ export function CommandMenu() {
       </Button>
 
       <CommandDialog open={open} onOpenChange={onOpenChange}>
-        <Command>
-          <CommandInput placeholder="Type a command or search..." />
+        <Command shouldFilter={!isSearchActive}>
+          <CommandInput
+            placeholder="Type a command or search posts..."
+            value={searchQuery}
+            onValueChange={onSearchChange}
+          />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
 
-            <CommandGroup heading="Menu">
-              {MENU_LINKS.map((item) => (
-                <CommandItem key={item.title} onSelect={() => onOpenLink(item.href, item.openInNewTab)}>
-                  {item.icon}
-                  {item.title}
-                  {item.shortcut ? <CommandShortcut>{item.shortcut}</CommandShortcut> : null}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {!isSearchActive && (
+              <>
+                <CommandGroup heading="Menu">
+                  {MENU_LINKS.map((item) => (
+                    <CommandItem key={item.title} onSelect={() => onOpenLink(item.href, item.openInNewTab)}>
+                      {item.icon}
+                      {item.title}
+                      {item.shortcut ? <CommandShortcut>{item.shortcut}</CommandShortcut> : null}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
 
-            <CommandGroup heading="Sections">
-              {SECTION_LINKS.map((item) => (
-                <CommandItem key={item.title} onSelect={() => onOpenLink(item.href)}>
-                  {item.icon}
-                  {item.title}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+                <CommandGroup heading="Sections">
+                  {SECTION_LINKS.map((item) => (
+                    <CommandItem key={item.title} onSelect={() => onOpenLink(item.href)}>
+                      {item.icon}
+                      {item.title}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </>
+            )}
 
-            <CommandGroup heading={`Posts (${posts.length})`}>
-              {isLoading ? (
-                <CommandItem disabled>
-                  <Loader2 className="size-4 animate-spin" />
-                  Loading posts...
-                </CommandItem>
-              ) : (
-                postLinks.map((item) => (
-                  <CommandItem key={item.href} onSelect={() => onOpenLink(item.href)}>
+            {isSearchActive && (
+              <CommandGroup heading={`Search Results (${searchResults.length})`}>
+                {isSearching ? (
+                  <CommandItem disabled>
+                    <Loader2 className="size-4 animate-spin" />
+                    Searching...
+                  </CommandItem>
+                ) : searchResults.length === 0 ? (
+                  <CommandItem disabled>No posts found.</CommandItem>
+                ) : (
+                  searchLinks.map((item) => (
+                    <CommandItem key={item.href} onSelect={() => onOpenLink(item.href)}>
+                      {item.icon}
+                      {item.title}
+                    </CommandItem>
+                  ))
+                )}
+              </CommandGroup>
+            )}
+
+            {!isSearchActive && (
+              <CommandGroup heading={`Posts (${posts.length})`}>
+                {isLoading ? (
+                  <CommandItem disabled>
+                    <Loader2 className="size-4 animate-spin" />
+                    Loading posts...
+                  </CommandItem>
+                ) : (
+                  postLinks.map((item) => (
+                    <CommandItem key={item.href} onSelect={() => onOpenLink(item.href)}>
+                      {item.icon}
+                      {item.title}
+                    </CommandItem>
+                  ))
+                )}
+              </CommandGroup>
+            )}
+
+            {!isSearchActive && (
+              <CommandGroup heading="Social Links">
+                {socialLinks.map((item) => (
+                  <CommandItem key={item.title} onSelect={() => onOpenLink(item.href, item.openInNewTab)}>
                     {item.icon}
                     {item.title}
                   </CommandItem>
-                ))
-              )}
-            </CommandGroup>
-
-            <CommandGroup heading="Social Links">
-              {socialLinks.map((item) => (
-                <CommandItem key={item.title} onSelect={() => onOpenLink(item.href, item.openInNewTab)}>
-                  {item.icon}
-                  {item.title}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+                ))}
+              </CommandGroup>
+            )}
           </CommandList>
         </Command>
       </CommandDialog>
