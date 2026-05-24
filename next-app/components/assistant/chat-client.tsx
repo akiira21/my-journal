@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { LoaderCircleIcon, SendIcon, SparklesIcon, UserIcon, PlusIcon, HistoryIcon } from "lucide-react";
+import { LoaderCircleIcon, SendIcon, SparklesIcon, UserIcon, PlusIcon, HistoryIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 
 import { apiFetch, apiStream } from "@/lib/api";
 import type { ChatMessage, ChatSessionResponse, ChatSource, PostsPageResponse } from "@/lib/blog-types";
@@ -258,6 +258,9 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
     last_message_at: string;
   }[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  // Collapsible context section
+  const [showContextDetails, setShowContextDetails] = useState(false);
 
   // Load post list for mentions
   useEffect(() => {
@@ -637,21 +640,36 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
           </code>
         </div>
 
-        {/* Sources */}
+        {/* Sources — collapsible */}
         {latestContextSources.length > 0 ? (
-          <div className="mt-2.5 flex flex-wrap items-center gap-1.5 border-t border-line/50 pt-2">
-            <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
-              Using
-            </span>
-            {latestContextSources.map((source, index) => (
-              <Link
-                key={`context-${source.post_id}-${index}`}
-                href={`/posts/${source.post_slug}`}
-                className="rounded-sm border border-line bg-background/50 px-2 py-0.5 font-mono text-[10px] text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
-              >
-                {source.title}
-              </Link>
-            ))}
+          <div className="mt-2.5 border-t border-line/50 pt-2">
+            <button
+              type="button"
+              onClick={() => setShowContextDetails((p) => !p)}
+              className="flex w-full items-center justify-between gap-2"
+            >
+              <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                Using {latestContextSources.length} source{latestContextSources.length > 1 ? "s" : ""}
+              </span>
+              {showContextDetails ? (
+                <ChevronUpIcon className="size-3 text-muted-foreground/50" />
+              ) : (
+                <ChevronDownIcon className="size-3 text-muted-foreground/50" />
+              )}
+            </button>
+            {showContextDetails && (
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                {latestContextSources.map((source, index) => (
+                  <Link
+                    key={`context-${source.post_id}-${index}`}
+                    href={`/posts/${source.post_slug}`}
+                    className="rounded-sm border border-line bg-background/50 px-2 py-0.5 font-mono text-[10px] text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
+                  >
+                    {source.title}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         ) : null}
       </div>

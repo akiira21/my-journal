@@ -233,6 +233,7 @@ func (s *Service) Chat(ctx context.Context, req ChatRequest) (*ChatResponse, err
 				Score:    pc.Score,
 			})
 		}
+		sources = s.filterReferencedSources(response, sources)
 	}
 
 	newMessages := append(chatCtx.Session.Messages, []Message{
@@ -376,6 +377,24 @@ Personality Notes:
 - Feel free to use a warm, helpful tone (e.g., "I'd be happy to help ~", "Let me explain that for you")
 - Remember you're Arun Kumar's personal assistant, here to help visitors learn
 - Stay professional while being approachable ~`, s.assistantName, context)
+}
+
+func (s *Service) filterReferencedSources(response string, sources []Source) []Source {
+	if len(sources) == 0 {
+		return sources
+	}
+	lowerResponse := strings.ToLower(response)
+	var referenced []Source
+	for _, src := range sources {
+		if strings.Contains(lowerResponse, strings.ToLower(src.Title)) {
+			referenced = append(referenced, src)
+		}
+	}
+	// If the assistant didn't explicitly mention any titles, fall back to the top source
+	if len(referenced) == 0 {
+		return []Source{sources[0]}
+	}
+	return referenced
 }
 
 func (s *Service) buildContextualQuery(messages []Message, currentQuery string) string {

@@ -213,6 +213,7 @@ func (h *Handler) ChatStream(c *gin.Context) {
 			Score:    pc.Score,
 		})
 	}
+	sources = h.service.filterReferencedSources(fullResponse, sources)
 
 	if len(sources) > 0 {
 		data, _ := json.Marshal(gin.H{"sources": sources})
