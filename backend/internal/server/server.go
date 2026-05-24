@@ -136,6 +136,7 @@ func (s *Server) registerRoutes() {
 	admin := v1.Group("/admin")
 	admin.Use(middleware.AdminAuth(s.config.AdminAPIKey))
 	{
+		admin.GET("/publish", s.adminHdlr.AdminPublishPage)
 		admin.POST("/posts", s.adminHdlr.CreatePost)
 		admin.POST("/posts/mdx", s.adminHdlr.CreateFromMDX)
 		admin.PUT("/posts/:id", s.adminHdlr.UpdatePost)
