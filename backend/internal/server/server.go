@@ -133,10 +133,12 @@ func (s *Server) registerRoutes() {
 		posts.POST("/:id/view", s.postHdlr.IncrementViewCount)
 	}
 
+	// Admin publish page — no auth required to load the HTML form
+	v1.GET("/admin/publish", s.adminHdlr.AdminPublishPage)
+
 	admin := v1.Group("/admin")
 	admin.Use(middleware.AdminAuth(s.config.AdminAPIKey))
 	{
-		admin.GET("/publish", s.adminHdlr.AdminPublishPage)
 		admin.POST("/posts", s.adminHdlr.CreatePost)
 		admin.POST("/posts/mdx", s.adminHdlr.CreateFromMDX)
 		admin.PUT("/posts/:id", s.adminHdlr.UpdatePost)
