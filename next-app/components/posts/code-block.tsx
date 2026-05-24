@@ -7,7 +7,7 @@ import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 
 interface CodeBlockProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }
 
@@ -177,7 +177,7 @@ function CodeBlock({ children, className }: CodeBlockProps) {
 }
 
 // Inline code — academic style
-function InlineCode({ children }: { children: React.ReactNode }) {
+function InlineCode({ children }: { children?: React.ReactNode }) {
   return (
     <code
       className="rounded-sm bg-muted/60 px-[0.25em] py-[0.1em] font-mono text-[0.85em] text-foreground/80"
