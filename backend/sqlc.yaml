@@ -10,6 +10,9 @@ sql:
         sql_package: "pgx/v5"
         emit_json_tags: true
         emit_empty_slices: true
+        overrides:
+          - column: "*.search_vector"
+            go_type: "string"
   - engine: "postgresql"
     queries: "internal/modules/chat/queries/"
     schema: "migrations/"
