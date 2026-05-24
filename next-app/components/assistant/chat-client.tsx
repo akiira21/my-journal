@@ -4,13 +4,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { LoaderCircleIcon, SendIcon, SparklesIcon, UserIcon } from "lucide-react";
+import { LoaderCircleIcon, SendIcon, SparklesIcon, UserIcon, PlusIcon, HistoryIcon } from "lucide-react";
 
 import { apiFetch, apiStream } from "@/lib/api";
-import type { ChatMessage, ChatSessionResponse, ChatSource } from "@/lib/blog-types";
+import type { ChatMessage, ChatSessionResponse, ChatSource, PostsPageResponse } from "@/lib/blog-types";
 import { Button } from "@/components/ui/button";
+import { Code } from "@/components/posts/code-block";
 
 const SESSION_STORAGE_KEY = "journal-assistant-session-id";
+const SOURCES_STORAGE_KEY = "journal-assistant-sources";
 
 type UiMessage = {
   id: string;
@@ -67,49 +69,129 @@ function parseSSEPayload(chunk: string): { event: string; data: unknown } | null
   }
 }
 
-type AssistantChatClientProps = {
-  assistantName: string;
-};
+function getStoredSources(): ChatSource[] {
+  try {
+    const raw = window.localStorage.getItem(SOURCES_STORAGE_KEY);
+    if (raw) {
+      return JSON.parse(raw) as ChatSource[];
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return [];
+}
 
-function MarkdownContent({ content }: { content: string }) {
+function setStoredSources(sources: ChatSource[]) {
+  try {
+    window.localStorage.setItem(SOURCES_STORAGE_KEY, JSON.stringify(sources));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Rich markdown renderer — same style as post MDX                    */
+/* ------------------------------------------------------------------ */
+
+function ChatMarkdownContent({ content }: { content: string }) {
   return (
     <div className="max-w-none overflow-x-hidden wrap-break-word text-sm leading-7 text-foreground/95">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
-          ul: ({ children }) => <ul className="mb-3 ml-5 list-disc space-y-1">{children}</ul>,
-          ol: ({ children }) => <ol className="mb-3 ml-5 list-decimal space-y-1">{children}</ol>,
-          a: ({ children, href }) => (
-            <a
-              href={href}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="underline decoration-muted-foreground/60 underline-offset-4 transition-colors hover:text-foreground"
-            >
+          h1: ({ children }) => (
+            <h1 className="mt-6 mb-3 text-lg font-bold leading-tight tracking-tight text-foreground">
               {children}
-            </a>
+            </h1>
           ),
-          code: ({ children, className }) => {
-            const isBlock = Boolean(className);
-            if (isBlock) {
-              return (
-                <code className="block overflow-x-auto border border-line bg-muted/30 px-3 py-2 font-mono text-xs">
-                  {children}
-                </code>
-              );
-            }
-
-            return <code className="bg-muted/40 px-1 py-0.5 font-mono text-xs">{children}</code>;
+          h2: ({ children }) => (
+            <h2 className="mt-5 mb-2.5 text-base font-semibold leading-snug tracking-tight text-foreground">
+              {children}
+            </h2>
+          ),
+          h3: ({ children }) => (
+            <h3 className="mt-4 mb-2 text-sm font-semibold leading-snug tracking-tight text-foreground/90">
+              {children}
+            </h3>
+          ),
+          p: ({ children }) => (
+            <p className="my-3 text-[0.9375rem] leading-[1.75] text-foreground/80">
+              {children}
+            </p>
+          ),
+          blockquote: ({ children }) => (
+            <blockquote className="my-4 border-l-2 border-primary/30 bg-muted/20 pl-4 py-1 pr-2 text-sm italic text-foreground/70">
+              {children}
+            </blockquote>
+          ),
+          hr: () => (
+            <div className="my-5 border-t border-line" aria-hidden="true" />
+          ),
+          ul: ({ children }) => (
+            <ul className="my-4 ml-0 list-none space-y-2">
+              {children}
+            </ul>
+          ),
+          ol: ({ children }) => (
+            <ol className="my-4 ml-0 list-none space-y-2">
+              {children}
+            </ol>
+          ),
+          li: ({ children }) => (
+            <li className="flex items-start gap-3 text-[0.9375rem] leading-[1.75] text-foreground/75">
+              <span className="flex-shrink-0 mt-[0.55rem] h-[5px] w-[5px] rounded-full bg-foreground/30" />
+              <span>{children}</span>
+            </li>
+          ),
+          a: ({ children, href }) => {
+            const safeHref = href ?? "#";
+            const isExternal = /^https?:\/\//i.test(safeHref);
+            return (
+              <a
+                href={safeHref}
+                target={isExternal ? "_blank" : undefined}
+                rel={isExternal ? "noreferrer noopener" : undefined}
+                className="text-primary underline underline-offset-4 decoration-primary/30 hover:decoration-primary transition-all font-medium"
+              >
+                {children}
+              </a>
+            );
           },
-          pre: ({ children }) => <pre className="mb-3 overflow-x-auto">{children}</pre>,
+          code: Code,
+          pre: ({ children }) => <pre className="my-4 overflow-x-auto">{children}</pre>,
           table: ({ children }) => (
-            <div className="mb-3 overflow-x-auto">
-              <table className="w-full min-w-max border-collapse border border-line text-xs">{children}</table>
+            <div className="my-4 overflow-x-auto border border-line rounded-md">
+              <table className="w-full text-sm">
+                {children}
+              </table>
             </div>
           ),
-          th: ({ children }) => <th className="border border-line px-2 py-1 text-left">{children}</th>,
-          td: ({ children }) => <td className="border border-line px-2 py-1">{children}</td>,
+          thead: ({ children }) => (
+            <thead className="bg-muted/50 border-b border-line">
+              {children}
+            </thead>
+          ),
+          th: ({ children }) => (
+            <th className="px-4 py-2.5 text-left font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              {children}
+            </th>
+          ),
+          td: ({ children }) => (
+            <td className="px-4 py-3 text-foreground/90 border-t border-line">
+              {children}
+            </td>
+          ),
+          tr: ({ children }) => (
+            <tr className="hover:bg-muted/30 transition-colors">
+              {children}
+            </tr>
+          ),
+          strong: ({ children }) => (
+            <strong className="font-semibold text-foreground">{children}</strong>
+          ),
+          em: ({ children }) => (
+            <em className="italic text-foreground/80">{children}</em>
+          ),
         }}
       >
         {content}
@@ -117,6 +199,38 @@ function MarkdownContent({ content }: { content: string }) {
     </div>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                            */
+/* ------------------------------------------------------------------ */
+
+function extractMentions(text: string): string[] {
+  const matches = text.match(/@([a-z0-9-]+)/g);
+  if (!matches) return [];
+  return matches.map((m) => m.slice(1)); // Remove the leading "@"
+}
+
+/* ------------------------------------------------------------------ */
+/*  Mention helpers                                                   */
+/* ------------------------------------------------------------------ */
+
+function getMentionContext(
+  text: string,
+  cursorPos: number,
+): { start: number; query: string } | null {
+  const beforeCursor = text.slice(0, cursorPos);
+  const match = beforeCursor.match(/@([a-zA-Z0-9-]*)$/);
+  if (!match) return null;
+  return { start: beforeCursor.length - match[0].length, query: match[1] };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Assistant Chat Client                                              */
+/* ------------------------------------------------------------------ */
+
+type AssistantChatClientProps = {
+  assistantName: string;
+};
 
 export function AssistantChatClient({ assistantName }: AssistantChatClientProps) {
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -126,11 +240,38 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesViewportRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
+  // Mention autocomplete state
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [mentionIndex, setMentionIndex] = useState(0);
+  const [mentionStartPos, setMentionStartPos] = useState(0);
+  const [allPosts, setAllPosts] = useState<{ slug: string; title: string }[]>([]);
+
+  // History dropdown state
+  const [showHistory, setShowHistory] = useState(false);
+  const [historySessions, setHistorySessions] = useState<{
+    session_id: string;
+    first_message: string;
+    message_count: number;
+    last_message_at: string;
+  }[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  // Load post list for mentions
+  useEffect(() => {
+    apiFetch<PostsPageResponse>("/posts?page=1&page_size=100")
+      .then((d) => setAllPosts(d.posts.map((p) => ({ slug: p.slug, title: p.title }))))
+      .catch(() => {});
+  }, []);
+
+  // Load session and restore persisted sources on mount
   useEffect(() => {
     const init = async () => {
       try {
         const stored = window.localStorage.getItem(SESSION_STORAGE_KEY);
+        const storedSources = getStoredSources();
 
         const session = await apiFetch<ChatSessionResponse>("/chat/sessions", {
           method: "POST",
@@ -142,7 +283,19 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
         window.localStorage.setItem(SESSION_STORAGE_KEY, nextSessionId);
 
         if (session.messages && session.messages.length > 0) {
-          setMessages(toUiMessages(session.messages));
+          const uiMessages = toUiMessages(session.messages);
+
+          // Restore sources to the most recent assistant message
+          if (storedSources.length > 0) {
+            for (let i = uiMessages.length - 1; i >= 0; i--) {
+              if (uiMessages[i].role === "assistant") {
+                uiMessages[i].sources = storedSources;
+                break;
+              }
+            }
+          }
+
+          setMessages(uiMessages);
         }
       } catch (error) {
         setError(
@@ -158,6 +311,7 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
     void init();
   }, []);
 
+  // Auto-scroll to bottom
   useEffect(() => {
     const viewport = messagesViewportRef.current;
     if (!viewport) {
@@ -169,6 +323,17 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
       behavior: "smooth",
     });
   }, [messages, isStreaming]);
+
+  // Persist latest sources whenever messages change
+  useEffect(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i];
+      if (message.role === "assistant" && message.sources && message.sources.length > 0) {
+        setStoredSources(dedupeSources(message.sources));
+        break;
+      }
+    }
+  }, [messages]);
 
   const canSend = useMemo(() => {
     return Boolean(sessionId) && inputValue.trim().length > 0 && !isStreaming;
@@ -184,12 +349,120 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
     return [] as ChatSource[];
   }, [messages]);
 
+  // Mention dropdown items
+  const filteredPosts = useMemo(() => {
+    if (!mentionQuery) return allPosts.slice(0, 6);
+    const q = mentionQuery.toLowerCase();
+    return allPosts
+      .filter(
+        (p) =>
+          p.slug.toLowerCase().includes(q) || p.title.toLowerCase().includes(q),
+      )
+      .slice(0, 6);
+  }, [allPosts, mentionQuery]);
+
+  const selectMention = (post: { slug: string; title: string }) => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const cursorPos = ta.selectionStart;
+    const before = inputValue.slice(0, mentionStartPos);
+    const after = inputValue.slice(cursorPos);
+    const newValue = `${before}@${post.slug} ${after}`;
+    setInputValue(newValue);
+    setShowMentions(false);
+    // Move cursor after inserted mention
+    requestAnimationFrame(() => {
+      const pos = before.length + post.slug.length + 2; // +2 for @ and space
+      ta.setSelectionRange(pos, pos);
+      ta.focus();
+    });
+  };
+
+  const handleNewSession = async () => {
+    if (isStreaming || isLoading) return;
+
+    setIsLoading(true);
+    setError(null);
+    setShowHistory(false);
+
+    try {
+      window.localStorage.removeItem(SESSION_STORAGE_KEY);
+      window.localStorage.removeItem(SOURCES_STORAGE_KEY);
+
+      // Always generate a new UUID so backend creates a fresh session
+      const newSessionId = crypto.randomUUID();
+      const session = await apiFetch<ChatSessionResponse>("/chat/sessions", {
+        method: "POST",
+        data: { session_id: newSessionId },
+      });
+
+      const nextSessionId = session.session_id;
+      setSessionId(nextSessionId);
+      window.localStorage.setItem(SESSION_STORAGE_KEY, nextSessionId);
+      setMessages([]);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to start a new session.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadHistory = async () => {
+    if (isLoadingHistory) return;
+    setIsLoadingHistory(true);
+    try {
+      const data = await apiFetch<{ sessions: typeof historySessions }>("/chat/history");
+      setHistorySessions(data.sessions ?? []);
+      setShowHistory(true);
+    } catch {
+      // ignore
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  const loadSessionFromHistory = async (sid: string) => {
+    setShowHistory(false);
+    setIsLoading(true);
+    setError(null);
+    try {
+      window.localStorage.removeItem(SOURCES_STORAGE_KEY);
+      const session = await apiFetch<ChatSessionResponse>("/chat/sessions", {
+        method: "POST",
+        data: { session_id: sid },
+      });
+
+      const nextSessionId = session.session_id;
+      setSessionId(nextSessionId);
+      window.localStorage.setItem(SESSION_STORAGE_KEY, nextSessionId);
+
+      if (session.messages && session.messages.length > 0) {
+        setMessages(toUiMessages(session.messages));
+      } else {
+        setMessages([]);
+      }
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to load session.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const onSendMessage = async () => {
     if (!canSend || !sessionId) {
       return;
     }
 
     const userMessage = inputValue.trim();
+    const mentionedPosts = extractMentions(userMessage);
     const assistantMessageId = `assistant-${Date.now()}`;
 
     setInputValue("");
@@ -208,6 +481,7 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
         body: JSON.stringify({
           session_id: sessionId,
           message: userMessage,
+          mentioned_posts: mentionedPosts,
         }),
       });
 
@@ -280,23 +554,100 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden border-x border-line">
-      <div className="screen-line-bottom border-b border-line bg-muted/30 p-3">
-        <div className="mb-1 inline-flex items-center gap-2 border border-line px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-          <SparklesIcon className="size-3.5 text-violet-500" />
-          Context Mode
+      {/* ── Header ── */}
+      <div className="screen-line-bottom relative border-b border-line bg-muted/30 px-4 py-3">
+        {/* Top row: badge + action */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="inline-flex items-center gap-1.5 rounded-md border border-line bg-background/60 px-2 py-1">
+            <SparklesIcon className="size-3 text-violet-500" />
+            <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              Context Mode
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => void loadHistory()}
+              disabled={isLoading || isStreaming || isLoadingHistory}
+              className="inline-flex items-center gap-1 rounded-md border border-line bg-background/60 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-40"
+              title="View conversation history"
+            >
+              <HistoryIcon className="size-3" />
+              History
+            </button>
+            <button
+              onClick={() => void handleNewSession()}
+              disabled={isLoading || isStreaming}
+              className="inline-flex items-center gap-1 rounded-md border border-line bg-background/60 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-40"
+              title="Start a new conversation"
+            >
+              <PlusIcon className="size-3" />
+              New
+            </button>
+          </div>
         </div>
-        <p className="font-mono text-xs text-muted-foreground/90">
+
+        {/* History dropdown */}
+        {showHistory && (
+          <div className="absolute right-4 top-12 z-50 w-72 max-h-60 overflow-y-auto rounded-lg border border-line bg-background shadow-xl">
+            {historySessions.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-muted-foreground">
+                No previous conversations.
+              </div>
+            ) : (
+              historySessions.map((session) => (
+                <button
+                  key={session.session_id}
+                  type="button"
+                  onClick={() => void loadSessionFromHistory(session.session_id)}
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors border-b border-line/50 last:border-0"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate font-medium text-foreground">
+                      {session.first_message || "Untitled"}
+                    </span>
+                    <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+                      {session.message_count} msg
+                    </span>
+                  </div>
+                  <div className="mt-0.5 font-mono text-[10px] text-muted-foreground/60">
+                    {session.last_message_at
+                      ? new Date(session.last_message_at).toLocaleString()
+                      : "No messages"}
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Description */}
+        <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground/80">
           Ask about posts, architecture decisions, and concepts from this journal.
         </p>
 
+        {/* Hint */}
+        <div className="mt-1.5 flex items-center gap-1.5">
+          <span className="text-[11px] text-muted-foreground/50">Tip:</span>
+          <span className="text-[11px] text-muted-foreground/60">
+            Mention a post with
+          </span>
+          <code className="rounded border border-line bg-muted/50 px-1.5 py-0.5 font-mono text-[10px] text-foreground/70">
+            @post-slug
+          </code>
+        </div>
+
+        {/* Sources */}
         {latestContextSources.length > 0 ? (
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Using:</span>
+          <div className="mt-2.5 flex flex-wrap items-center gap-1.5 border-t border-line/50 pt-2">
+            <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
+              Using
+            </span>
             {latestContextSources.map((source, index) => (
               <Link
                 key={`context-${source.post_id}-${index}`}
                 href={`/posts/${source.post_slug}`}
-                className="border border-line px-2 py-0.5 font-mono text-[10px] text-muted-foreground transition-colors hover:text-foreground"
+                className="rounded-sm border border-line bg-background/50 px-2 py-0.5 font-mono text-[10px] text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
               >
                 {source.title}
               </Link>
@@ -335,7 +686,7 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
               </div>
 
               {message.role === "assistant" ? (
-                <MarkdownContent content={message.content || "..."} />
+                <ChatMarkdownContent content={message.content || "..."} />
               ) : (
                 <p className="whitespace-pre-wrap wrap-break-word font-mono text-sm leading-7 text-foreground/95">
                   {message.content || "..."}
@@ -349,13 +700,78 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
 
       <div className="mt-auto shrink-0 border-t border-line bg-background">
         <div className="border-l-2 border-l-transparent px-3 py-2 focus-within:border-l-blue-500">
-          <div className="flex items-end gap-2">
+          <div className="relative flex items-end gap-2">
+            {/* Mention autocomplete dropdown */}
+            {showMentions && filteredPosts.length > 0 && (
+              <div className="absolute bottom-full left-0 z-50 mb-1.5 w-full max-h-44 overflow-y-auto rounded-lg border border-line bg-background shadow-xl">
+                {filteredPosts.map((post, i) => (
+                  <button
+                    key={post.slug}
+                    type="button"
+                    onMouseEnter={() => setMentionIndex(i)}
+                    onClick={() => selectMention(post)}
+                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                      i === mentionIndex
+                        ? "bg-muted text-foreground"
+                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    }`}
+                  >
+                    <span className="font-medium">{post.title}</span>
+                    <span className="ml-2 font-mono text-[10px] text-muted-foreground/50">
+                      @{post.slug}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+
             <textarea
+              ref={textareaRef}
               placeholder={`Message ${assistantName}...`}
               className="max-h-36 min-h-12 w-full resize-none bg-transparent px-1 py-1 font-mono text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground"
               value={inputValue}
-              onChange={(event) => setInputValue(event.target.value)}
+              onChange={(event) => {
+                const value = event.target.value;
+                const cursorPos = event.target.selectionStart;
+                setInputValue(value);
+
+                const ctx = getMentionContext(value, cursorPos);
+                if (ctx) {
+                  setShowMentions(true);
+                  setMentionQuery(ctx.query);
+                  setMentionStartPos(ctx.start);
+                  setMentionIndex(0);
+                } else {
+                  setShowMentions(false);
+                }
+              }}
               onKeyDown={(event) => {
+                if (showMentions) {
+                  if (event.key === "ArrowDown") {
+                    event.preventDefault();
+                    setMentionIndex((p) =>
+                      Math.min(filteredPosts.length - 1, p + 1),
+                    );
+                    return;
+                  }
+                  if (event.key === "ArrowUp") {
+                    event.preventDefault();
+                    setMentionIndex((p) => Math.max(0, p - 1));
+                    return;
+                  }
+                  if (event.key === "Enter" || event.key === "Tab") {
+                    event.preventDefault();
+                    if (filteredPosts[mentionIndex]) {
+                      selectMention(filteredPosts[mentionIndex]);
+                    }
+                    return;
+                  }
+                  if (event.key === "Escape") {
+                    setShowMentions(false);
+                    return;
+                  }
+                }
+
                 if (event.key === "Enter" && !event.shiftKey) {
                   event.preventDefault();
                   void onSendMessage();
