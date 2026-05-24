@@ -12,7 +12,22 @@ A personal blog with an AI assistant that helps readers explore and understand c
 - **Admin publishing pipeline** — Upload MDX files with YAML frontmatter to publish or update posts, with automatic content indexing
 - **Hybrid search (BM25 + embeddings)** — Blog search and AI assistant retrieval combine PostgreSQL full-text search with OpenAI vector similarity for better results on both exact keywords and conceptual queries
 
-### Publish a Single Post
+### Publish via Web UI (Recommended)
+
+The easiest way to publish is through the built-in admin web interface:
+
+1. Start the backend server
+2. Visit `http://localhost:8080/api/v1/admin/publish`
+3. Enter your admin API key
+4. Drag & drop an MDX file (with YAML frontmatter)
+5. Optionally set a publish date
+6. Click **Publish Post**
+
+The page validates frontmatter client-side and shows a preview before publishing.
+
+### Publish via CLI
+
+For bulk uploads or CI/CD pipelines, use the publish script:
 
 ```bash
 cd scripts/publish
@@ -20,13 +35,13 @@ cd scripts/publish
 export API_URL="https://your-api.com"
 export ADMIN_API_KEY="your-admin-key"
 
-go run main.go --file ../../web/content/my-post.mdx --publish
+go run main.go --file ../../next-app/content/my-post.mdx --publish
 
 # Dry-run to validate frontmatter without publishing
-go run main.go --file ../../web/content/my-post.mdx --dry-run
+go run main.go --file ../../next-app/content/my-post.mdx --dry-run
 
 # Override slug
-go run main.go --file ../../web/content/my-post.mdx --slug custom-slug --publish
+go run main.go --file ../../next-app/content/my-post.mdx --slug custom-slug --publish
 ```
 
 ### Publish All Posts (Bulk Upload)
@@ -34,7 +49,7 @@ go run main.go --file ../../web/content/my-post.mdx --slug custom-slug --publish
 ```bash
 cd scripts/publish
 
-for file in ../../web/content/*.mdx; do
+for file in ../../next-app/content/*.mdx; do
   echo "Publishing: $file"
   go run main.go --file "$file" --publish
   sleep 1  # Rate limit between uploads
