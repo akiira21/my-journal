@@ -28,10 +28,9 @@ export function PixelSphere({ className }: PixelSphereProps) {
     const cellW = W / cols;
     const cellH = H / rows;
 
-    const R1 = 20;   // sphere "cross-section" radius
-    const R2 = 0;    // 0 = sphere (no hole like donut)
+    const R = 22;
     const K2 = 200;
-    const K1 = (rows * K2 * 3) / (8 * (R1 + R2 || R1));
+    const K1 = (rows * K2 * 2) / (8 * R);
 
     const output = new Array(cols * rows).fill(" ");
     const zbuffer = new Array(cols * rows).fill(0);
@@ -40,13 +39,19 @@ export function PixelSphere({ className }: PixelSphereProps) {
     let B = 0;
     let animId: number;
 
-    // Use same step sizes as donut for similar density
-    const thetaStep = 0.07;
-    const phiStep = 0.025;
+    // Match donut step density
+    const thetaStep = 0.10;
+    const phiStep = 0.03;
+
+    // Light direction (same as donut convention)
+    const light = [0, 1, -1];
+    const lightLen = Math.sqrt(light[0]**2 + light[1]**2 + light[2]**2);
+    const lX = light[0] / lightLen;
+    const lY = light[1] / lightLen;
+    const lZ = light[2] / lightLen;
 
     function draw() {
       if (!ctx) return;
-
       output.fill(" ");
       zbuffer.fill(0);
 
@@ -55,22 +60,29 @@ export function PixelSphere({ className }: PixelSphereProps) {
       const sinB = Math.sin(B);
       const cosB = Math.cos(B);
 
-      for (let theta = 0; theta < Math.PI * 2; theta += thetaStep) {
-        const sintheta = Math.sin(theta);
-        const costheta = Math.cos(theta);
+      for (let theta = 0; theta < Math.PI; theta += thetaStep) {
+        const sinT = Math.sin(theta);
+        const cosT = Math.cos(theta);
 
         for (let phi = 0; phi < Math.PI * 2; phi += phiStep) {
-          const sinphi = Math.sin(phi);
-          const cosphi = Math.cos(phi);
+          const sinP = Math.sin(phi);
+          const cosP = Math.cos(phi);
 
-          // Circle cross-section (sphere: R2=0)
-          const circlex = R2 + R1 * costheta;
-          const circley = R1 * sintheta;
+          // Sphere surface point
+          const sx = R * sinT * cosP;
+          const sy = R * cosT;
+          const sz = R * sinT * sinP;
 
-          // 3D coords after A/B rotation (same as donut!)
-          const x = circlex * (cosB * cosphi + sinA * sinB * sinphi) - circley * cosA * sinB;
-          const y = circlex * (sinB * cosphi - sinA * cosB * sinphi) + circley * cosA * cosB;
-          const z = K2 + cosA * circlex * sinphi + circley * sinA;
+          // --- Rotate around X by A ---
+          const y1 = sy * cosA - sz * sinA;
+          const z1 = sy * sinA + sz * cosA;
+          const x1 = sx;
+
+          // --- Rotate around Y by B ---
+          const x = x1 * cosB + z1 * sinB;
+          const y = y1;
+          const z = -x1 * sinB + z1 * cosB + K2;
+
           const ooz = 1 / z;
 
           // 2D projection
@@ -84,12 +96,18 @@ export function PixelSphere({ className }: PixelSphereProps) {
           if (ooz > zbuffer[pos]) {
             zbuffer[pos] = ooz;
 
-            // Luminance (same formula as donut - dot of rotated normal with light)
-            const L =
-              cosphi * costheta * sinB -
-              cosA * costheta * sinphi -
-              sinA * sintheta +
-              cosB * (cosA * sintheta - costheta * sinA * sinphi);
+            // Normal is just the unit position vector on a sphere
+            // Rotate normal the same way as the point
+            const ny1 = cosT * cosA - sinT * sinP * sinA;
+            const nz1 = cosT * sinA + sinT * sinP * cosA;
+            const nx1 = sinT * cosP;
+
+            const nx = nx1 * cosB + nz1 * sinB;
+            const ny = ny1;
+            const nz = -nx1 * sinB + nz1 * cosB;
+
+            // Luminance = dot(normal, light)
+            const L = nx * lX + ny * lY + nz * lZ;
 
             const lumIdx = Math.floor(L * 8);
             const charIdx = Math.max(0, Math.min(CHARS.length - 1, lumIdx));
@@ -131,7 +149,7 @@ export function PixelSphere({ className }: PixelSphereProps) {
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
 
-      // Same increments as donut for same tumbling feel
+      // Same increments as donut
       A += 0.03;
       B += 0.007;
 
