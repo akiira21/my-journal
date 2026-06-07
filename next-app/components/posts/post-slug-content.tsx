@@ -9,6 +9,7 @@ import { Calendar, Clock, ArrowLeft, Tag } from "lucide-react";
 import { apiFetchServer } from "@/lib/api-server";
 import { postMdxComponents } from "@/components/posts/post-mdx-components";
 import { TableOfContent } from "@/components/posts/table-of-content";
+import { SharePreviewModal } from "@/components/posts/share-preview-modal";
 
 const inter = Inter({
   variable: "--font-post-body",
@@ -21,6 +22,7 @@ type PostDetail = {
   slug: string;
   title: string;
   description?: string | null;
+  cover_url?: string | null;
   content?: string | null;
   categories?: string[];
   tags?: string[];
@@ -242,6 +244,14 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
                 </div>
               </>
             )}
+            <span className="hidden sm:block h-3 w-px bg-line" />
+            <SharePreviewModal
+              title={post.title}
+              description={post.description}
+              coverUrl={post.cover_url}
+              slug={post.slug}
+              categories={post.categories}
+            />
           </div>
         </header>
 
