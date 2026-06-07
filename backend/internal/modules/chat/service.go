@@ -70,11 +70,15 @@ type ChatContext struct {
 }
 
 func (s *Service) CreateSession(ctx context.Context, sessionID string, ipHash *string) (*ChatSession, error) {
-	// If no session_id provided and we have an IP, try to find a recent session for this IP
+	// If no session_id provided and we have an IP, try to find a recent non-empty session for this IP
 	if sessionID == "" && ipHash != nil && *ipHash != "" {
-		sessions, err := s.repo.GetSessionsByIPHash(ctx, *ipHash, 1)
-		if err == nil && len(sessions) > 0 {
-			return &sessions[0], nil
+		sessions, err := s.repo.GetSessionsByIPHash(ctx, *ipHash, 5)
+		if err == nil {
+			for _, sess := range sessions {
+				if len(sess.Messages) > 0 {
+					return &sess, nil
+				}
+			}
 		}
 	}
 
