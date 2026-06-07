@@ -3,26 +3,13 @@
   "copyrightName": "Arun Journal",
   "avatar": "https://avatars.githubusercontent.com/u/135523348?v=4",
   "navigation": [
-    {
-      "label": "Posts",
-      "href": "/posts"
-    },
-    {
-      "label": "Assistant",
-      "href": "/assistant"
-    },
-    {
-      "label": "About",
-      "href": "/#about"
-    }
+    { "label": "Posts", "href": "/posts" },
+    { "label": "Assistant", "href": "/assistant" },
+    { "label": "About", "href": "/#about" }
   ],
   "about": {
     "name": "Arun Kumar",
-    "expertise": [
-      "Open Source Contributor",
-      "Frontend Engineer",
-      "Backend Engineer"
-    ],
+    "expertise": ["Open Source Contributor", "Frontend Engineer", "Backend Engineer"],
     "github": "https://github.com/akiira21",
     "X": "https://x.com/arundotspace",
     "Instagram": "https://instagram.com/arundotspace",
@@ -31,10 +18,8 @@
     "location": "Delhi, India",
     "timezone": "Asia/Kolkata",
     "description": [
-      "I specialize in frontend engineering with Next.js, React, and Tailwind CSS, and I commonly use shadcn/ui to build clean, accessible interfaces.",
-      "On the backend, I work with Node.js, Express, and Go, and I typically use PostgreSQL and MongoDB for production-ready applications.",
-      "I have a strong foundation in machine learning and deep learning, with hands-on experience implementing research papers in computer vision, including object detection, image super-resolution, and Attention Is All You Need.",
-      "I am deeply interested in practical AI and enjoy building personal projects that turn emerging ideas into useful products."
+      "I write about mathematics, machine learning, and computer science. I build full-stack web apps with Next.js, React, and Go, and I explore AI research by implementing papers in computer vision and NLP.",
+      "This blog is where I turn what I learn into something useful — for myself and for anyone else trying to understand the same things."
     ]
   },
   "repo": "https://github.com/akiira21/my-journal"

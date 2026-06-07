@@ -11,12 +11,15 @@ export function AboutSection() {
       </PanelHeader>
 
       <PanelContent className="p-0">
-        <div className="border-y border-line p-4">
-          <ul className="list-disc space-y-2 pl-5 font-mono text-sm leading-7 text-muted-foreground marker:text-foreground/50">
-            {about.description.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
+        <div className="border-y border-line p-4 space-y-3">
+          {about.description.map((paragraph, i) => (
+            <p
+              key={i}
+              className="font-mono text-xs leading-6 text-muted-foreground"
+            >
+              {paragraph}
+            </p>
+          ))}
         </div>
       </PanelContent>
     </Panel>

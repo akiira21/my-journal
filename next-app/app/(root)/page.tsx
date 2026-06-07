@@ -1,7 +1,10 @@
 import { AboutSection } from "@/components/home/about-section";
-import { PixelSphereRaster } from "@/components/pixel-sphere-raster";
+import { ChangelogSection } from "@/components/home/changelog-section";
+import { ContactSection } from "@/components/home/contact-section";
 import { GitHubContributions } from "@/components/home/github-contributions";
+import { LatestPostsSection } from "@/components/home/latest-posts-section";
 import { Overview } from "@/components/home/overview";
+import { PixelSphereRaster } from "@/components/pixel-sphere-raster";
 import { ProfileHeader } from "@/components/home/profile-header";
 import { SocialLinks } from "@/components/home/social-links";
 import { TechStack } from "@/components/home/tech-stack";
@@ -54,11 +57,23 @@ export default function Home() {
       </div>
 
       <ProfileHeader />
+      <div className="py-3" />
       <Overview />
+      <div className="py-3" />
       <SocialLinks />
+      <div className="py-3" />
+      <LatestPostsSection />
+      <div className="py-3" />
       <GitHubContributions />
+      <div className="py-3" />
       <TechStack />
+      <div className="py-4" />
       <AboutSection />
+      <div className="py-4" />
+      <ContactSection />
+      <div className="py-4" />
+      <ChangelogSection />
+      <div className="py-4" />
     </section>
   );
 }
