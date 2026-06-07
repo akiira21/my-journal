@@ -264,7 +264,7 @@
   .prose-magazine h2,
   .prose-magazine h3,
   .prose-magazine h4 {
-    font-family: var(--font-post-heading), Georgia, serif;
+    font-family: var(--font-pixel), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   }
 
   .prose-magazine strong {

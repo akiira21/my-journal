@@ -17,7 +17,7 @@ function OrderedList({ items, children }: OrderedListProps) {
     <ol className="my-5 ml-0 list-none space-y-2">
       {normalizedItems.length > 0
         ? normalizedItems.map((item, index) => (
-            <li key={`ordered-${index}-${String(item)}`} className="flex items-start gap-3 text-[0.9375rem] leading-[1.75] text-foreground/75">
+            <li key={`ordered-${index}-${String(item)}`} className="flex items-start gap-3 font-mono text-sm leading-[1.75] text-foreground/75">
               <span
                 className="shrink-0 mt-0.5 w-5 h-5 flex items-center justify-center rounded-sm bg-muted font-mono text-[11px] font-medium text-muted-foreground"
               >
@@ -43,7 +43,7 @@ function UnorderedList({ items, children }: UnorderedListProps) {
     <ul className="my-5 ml-0 list-none space-y-2">
       {normalizedItems.length > 0
         ? normalizedItems.map((item, index) => (
-            <li key={`unordered-${index}-${String(item)}`} className="flex items-start gap-3 text-[0.9375rem] leading-[1.75] text-foreground/75">
+            <li key={`unordered-${index}-${String(item)}`} className="flex items-start gap-3 font-mono text-sm leading-[1.75] text-foreground/75">
               <span className="flex-shrink-0 mt-[0.55rem] h-[5px] w-[5px] rounded-full bg-foreground/30" />
               <span>{item}</span>
             </li>
@@ -102,14 +102,14 @@ function Callout({ type = "info", title, children }: CalloutProps) {
   const label = title ?? type.charAt(0).toUpperCase() + type.slice(1);
 
   return (
-    <div className={`my-8 border border-line border-l-4 ${styles.border} ${styles.bg} rounded-md`}>
+    <div className="my-8 border border-line border-l-4 ${styles.border} ${styles.bg} rounded-md">
       <div className="flex items-center gap-2.5 px-4 py-2.5 border-b border-line/50 bg-background/50">
         <span className="text-muted-foreground">{styles.icon}</span>
-        <span className="font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+        <span className="font-pixel text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           {label}
         </span>
       </div>
-      <div className="px-4 py-4 text-sm leading-7 text-foreground/90">
+      <div className="px-4 py-4 font-mono text-sm leading-7 text-foreground/90">
         {children}
       </div>
     </div>
@@ -226,7 +226,7 @@ export const postMdxComponents = {
   h2: ({ children }: { children: ReactNode }) => {
     const id = generateId(getTextContent(children));
     return (
-      <h2 id={id} className="mt-12 mb-5 text-xl font-pixel leading-snug tracking-tight text-foreground">
+      <h2 id={id} className="mt-10 mb-4 text-lg font-pixel leading-snug tracking-tight text-foreground">
         {children}
       </h2>
     );
@@ -234,18 +234,18 @@ export const postMdxComponents = {
   h3: ({ children }: { children: ReactNode }) => {
     const id = generateId(getTextContent(children));
     return (
-      <h3 id={id} className="mt-10 mb-4 text-lg font-pixel leading-snug tracking-tight text-foreground/90">
+      <h3 id={id} className="mt-8 mb-3 text-sm font-pixel leading-snug tracking-tight text-foreground/90">
         {children}
       </h3>
     );
   },
   p: ({ children }: { children: ReactNode }) => (
-    <p className="my-5 text-[1rem] leading-[1.85] text-foreground/80">
+    <p className="my-5 font-mono text-sm leading-[1.85] text-foreground/80">
       {children}
     </p>
   ),
   blockquote: ({ children }: { children: ReactNode }) => (
-    <blockquote className="pull-quote">
+    <blockquote className="pull-quote font-mono">
       {children}
     </blockquote>
   ),

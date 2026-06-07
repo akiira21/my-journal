@@ -209,7 +209,7 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
 
           {/* Subtitle / description */}
           {post.description && (
-            <p className="mt-3.5 max-w-2xl text-sm leading-relaxed text-muted-foreground/80">
+            <p className="mt-3.5 max-w-2xl font-mono text-sm leading-relaxed text-muted-foreground/80">
               {post.description}
             </p>
           )}
@@ -258,7 +258,7 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
         {relatedPosts.length > 0 && (
           <div className="mx-6 mb-8 border-t border-line pt-5">
             <h2
-              className="mb-3 font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60"
+              className="mb-3 font-pixel text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60"
             >
               Related Reading
             </h2>
@@ -271,11 +271,11 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
                 >
                   <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/40 transition-colors group-hover:bg-primary" />
                   <div>
-                    <span className="text-[14px] font-medium text-foreground/85 transition-colors group-hover:text-foreground">
+                    <span className="text-[13px] font-pixel text-foreground/85 transition-colors group-hover:text-foreground">
                       {related.title}
                     </span>
                     {related.description && (
-                      <p className="mt-0.5 line-clamp-1 text-[13px] text-muted-foreground/60">
+                      <p className="mt-0.5 line-clamp-1 font-mono text-[11px] text-muted-foreground/60">
                         {related.description}
                       </p>
                     )}
