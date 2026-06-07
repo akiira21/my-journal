@@ -18,77 +18,59 @@ export function PixelSphere({ className }: PixelSphereProps) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Grid resolution (character cells)
-    const cols = 70;
-    const rows = 70;
-    const W = 420;
-    const H = 420;
+    const cols = 80;
+    const rows = 80;
+    const W = 400;
+    const H = 400;
     canvas.width = W;
     canvas.height = H;
 
     const cellW = W / cols;
     const cellH = H / rows;
 
-    // Sphere constants
-    const R = 18;          // sphere radius
-    const K2 = 200;        // viewer distance
-    const K1 = (rows * K2 * 3) / (8 * (R * 2));
+    const R1 = 20;   // sphere "cross-section" radius
+    const R2 = 0;    // 0 = sphere (no hole like donut)
+    const K2 = 200;
+    const K1 = (rows * K2 * 3) / (8 * (R1 + R2 || R1));
 
     const output = new Array(cols * rows).fill(" ");
     const zbuffer = new Array(cols * rows).fill(0);
 
-    let angleX = 0;
-    let angleY = 0;
+    let A = 0;
+    let B = 0;
     let animId: number;
 
-    const thetaStep = 0.09; // latitude step
-    const phiStep = 0.06;   // longitude step
+    // Use same step sizes as donut for similar density
+    const thetaStep = 0.07;
+    const phiStep = 0.025;
 
     function draw() {
       if (!ctx) return;
 
-      // Clear buffers
       output.fill(" ");
       zbuffer.fill(0);
 
-      const cosAX = Math.cos(angleX);
-      const sinAX = Math.sin(angleX);
-      const cosAY = Math.cos(angleY);
-      const sinAY = Math.sin(angleY);
+      const sinA = Math.sin(A);
+      const cosA = Math.cos(A);
+      const sinB = Math.sin(B);
+      const cosB = Math.cos(B);
 
-      // Light direction (fixed in world space)
-      const lightX = 0;
-      const lightY = 1;
-      const lightZ = -1;
-      const lightLen = Math.sqrt(lightX * lightX + lightY * lightY + lightZ * lightZ);
-      const lX = lightX / lightLen;
-      const lY = lightY / lightLen;
-      const lZ = lightZ / lightLen;
-
-      for (let theta = 0; theta < Math.PI; theta += thetaStep) {
-        const cosT = Math.cos(theta);
-        const sinT = Math.sin(theta);
+      for (let theta = 0; theta < Math.PI * 2; theta += thetaStep) {
+        const sintheta = Math.sin(theta);
+        const costheta = Math.cos(theta);
 
         for (let phi = 0; phi < Math.PI * 2; phi += phiStep) {
-          const cosP = Math.cos(phi);
-          const sinP = Math.sin(phi);
+          const sinphi = Math.sin(phi);
+          const cosphi = Math.cos(phi);
 
-          // Sphere surface point
-          const sx = R * sinT * cosP;
-          const sy = R * cosT;
-          const sz = R * sinT * sinP;
+          // Circle cross-section (sphere: R2=0)
+          const circlex = R2 + R1 * costheta;
+          const circley = R1 * sintheta;
 
-          // Rotate around X then Y
-          // X rotation
-          const ry1 = sy * cosAX - sz * sinAX;
-          const rz1 = sy * sinAX + sz * cosAX;
-          const rx1 = sx;
-
-          // Y rotation
-          const x = rx1 * cosAY - rz1 * sinAY;
-          const y = ry1;
-          const z = rx1 * sinAY + rz1 * cosAY + K2;
-
+          // 3D coords after A/B rotation (same as donut!)
+          const x = circlex * (cosB * cosphi + sinA * sinB * sinphi) - circley * cosA * sinB;
+          const y = circlex * (sinB * cosphi - sinA * cosB * sinphi) + circley * cosA * cosB;
+          const z = K2 + cosA * circlex * sinphi + circley * sinA;
           const ooz = 1 / z;
 
           // 2D projection
@@ -99,24 +81,15 @@ export function PixelSphere({ className }: PixelSphereProps) {
 
           const pos = xp + cols * yp;
 
-          // Z-buffer
           if (ooz > zbuffer[pos]) {
             zbuffer[pos] = ooz;
 
-            // Surface normal (same as point on unit sphere, rotated)
-            const nx1 = sinT * cosP;
-            const ny1 = cosT;
-            const nz1 = sinT * sinP;
-
-            // Apply same rotations to normal
-            const nry1 = ny1 * cosAX - nz1 * sinAX;
-            const nrz1 = ny1 * sinAX + nz1 * cosAX;
-            const nx = nx1 * cosAY - nrz1 * sinAY;
-            const ny = nry1;
-            const nz = nx1 * sinAY + nrz1 * cosAY;
-
-            // Luminance = dot(normal, light)
-            const L = nx * lX + ny * lY + nz * lZ;
+            // Luminance (same formula as donut - dot of rotated normal with light)
+            const L =
+              cosphi * costheta * sinB -
+              cosA * costheta * sinphi -
+              sinA * sintheta +
+              cosB * (cosA * sintheta - costheta * sinA * sinphi);
 
             const lumIdx = Math.floor(L * 8);
             const charIdx = Math.max(0, Math.min(CHARS.length - 1, lumIdx));
@@ -125,33 +98,29 @@ export function PixelSphere({ className }: PixelSphereProps) {
         }
       }
 
-      // Render to canvas
+      // Render
       ctx.clearRect(0, 0, W, H);
-
-      // Glimmer time
       const time = Date.now() * 0.001;
 
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           const ch = output[x + cols * y];
           if (ch !== " ") {
-            // Find char brightness index
             const charIdx = CHARS.indexOf(ch);
-            const brightness = charIdx / (CHARS.length - 1); // 0..1
+            const brightness = charIdx / (CHARS.length - 1);
 
-            // Glimmer: traveling wave across screen
             const glimmer =
-              Math.sin(time * 2 + x * 0.15 + y * 0.1) * 0.3 +
-              Math.sin(time * 1.5 + x * 0.08 - y * 0.12) * 0.2 +
+              Math.sin(time * 2 + x * 0.12 + y * 0.08) * 0.3 +
+              Math.sin(time * 1.5 - x * 0.1 + y * 0.15) * 0.2 +
               0.5;
 
             const alpha = Math.min(1, Math.max(0.15, brightness * glimmer + 0.2));
 
             ctx.globalAlpha = alpha;
-            ctx.fillStyle = "#3b82f6"; // blue
+            ctx.fillStyle = "#3b82f6";
             ctx.shadowColor = "#60a5fa";
             ctx.shadowBlur = brightness > 0.6 ? 3 : 0;
-            ctx.font = `${Math.min(cellW, cellH) * 0.9}px var(--font-geist-mono, monospace)`;
+            ctx.font = `${Math.min(cellW, cellH) * 0.85}px var(--font-geist-mono, monospace)`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(ch, x * cellW + cellW / 2, y * cellH + cellH / 2);
@@ -162,8 +131,9 @@ export function PixelSphere({ className }: PixelSphereProps) {
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
 
-      angleX += 0.025;
-      angleY += 0.015;
+      // Same increments as donut for same tumbling feel
+      A += 0.03;
+      B += 0.007;
 
       animId = requestAnimationFrame(draw);
     }
