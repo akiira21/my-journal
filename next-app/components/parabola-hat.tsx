@@ -40,8 +40,8 @@ export function PixelGlobe({ className }: DonutProps) {
     let B = 0;
     let animId: number;
 
-    const thetaStep = 0.08;
-    const phiStep = 0.03;
+    const thetaStep = 0.14;
+    const phiStep = 0.07;
 
     function draw() {
       if (!ctx) return;

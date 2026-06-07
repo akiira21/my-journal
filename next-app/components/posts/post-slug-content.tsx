@@ -159,7 +159,7 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
     return (
       <section className="mx-auto w-full max-w-3xl px-5 pt-12 pb-12">
         <div className="rounded-xl border border-line bg-muted/10 px-6 py-10 text-center">
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">Post not available</h1>
+          <h1 className="text-xl font-pixel tracking-tight text-foreground">Post not available</h1>
           <p className="mt-2 text-sm text-muted-foreground">{loadError ?? "Post content is missing."}</p>
           <Link
             href="/posts"

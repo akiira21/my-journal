@@ -298,7 +298,7 @@ export function TableOfContent({ sections }: TableOfContentProps) {
               stroke={3}
             />
             <div>
-              <h3 className="text-[13px] font-semibold text-foreground/90">
+              <h3 className="text-[13px] font-pixel text-foreground/90">
                 Reading
               </h3>
               <p className="text-[10px] text-foreground/40 font-medium">

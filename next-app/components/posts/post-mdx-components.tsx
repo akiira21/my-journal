@@ -218,7 +218,7 @@ export const postMdxComponents = {
   h1: ({ children }: { children: ReactNode }) => {
     const id = generateId(getTextContent(children));
     return (
-      <h1 id={id} className="mt-14 mb-6 text-[1.75rem] font-bold leading-tight tracking-tight text-foreground">
+      <h1 id={id} className="mt-14 mb-6 text-[1.75rem] font-pixel leading-tight tracking-tight text-foreground">
         {children}
       </h1>
     );
@@ -226,7 +226,7 @@ export const postMdxComponents = {
   h2: ({ children }: { children: ReactNode }) => {
     const id = generateId(getTextContent(children));
     return (
-      <h2 id={id} className="mt-12 mb-5 text-xl font-semibold leading-snug tracking-tight text-foreground">
+      <h2 id={id} className="mt-12 mb-5 text-xl font-pixel leading-snug tracking-tight text-foreground">
         {children}
       </h2>
     );
@@ -234,7 +234,7 @@ export const postMdxComponents = {
   h3: ({ children }: { children: ReactNode }) => {
     const id = generateId(getTextContent(children));
     return (
-      <h3 id={id} className="mt-10 mb-4 text-lg font-semibold leading-snug tracking-tight text-foreground/90">
+      <h3 id={id} className="mt-10 mb-4 text-lg font-pixel leading-snug tracking-tight text-foreground/90">
         {children}
       </h3>
     );

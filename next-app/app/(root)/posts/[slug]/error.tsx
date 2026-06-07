@@ -12,7 +12,7 @@ export default function PostSlugError({
   return (
     <section className="mx-auto w-full max-w-3xl pt-0 pb-0">
       <div className="screen-line-top screen-line-bottom border-x border-y border-line px-4 py-4">
-        <h1 className="text-xl font-semibold tracking-tight">Something went wrong</h1>
+        <h1 className="text-xl font-pixel tracking-tight">Something went wrong</h1>
       </div>
 
       <div className="screen-line-bottom border-x border-b border-line px-4 py-4 space-y-3">

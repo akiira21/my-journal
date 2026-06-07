@@ -13,7 +13,7 @@ export function TypographyH1({ children, className, id }: TypographyProps) {
     <h1
       id={id}
       className={cn(
-        "scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance",
+        "scroll-m-20 text-center text-4xl font-pixel tracking-tight text-balance",
         className,
       )}
     >
@@ -26,7 +26,7 @@ export function TypographyH2({ children, className, id }: TypographyProps) {
     <h2
       id={id}
       className={cn(
-        "scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0",
+        "scroll-m-20 border-b pb-2 text-3xl font-pixel tracking-tight first:mt-0",
         className,
       )}
     >
@@ -37,7 +37,7 @@ export function TypographyH2({ children, className, id }: TypographyProps) {
 
 export function TypographyH3({ children, className, id }: TypographyProps) {
   return (
-    <h3 id={id} className={cn("scroll-m-20 text-2xl font-semibold tracking-tight", className)}>
+    <h3 id={id} className={cn("scroll-m-20 text-2xl font-pixel tracking-tight", className)}>
       {children}
     </h3>
   )
@@ -45,7 +45,7 @@ export function TypographyH3({ children, className, id }: TypographyProps) {
 
 export function TypographyH4({ children, className, id }: TypographyProps) {
   return (
-    <h4 id={id} className={cn("scroll-m-20 text-xl font-semibold tracking-tight", className)}>
+    <h4 id={id} className={cn("scroll-m-20 text-xl font-pixel tracking-tight", className)}>
       {children}
     </h4>
   )
