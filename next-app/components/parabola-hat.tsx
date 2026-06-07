@@ -17,35 +17,39 @@ export function PixelGlobe({ className }: PixelGlobeProps) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Low-res pixelated canvas
-    const W = 180;
-    const H = 180;
+    // Higher internal res for dense dot grid, still pixelated via CSS
+    const W = 280;
+    const H = 280;
     canvas.width = W;
     canvas.height = H;
 
-    const globeColor = "#60a5fa"; // bright blue
-    const glowColor = "#2563eb";  // deeper blue glow
+    const baseColor = "#3b82f6"; // bright blue
+    const glowColor = "#60a5fa"; // lighter blue glow
 
-    // Generate evenly distributed points on sphere using Fibonacci spiral
-    const pointCount = 280;
-    const points: { x: number; y: number; z: number; char: string }[] = [];
-    const phi = Math.PI * (3 - Math.sqrt(5)); // golden angle
+    // Build lat/lon grid points on unit sphere
+    const latSteps = 40;
+    const lonSteps = 60;
+    const points: { x: number; y: number; z: number; lat: number; lon: number }[] = [];
 
-    for (let i = 0; i < pointCount; i++) {
-      const y = 1 - (i / (pointCount - 1)) * 2; // y from 1 to -1
-      const radius = Math.sqrt(1 - y * y);
-      const theta = phi * i;
-      const x = Math.cos(theta) * radius;
-      const z = Math.sin(theta) * radius;
-      const char = i % 2 === 0 ? "+" : "x";
-      points.push({ x, y, z, char });
+    for (let latIdx = 0; latIdx <= latSteps; latIdx++) {
+      const lat = (latIdx / latSteps) * Math.PI; // 0 -> PI
+      const y = Math.cos(lat);
+      const ringRadius = Math.sin(lat);
+
+      for (let lonIdx = 0; lonIdx < lonSteps; lonIdx++) {
+        const lon = (lonIdx / lonSteps) * Math.PI * 2;
+        const x = ringRadius * Math.cos(lon);
+        const z = ringRadius * Math.sin(lon);
+        points.push({ x, y, z, lat, lon });
+      }
     }
 
     let animationId: number;
     let angleY = 0;
+    let time = 0;
 
-    const fov = 250;
-    const globeR = 55;
+    const fov = 300;
+    const globeR = 90;
 
     function project(px: number, py: number, pz: number) {
       // Rotate around Y
@@ -56,7 +60,7 @@ export function PixelGlobe({ className }: PixelGlobeProps) {
       const ry = py;
 
       // Tilt slightly back
-      const tilt = -0.2;
+      const tilt = -0.25;
       const cosT = Math.cos(tilt);
       const sinT = Math.sin(tilt);
       const ty = ry * cosT - rz * sinT;
@@ -64,7 +68,7 @@ export function PixelGlobe({ className }: PixelGlobeProps) {
 
       const scale = fov / (fov + tz);
       const sx = rx * scale * globeR + W / 2;
-      const sy = -ty * scale * globeR + H / 2;
+      const sy = -ty * scale * globeR + H / 2 + 6; // nudge down
       return { x: sx, y: sy, scale, z: tz };
     }
 
@@ -75,31 +79,38 @@ export function PixelGlobe({ className }: PixelGlobeProps) {
       // Project all points
       const projected = points.map((p) => ({
         ...project(p.x, p.y, p.z),
-        char: p.char,
+        lat: p.lat,
+        lon: p.lon,
       }));
 
       // Sort by depth (back to front)
       projected.sort((a, b) => a.z - b.z);
 
-      // Draw back points dimmer
       for (const p of projected) {
-        const alpha = p.z < 0 ? 0.25 : 1;
-        const size = Math.max(6, 10 * p.scale);
+        // Only draw points on the visible hemisphere (+ small margin)
+        if (p.z < -0.35) continue;
+
+        // Glimmer: sine wave traveling across surface
+        const shimmer =
+          Math.sin(time * 2.5 + p.lat * 6 + p.lon * 3) * 0.5 +
+          Math.sin(time * 1.8 + p.lon * 8) * 0.3 +
+          0.8; // base brightness
+
+        const alpha = Math.min(1, Math.max(0.15, shimmer * (p.z > 0 ? 1 : 0.4)));
+        const dotSize = Math.max(1.5, 2.2 * p.scale);
 
         ctx.globalAlpha = alpha;
-        ctx.fillStyle = globeColor;
+        ctx.fillStyle = baseColor;
         ctx.shadowColor = glowColor;
-        ctx.shadowBlur = p.z > 0 ? 4 : 0;
-        ctx.font = `${size}px var(--font-geist-pixel-square, monospace)`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(p.char, p.x, p.y);
+        ctx.shadowBlur = p.z > 0 ? 3 : 0;
+        ctx.fillRect(p.x - dotSize / 2, p.y - dotSize / 2, dotSize, dotSize);
       }
 
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
 
-      angleY += 0.012;
+      angleY += 0.0035; // slow rotation
+      time += 0.016;
       animationId = requestAnimationFrame(draw);
     }
 
