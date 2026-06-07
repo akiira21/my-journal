@@ -113,6 +113,9 @@ func (h *Handler) GetHistory(c *gin.Context) {
 
 	result := make([]historySession, 0, len(sessions))
 	for _, s := range sessions {
+		if len(s.Messages) == 0 {
+			continue
+		}
 		firstMsg := ""
 		for _, m := range s.Messages {
 			if m.Role == "user" {
