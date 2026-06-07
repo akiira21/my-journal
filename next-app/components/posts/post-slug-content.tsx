@@ -175,7 +175,7 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
       <article
         className={`${inter.variable} mx-auto w-full max-w-3xl`}
         style={{
-          fontFamily: "var(--font-post-body), system-ui, sans-serif",
+          fontFamily: "var(--font-open-sans), system-ui, sans-serif",
         } as React.CSSProperties}
       >
         {/* Minimal back link */}
@@ -209,7 +209,7 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
 
           {/* Subtitle / description */}
           {post.description && (
-            <p className="mt-3.5 max-w-2xl font-mono text-sm leading-relaxed text-muted-foreground/80">
+            <p className="mt-3.5 max-w-2xl text-sm leading-relaxed text-muted-foreground/80" style={{ fontFamily: "var(--font-open-sans), system-ui, sans-serif" }}>
               {post.description}
             </p>
           )}
@@ -275,7 +275,7 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
                       {related.title}
                     </span>
                     {related.description && (
-                      <p className="mt-0.5 line-clamp-1 font-mono text-[11px] text-muted-foreground/60">
+                      <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground/60" style={{ fontFamily: "var(--font-open-sans), system-ui, sans-serif" }}>
                         {related.description}
                       </p>
                     )}
