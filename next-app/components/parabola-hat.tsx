@@ -18,8 +18,9 @@ export function PixelGlobe({ className }: DonutProps) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const cols = 60;
-    const rows = 60;
+    // Lower resolution = bigger cells, sparser look
+    const cols = 36;
+    const rows = 36;
     const W = 360;
     const H = 360;
     canvas.width = W;
@@ -40,8 +41,9 @@ export function PixelGlobe({ className }: DonutProps) {
     let B = 0;
     let animId: number;
 
-    const thetaStep = 0.14;
-    const phiStep = 0.07;
+    // Much bigger steps = way fewer chars
+    const thetaStep = 0.22;
+    const phiStep = 0.14;
 
     function draw() {
       if (!ctx) return;
@@ -98,9 +100,18 @@ export function PixelGlobe({ className }: DonutProps) {
 
       ctx.clearRect(0, 0, W, H);
 
-      // Read current text color from CSS (adapts to light/dark mode)
+      // Read theme from CSS for adaptive rendering
       const style = getComputedStyle(canvas!);
       const textColor = style.color || "currentColor";
+      const isDark = document.documentElement.classList.contains("dark");
+
+      // Subtle background disc so shape reads in both modes
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(W / 2, H / 2, K1 * 0.55, 0, Math.PI * 2);
+      ctx.fillStyle = isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.03)";
+      ctx.fill();
+      ctx.restore();
 
       const time = Date.now() * 0.001;
 
@@ -111,7 +122,6 @@ export function PixelGlobe({ className }: DonutProps) {
             const charIdx = CHARS.indexOf(ch);
             const brightness = charIdx / (CHARS.length - 1);
 
-            // Glimmer: traveling wave across the donut
             const glimmer =
               Math.sin(time * 2.5 + x * 0.15 + y * 0.1) * 0.3 +
               Math.sin(time * 1.8 + x * 0.08 - y * 0.12) * 0.2 +
@@ -121,9 +131,11 @@ export function PixelGlobe({ className }: DonutProps) {
 
             ctx.globalAlpha = alpha;
             ctx.fillStyle = textColor;
+            // Glow only in dark mode; in light mode it's too muddy
             ctx.shadowColor = textColor;
-            ctx.shadowBlur = brightness > 0.6 ? 3 : 0;
-            ctx.font = `${Math.min(cellW, cellH) * 0.85}px var(--font-geist-pixel-circle, monospace)`;
+            ctx.shadowBlur = isDark && brightness > 0.6 ? 4 : 0;
+            // Bigger font for clearer pixel look
+            ctx.font = `${Math.min(cellW, cellH) * 1.2}px var(--font-geist-pixel-circle, monospace)`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(ch, x * cellW + cellW / 2, y * cellH + cellH / 2);
