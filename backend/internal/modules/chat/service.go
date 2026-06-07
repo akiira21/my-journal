@@ -175,14 +175,6 @@ func (s *Service) PrepareChatContext(ctx context.Context, req ChatRequest) (*Cha
 		}
 	}
 
-	// 3. Fallback to previous context if nothing found
-	if !isRelated && len(session.Messages) > 0 {
-		postContents = s.getRecentPostContexts(ctx, session.Messages)
-		if len(postContents) > 0 {
-			isRelated = true
-		}
-	}
-
 	contextText := s.buildContext(postContents)
 	isNewSession := len(session.Messages) == 0
 	systemPrompt := s.buildSystemPrompt(contextText, isRelated, isNewSession)
@@ -418,47 +410,4 @@ func (s *Service) buildContextualQuery(messages []Message, currentQuery string) 
 	return strings.Join(parts, " ")
 }
 
-func (s *Service) getRecentPostContexts(ctx context.Context, messages []Message) []PostContent {
-	for i := len(messages) - 1; i >= 0; i-- {
-		if messages[i].Role == "user" {
-			prevEmbedding, err := s.openai.GenerateEmbedding(ctx, messages[i].Content)
-			if err != nil {
-				continue
-			}
 
-			results, err := s.postSvc.SearchHybrid(ctx, messages[i].Content, prevEmbedding, 3)
-			if err != nil {
-				continue
-			}
-
-			if len(results) > 0 {
-				var postContents []PostContent
-				for _, r := range results {
-					if len(postContents) >= 3 {
-						break
-					}
-					postDetail, content, err := s.postSvc.GetBySlug(ctx, r.Post.Slug)
-					if err != nil {
-						continue
-					}
-					postContents = append(postContents, PostContent{
-						Post: &post.PostSummary{
-							ID:          postDetail.ID,
-							Slug:        postDetail.Slug,
-							Title:       postDetail.Title,
-							Description: postDetail.Description,
-							Categories:  postDetail.Categories,
-							Tags:        postDetail.Tags,
-							Featured:    postDetail.Featured,
-							ViewCount:   postDetail.ViewCount,
-						},
-						Content: *content,
-						Score:   r.Score,
-					})
-				}
-				return postContents
-			}
-		}
-	}
-	return nil
-}
