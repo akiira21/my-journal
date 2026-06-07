@@ -1,24 +1,14 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, Play } from "lucide-react";
 
-type PostLightboxImageProps = {
+type VideoLightboxProps = {
   src: string;
-  alt: string;
-  width?: number;
-  height?: number;
-  caption?: string;
+  title?: string;
 };
 
-export function PostLightboxImage({
-  src,
-  alt,
-  width = 1200,
-  height = 800,
-  caption,
-}: PostLightboxImageProps) {
+export function VideoLightbox({ src, title }: VideoLightboxProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -31,28 +21,29 @@ export function PostLightboxImage({
   }, [open]);
 
   return (
-    <figure className="my-6 w-full">
-      {/* Thumbnail */}
+    <>
+      {/* Thumbnail / Preview */}
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group block w-full cursor-zoom-in overflow-hidden rounded-xl border border-line text-left"
+        className="group relative my-6 block w-full cursor-pointer overflow-hidden rounded-xl border border-line text-left"
       >
-        <Image
-          src={src}
-          alt={alt}
-          width={width}
-          height={height}
-          unoptimized
-          className="h-auto w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
-        />
+        {/* Video poster / gradient background */}
+        <div className="relative flex aspect-video w-full items-center justify-center bg-muted/60">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-line bg-background/80 shadow-lg transition-transform duration-300 group-hover:scale-110">
+              <Play className="ml-0.5 h-5.5 w-5.5 fill-foreground text-foreground" />
+            </div>
+          </div>
+          {title && (
+            <div className="absolute bottom-0 left-0 right-0 bg-background/80 px-4 py-2 backdrop-blur-sm">
+              <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                {title}
+              </span>
+            </div>
+          )}
+        </div>
       </button>
-
-      {caption ? (
-        <figcaption className="mt-2.5 text-center font-mono text-[11px] text-muted-foreground/70">
-          {caption}
-        </figcaption>
-      ) : null}
 
       {/* Lightbox Overlay */}
       {open && (
@@ -61,7 +52,7 @@ export function PostLightboxImage({
           onClick={() => setOpen(false)}
           role="dialog"
           aria-modal="true"
-          aria-label={alt}
+          aria-label={title || "Video"}
         >
           {/* Close button */}
           <button
@@ -73,22 +64,21 @@ export function PostLightboxImage({
             <X className="h-4.5 w-4.5" />
           </button>
 
-          {/* Image container */}
+          {/* Video container */}
           <div
             className="max-h-[85vh] max-w-[90vw] rounded-2xl border border-line bg-background p-2 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <Image
+            <video
+              controls
+              autoPlay
+              className="h-auto max-h-[81vh] w-full max-w-[88vw] rounded-xl"
               src={src}
-              alt={alt}
-              width={width}
-              height={height}
-              unoptimized
-              className="h-auto max-h-[81vh] w-auto max-w-[88vw] rounded-xl object-contain"
+              title={title}
             />
           </div>
         </div>
       )}
-    </figure>
+    </>
   );
 }

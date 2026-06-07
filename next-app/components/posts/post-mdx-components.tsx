@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 
 import { PostLightboxImage } from "@/components/posts/post-lightbox-image";
+import { VideoLightbox } from "@/components/posts/video-lightbox";
 import { Code } from "@/components/posts/code-block";
 import { TypographyH3, TypographyInlineCode as SharedTypographyInlineCode } from "@/components/typography";
 
@@ -129,21 +130,7 @@ function VideoPlayer({ src, title }: { src: string; title?: string }) {
     return null;
   }
 
-  return (
-    <div className="my-6 border border-line">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-line bg-muted/40">
-        <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-          Video
-        </span>
-        {title && (
-          <span className="text-xs text-muted-foreground truncate max-w-[200px]">
-            {title}
-          </span>
-        )}
-      </div>
-      <video controls className="h-auto w-full" src={src} title={title} />
-    </div>
-  );
+  return <VideoLightbox src={src} title={title} />;
 }
 
 type NumericalTableProps = {
