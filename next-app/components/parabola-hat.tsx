@@ -3,11 +3,11 @@
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
-export type ParabolaHatProps = {
+export type PixelGlobeProps = {
   className?: string;
 };
 
-export function ParabolaHat({ className }: ParabolaHatProps) {
+export function PixelGlobe({ className }: PixelGlobeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -17,102 +17,89 @@ export function ParabolaHat({ className }: ParabolaHatProps) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Internal low resolution for pixelated look
-    const W = 160;
-    const H = 120;
+    // Low-res pixelated canvas
+    const W = 180;
+    const H = 180;
     canvas.width = W;
     canvas.height = H;
 
-    // Read color from computed style
-    const style = getComputedStyle(canvas);
-    const color = style.color || "#e8e8e8";
+    const globeColor = "#60a5fa"; // bright blue
+    const glowColor = "#2563eb";  // deeper blue glow
 
-    // Hat geometry parameters
-    const rings = 12;
-    const segments = 24;
-    const maxR = 40;
-    const height = 50;
-    const a = height / (maxR * maxR); // z = height - a * r^2
+    // Generate evenly distributed points on sphere using Fibonacci spiral
+    const pointCount = 280;
+    const points: { x: number; y: number; z: number; char: string }[] = [];
+    const phi = Math.PI * (3 - Math.sqrt(5)); // golden angle
 
-    // Generate mesh points
-    const mesh: { x: number; y: number; z: number }[][] = [];
-    for (let i = 0; i <= rings; i++) {
-      const r = (i / rings) * maxR;
-      const row: { x: number; y: number; z: number }[] = [];
-      for (let j = 0; j <= segments; j++) {
-        const theta = (j / segments) * Math.PI * 2;
-        const x = r * Math.cos(theta);
-        const z = r * Math.sin(theta); // using z as the horizontal plane axis (will become y after tilt)
-        const y = height - a * r * r; // height axis (will become z after tilt)
-        row.push({ x, y, z });
-      }
-      mesh.push(row);
+    for (let i = 0; i < pointCount; i++) {
+      const y = 1 - (i / (pointCount - 1)) * 2; // y from 1 to -1
+      const radius = Math.sqrt(1 - y * y);
+      const theta = phi * i;
+      const x = Math.cos(theta) * radius;
+      const z = Math.sin(theta) * radius;
+      const char = i % 2 === 0 ? "+" : "x";
+      points.push({ x, y, z, char });
     }
 
     let animationId: number;
     let angleY = 0;
 
-    const fov = 200;
+    const fov = 250;
+    const globeR = 55;
 
-    function project(p: { x: number; y: number; z: number }) {
-      // Rotate around Y (vertical after tilt)
+    function project(px: number, py: number, pz: number) {
+      // Rotate around Y
       const cosY = Math.cos(angleY);
       const sinY = Math.sin(angleY);
-      const rx = p.x * cosY - p.z * sinY;
-      const rz = p.x * sinY + p.z * cosY;
-      const ry = p.y;
+      const rx = px * cosY - pz * sinY;
+      const rz = px * sinY + pz * cosY;
+      const ry = py;
 
-      // Tilt backward slightly (rotate around X)
-      const tilt = -0.35; // radians, about -20 deg
+      // Tilt slightly back
+      const tilt = -0.2;
       const cosT = Math.cos(tilt);
       const sinT = Math.sin(tilt);
       const ty = ry * cosT - rz * sinT;
       const tz = ry * sinT + rz * cosT;
 
       const scale = fov / (fov + tz);
-      const sx = rx * scale * 1.8 + W / 2;
-      const sy = -ty * scale * 1.8 + H / 2 + 10; // +10 to center vertically
-      return { x: sx, y: sy, scale };
+      const sx = rx * scale * globeR + W / 2;
+      const sy = -ty * scale * globeR + H / 2;
+      return { x: sx, y: sy, scale, z: tz };
     }
 
     function draw() {
       if (!ctx) return;
       ctx.clearRect(0, 0, W, H);
 
-      ctx.shadowBlur = 3;
-      ctx.shadowColor = color;
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 0.5;
+      // Project all points
+      const projected = points.map((p) => ({
+        ...project(p.x, p.y, p.z),
+        char: p.char,
+      }));
 
-      // Draw rings
-      for (let i = 0; i <= rings; i++) {
-        ctx.beginPath();
-        for (let j = 0; j <= segments; j++) {
-          const p = project(mesh[i][j]);
-          if (j === 0) ctx.moveTo(p.x, p.y);
-          else ctx.lineTo(p.x, p.y);
-        }
-        ctx.closePath();
-        ctx.globalAlpha = 0.5 + (i / rings) * 0.5;
-        ctx.stroke();
-      }
+      // Sort by depth (back to front)
+      projected.sort((a, b) => a.z - b.z);
 
-      // Draw spokes
-      ctx.globalAlpha = 0.35;
-      for (let j = 0; j < segments; j += 2) {
-        ctx.beginPath();
-        for (let i = 0; i <= rings; i++) {
-          const p = project(mesh[i][j]);
-          if (i === 0) ctx.moveTo(p.x, p.y);
-          else ctx.lineTo(p.x, p.y);
-        }
-        ctx.stroke();
+      // Draw back points dimmer
+      for (const p of projected) {
+        const alpha = p.z < 0 ? 0.25 : 1;
+        const size = Math.max(6, 10 * p.scale);
+
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = globeColor;
+        ctx.shadowColor = glowColor;
+        ctx.shadowBlur = p.z > 0 ? 4 : 0;
+        ctx.font = `${size}px var(--font-geist-pixel-square, monospace)`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(p.char, p.x, p.y);
       }
 
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
 
-      angleY += 0.015;
+      angleY += 0.012;
       animationId = requestAnimationFrame(draw);
     }
 

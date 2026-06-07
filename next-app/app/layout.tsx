@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
-import { GeistPixelCircle } from 'geist/font/pixel';
+import { GeistPixelSquare } from 'geist/font/pixel';
 
 import "./globals.css";
 import "katex/dist/katex.min.css";
@@ -73,7 +73,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, GeistPixelCircle.variable, "font-sans")}
+      className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, GeistPixelSquare.variable, "font-sans")}
     >
       <body className="min-h-full flex flex-col">
         <ThemeProvider defaultTheme="system" enableSystem>
