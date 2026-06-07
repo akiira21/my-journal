@@ -49,7 +49,7 @@ export function MainNavbar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "font-mono text-xs font-bold transition-colors",
+                "font-mono text-sm transition-colors",
                 isActivePath(pathname, item.href)
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground",
@@ -66,7 +66,7 @@ export function MainNavbar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "font-mono text-sm font-bold transition-colors",
+                "font-mono text-sm transition-colors",
                 isActivePath(pathname, item.href)
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground",

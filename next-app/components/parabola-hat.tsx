@@ -98,6 +98,10 @@ export function PixelGlobe({ className }: DonutProps) {
 
       ctx.clearRect(0, 0, W, H);
 
+      // Read current text color from CSS (adapts to light/dark mode)
+      const style = getComputedStyle(canvas!);
+      const textColor = style.color || "currentColor";
+
       const time = Date.now() * 0.001;
 
       for (let y = 0; y < rows; y++) {
@@ -116,10 +120,10 @@ export function PixelGlobe({ className }: DonutProps) {
             const alpha = Math.min(1, Math.max(0.15, brightness * glimmer + 0.2));
 
             ctx.globalAlpha = alpha;
-            ctx.fillStyle = "#3b82f6";
-            ctx.shadowColor = "#60a5fa";
+            ctx.fillStyle = textColor;
+            ctx.shadowColor = textColor;
             ctx.shadowBlur = brightness > 0.6 ? 3 : 0;
-            ctx.font = `${Math.min(cellW, cellH) * 0.85}px var(--font-geist-mono, monospace)`;
+            ctx.font = `${Math.min(cellW, cellH) * 0.85}px var(--font-geist-pixel-circle, monospace)`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(ch, x * cellW + cellW / 2, y * cellH + cellH / 2);
