@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import { LoaderCircleIcon, SendIcon, SparklesIcon, UserIcon, PlusIcon, HistoryIcon, ChevronDownIcon, ChevronUpIcon, XIcon } from "lucide-react";
 
 import { apiFetch, apiStream } from "@/lib/api";
@@ -97,7 +99,8 @@ function ChatMarkdownContent({ content }: { content: string }) {
   return (
     <div className="max-w-none overflow-x-hidden wrap-break-word text-sm leading-7 text-foreground/95">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex]}
         components={{
           h1: ({ children }) => (
             <h1 className="mt-6 mb-3 text-lg font-pixel leading-tight tracking-tight text-foreground">
