@@ -225,6 +225,24 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
               <Clock className="h-3.5 w-3.5" />
               <span className="font-mono">{post.read_time_minutes ?? 1} min read</span>
             </div>
+            {post.tags && post.tags.length > 0 && (
+              <>
+                <span className="hidden sm:block h-3 w-px bg-line" />
+                <div className="flex items-center gap-2">
+                  <Tag className="h-3 w-3 text-muted-foreground/40" />
+                  {post.tags.map((tag, i) => (
+                    <span key={tag} className="flex items-center gap-2">
+                      <span className="font-mono text-[11px] text-muted-foreground/60">
+                        {tag}
+                      </span>
+                      {i < (post.tags?.length ?? 0) - 1 && (
+                        <span className="text-muted-foreground/20">·</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </header>
 
@@ -232,27 +250,6 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
         <div className="px-6 pb-12">
           <div className="drop-cap prose-magazine">{content}</div>
         </div>
-
-        {/* Tags — academic footnote style */}
-        {post.tags && post.tags.length > 0 && (
-          <div className="mx-6 mb-8 border-t border-line pt-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <Tag className="h-3 w-3 text-muted-foreground/40" />
-              {post.tags.map((tag, i) => (
-                <span key={tag} className="flex items-center gap-2">
-                  <span
-                    className="font-mono text-[11px] text-muted-foreground/60"
-                  >
-                    {tag}
-                  </span>
-                  {i < post.tags!.length - 1 && (
-                    <span className="text-muted-foreground/20">·</span>
-                  )}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Related Posts — journal references style */}
         {relatedPosts.length > 0 && (
