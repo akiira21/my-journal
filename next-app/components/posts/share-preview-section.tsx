@@ -79,8 +79,12 @@ async function inlineImages(container: HTMLElement) {
   return restore;
 }
 
-/* ── Instagram Card (4:5) ────────────────────────────────────── */
+function getProxiedImageSrc(src: string | null | undefined) {
+  if (!src) return null;
+  return `/api/image-proxy?url=${encodeURIComponent(src)}`;
+}
 
+/* ── Instagram Card (4:5) ────────────────────────────────────── */
 function InstagramCard({
   title,
   description,
@@ -94,7 +98,7 @@ function InstagramCard({
 
   return (
     <div
-      className="flex w-[280px] flex-col overflow-hidden rounded-2xl"
+      className="flex w-70 flex-col overflow-hidden rounded-2xl"
       style={{
         aspectRatio: "4/5",
         background: "#0a0a0a",
@@ -106,7 +110,7 @@ function InstagramCard({
         {coverUrl && !imgError ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={coverUrl}
+            src={getProxiedImageSrc(coverUrl) ?? coverUrl}
             alt={title}
             className="h-full w-full object-cover"
             onError={() => setImgError(true)}
@@ -154,25 +158,39 @@ function InstagramCard({
             className="h-px w-full"
             style={{ background: "rgba(255,255,255,0.08)" }}
           />
-          <div className="flex items-center justify-between">
-            <span
-              className="text-[9px] uppercase tracking-widest text-white/35"
-              style={{
-                fontFamily:
-                  "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              }}
-            >
-              {domain}
-            </span>
-            <span
-              className="text-[9px] text-white/25"
-              style={{
-                fontFamily:
-                  "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              }}
-            >
-              /posts/{slug}
-            </span>
+          <div className="flex items-end justify-between gap-3">
+            <div className="flex flex-col gap-1">
+              <span
+                className="text-[8px] uppercase tracking-[0.22em] text-white/28"
+                style={{
+                  fontFamily:
+                    "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                }}
+              >
+                Site
+              </span>
+              <span
+                className="text-[10px] font-medium text-white/82"
+                style={{
+                  fontFamily:
+                    "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                }}
+              >
+                {domain}
+              </span>
+            </div>
+
+            <div className="max-w-[60%] rounded-full border border-white/10 bg-white/6 px-2.5 py-1">
+              <span
+                className="block truncate text-[9px] text-white/70"
+                style={{
+                  fontFamily:
+                    "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                }}
+              >
+                /posts/{slug}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -195,7 +213,7 @@ function XCard({
 
   return (
     <div
-      className="flex w-[380px] overflow-hidden rounded-xl"
+      className="flex w-full max-w-95 overflow-hidden rounded-xl"
       style={{
         aspectRatio: "16/9",
         background: "#0a0a0a",
@@ -210,7 +228,7 @@ function XCard({
         {coverUrl && !imgError ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={coverUrl}
+            src={getProxiedImageSrc(coverUrl) ?? coverUrl}
             alt={title}
             className="h-full w-full object-cover"
             onError={() => setImgError(true)}
@@ -228,10 +246,10 @@ function XCard({
       </div>
 
       {/* Right: Content */}
-      <div className="flex flex-1 flex-col justify-between px-4 py-4">
+      <div className="flex min-w-0 flex-1 flex-col justify-between px-4 py-4">
         <div className="space-y-1.5">
           <h3
-            className="text-balance text-sm leading-tight tracking-tight text-white"
+            className="wrap-break-word text-balance text-sm leading-tight tracking-tight text-white"
             style={{
               wordBreak: "break-word",
               fontFamily:
@@ -258,25 +276,39 @@ function XCard({
             className="h-px w-full"
             style={{ background: "rgba(255,255,255,0.08)" }}
           />
-          <div className="flex items-center justify-between">
-            <span
-              className="text-[9px] uppercase tracking-widest text-white/35"
-              style={{
-                fontFamily:
-                  "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              }}
-            >
-              {domain}
-            </span>
-            <span
-              className="text-[9px] text-white/25"
-              style={{
-                fontFamily:
-                  "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              }}
-            >
-              /posts/{slug}
-            </span>
+          <div className="flex items-end justify-between gap-2">
+            <div className="min-w-0 flex flex-col gap-0.5">
+              <span
+                className="text-[7px] uppercase tracking-[0.2em] text-white/25"
+                style={{
+                  fontFamily:
+                    "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                }}
+              >
+                Site
+              </span>
+              <span
+                className="text-[9px] font-medium text-white/80"
+                style={{
+                  fontFamily:
+                    "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                }}
+              >
+                {domain}
+              </span>
+            </div>
+
+            <div className="max-w-[54%] shrink-0 rounded-full border border-white/10 bg-white/6 px-2 py-0.5">
+              <span
+                className="block truncate text-[8px] text-white/62"
+                style={{
+                  fontFamily:
+                    "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                }}
+              >
+                /posts/{slug}
+              </span>
+            </div>
           </div>
         </div>
       </div>
