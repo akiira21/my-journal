@@ -29,7 +29,7 @@ function SocialLinkItem({ icon, title, href }: SocialItem) {
     >
       <span className="flex size-8 shrink-0 items-center justify-center text-foreground/85">{icon}</span>
 
-      <h3 className="flex-1 text-lg font-medium tracking-tight">{title}</h3>
+      <h3 className="flex-1 text-lg font-pixel tracking-tight">{title}</h3>
 
       <ArrowUpRightIcon className="size-4 text-muted-foreground" />
     </a>

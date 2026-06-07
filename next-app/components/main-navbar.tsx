@@ -28,8 +28,8 @@ export function MainNavbar() {
   const desktopNavigation = personalConfig.navigation.filter((item) => item.href !== "/#about");
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/70 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
-      <div className="mx-auto flex h-12 w-full max-w-3xl items-center border-l border-r border-border/70 px-2 sm:px-5">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-line/70 bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
+      <div className="mx-auto flex h-12 w-full max-w-3xl items-center border-l border-r border-line/70 px-2 sm:px-5">
         <Link href="/" className="mr-2 flex items-center gap-2 pr-1 sm:pr-3">
           <Image
             src="/logo.svg"
@@ -40,7 +40,7 @@ export function MainNavbar() {
             priority
             loading="eager"
           />
-          <span className="hidden font-medium tracking-tight sm:inline">{personalConfig.siteName}</span>
+          <span className="hidden font-pixel tracking-tight sm:inline">{personalConfig.siteName}</span>
         </Link>
 
         <nav className="flex items-center gap-3 pr-2 sm:hidden">
