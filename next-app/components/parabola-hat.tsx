@@ -3,142 +3,159 @@
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
-export type PixelGlobeProps = {
+export type DonutProps = {
   className?: string;
 };
 
-export function PixelGlobe({ className }: PixelGlobeProps) {
+const CHARS = ".,-~:;=!*#$@";
+
+function hsvToRgb(h: number, s: number, v: number): [number, number, number] {
+  const i = Math.floor(h * 6);
+  const f = h * 6 - i;
+  const p = v * (1 - s);
+  const q = v * (1 - f * s);
+  const t = v * (1 - (1 - f) * s);
+  let r = 0, g = 0, b = 0;
+  switch (i % 6) {
+    case 0: r = v; g = t; b = p; break;
+    case 1: r = q; g = v; b = p; break;
+    case 2: r = p; g = v; b = t; break;
+    case 3: r = p; g = q; b = v; break;
+    case 4: r = t; g = p; b = v; break;
+    case 5: r = v; g = p; b = q; break;
+  }
+  return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+}
+
+export function PixelGlobe({ className }: DonutProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const W = 320;
-    const H = 320;
+    // Grid resolution (character cells)
+    const cols = 60;
+    const rows = 60;
+    const W = 360;
+    const H = 360;
     canvas.width = W;
     canvas.height = H;
 
-    // Math symbols palette
-    const MATH_CHARS = [
-      "+", "-", "×", "÷", "=", "≠", "≈", "∞", "∑", "∏",
-      "∫", "∂", "√", "π", "Δ", "θ", "λ", "α", "β", "γ",
-      "≈", "≤", "≥", "∈", "∉", "∩", "∪", "∀", "∃", "¬",
-      "∧", "∨", "→", "↔", "⇒", "∴", "∵", "∼", "≅", "≡",
-      "∥", "⊥", "∠", "′", "″", "°", "½", "¼", "¾", "♯",
-    ];
+    const cellW = W / cols;
+    const cellH = H / rows;
 
-    // Build dense lat/lon grid on unit sphere
-    const latSteps = 45;
-    const lonSteps = 70;
-    const points: {
-      x: number;
-      y: number;
-      z: number;
-      char: string;
-      phase: number;
-      speed: number;
-      minOpacity: number;
-    }[] = [];
+    // Donut math constants
+    const R1 = 10;
+    const R2 = 20;
+    const K2 = 200;
+    const K1 = (rows * K2 * 3) / (8 * (R1 + R2));
 
-    for (let latIdx = 0; latIdx <= latSteps; latIdx++) {
-      const lat = (latIdx / latSteps) * Math.PI;
-      const py = Math.cos(lat);
-      const ringRadius = Math.sin(lat);
+    const output = new Array(cols * rows).fill(" ");
+    const zbuffer = new Array(cols * rows).fill(0);
 
-      for (let lonIdx = 0; lonIdx < lonSteps; lonIdx++) {
-        const lon = (lonIdx / lonSteps) * Math.PI * 2;
-        const px = ringRadius * Math.cos(lon);
-        const pz = ringRadius * Math.sin(lon);
-        const char = MATH_CHARS[(latIdx * lonSteps + lonIdx) % MATH_CHARS.length];
-        const phase = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 1.5 + 0.5;
-        const minOpacity = Math.random() * 0.4 + 0.1;
-        points.push({ x: px, y: py, z: pz, char, phase, speed, minOpacity });
-      }
-    }
+    let A = 0;
+    let B = 0;
+    let hue = 0;
+    let animId: number;
 
-    let animationId: number;
-    let angleY = 0;
-    let time = 0;
-
-    const fov = 320;
-    const globeR = 100;
-
-    function project(px: number, py: number, pz: number) {
-      const cosY = Math.cos(angleY);
-      const sinY = Math.sin(angleY);
-      const rx = px * cosY - pz * sinY;
-      const rz = px * sinY + pz * cosY;
-      const ry = py;
-
-      const tilt = -0.25;
-      const cosT = Math.cos(tilt);
-      const sinT = Math.sin(tilt);
-      const ty = ry * cosT - rz * sinT;
-      const tz = ry * sinT + rz * cosT;
-
-      const scale = fov / (fov + tz);
-      const sx = rx * scale * globeR + W / 2;
-      const sy = -ty * scale * globeR + H / 2 + 4;
-      return { x: sx, y: sy, scale, z: tz };
-    }
+    const thetaStep = 0.08;
+    const phiStep = 0.03;
 
     function draw() {
       if (!ctx) return;
-      ctx.clearRect(0, 0, W, H);
+      // Clear buffers
+      output.fill(" ");
+      zbuffer.fill(0);
 
-      const projected = points.map((p) => ({
-        ...project(p.x, p.y, p.z),
-        char: p.char,
-        phase: p.phase,
-        speed: p.speed,
-        minOpacity: p.minOpacity,
-      }));
+      const cosA = Math.cos(A);
+      const sinA = Math.sin(A);
+      const cosB = Math.cos(B);
+      const sinB = Math.sin(B);
 
-      projected.sort((a, b) => a.z - b.z);
+      for (let theta = 0; theta < Math.PI * 2; theta += thetaStep) {
+        const costheta = Math.cos(theta);
+        const sintheta = Math.sin(theta);
 
-      for (const p of projected) {
-        // Cull back hemisphere
-        if (p.z < -0.2) continue;
+        for (let phi = 0; phi < Math.PI * 2; phi += phiStep) {
+          const cosphi = Math.cos(phi);
+          const sinphi = Math.sin(phi);
 
-        // Glimmer: sine wave with per-dot random phase and speed
-        const glimmer =
-          Math.sin(time * p.speed + p.phase) * 0.5 + 0.5; // 0 -> 1
-        const alpha = p.minOpacity + glimmer * (1 - p.minOpacity);
+          // Torus cross-section circle
+          const circlex = R2 + R1 * costheta;
+          const circley = R1 * sintheta;
 
-        // Depth dimming for back-facing chars
-        const depthAlpha = p.z > 0 ? 1 : 0.35;
-        const finalAlpha = alpha * depthAlpha;
+          // 3D rotation
+          const x =
+            circlex * (cosB * cosphi + sinA * sinB * sinphi) -
+            circley * cosA * sinB;
+          const y =
+            circlex * (sinB * cosphi - sinA * cosB * sinphi) +
+            circley * cosA * cosB;
+          const z = K2 + cosA * circlex * sinphi + circley * sinA;
+          const ooz = 1 / z;
 
-        const size = Math.max(7, 11 * p.scale);
+          // 2D projection
+          const xp = Math.floor(cols / 2 + K1 * ooz * x);
+          const yp = Math.floor(rows / 2 - K1 * ooz * y);
 
-        ctx.globalAlpha = finalAlpha;
-        ctx.fillStyle = "#3b82f6"; // bright blue
-        ctx.shadowColor = "#60a5fa";
-        ctx.shadowBlur = p.z > 0 ? 4 : 0;
-        ctx.font = `${size}px var(--font-geist-mono, monospace)`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(p.char, p.x, p.y);
+          if (xp < 0 || xp >= cols || yp < 0 || yp >= rows) continue;
+
+          const pos = xp + cols * yp;
+
+          // Z-buffer: larger ooz = closer to viewer
+          if (ooz > zbuffer[pos]) {
+            zbuffer[pos] = ooz;
+
+            // Luminance (surface normal dot light source)
+            const L =
+              cosphi * costheta * sinB -
+              cosA * costheta * sinphi -
+              sinA * sintheta +
+              cosB * (cosA * sintheta - costheta * sinA * sinphi);
+
+            const lumIdx = Math.floor(L * 8);
+            const charIdx = Math.max(0, Math.min(CHARS.length - 1, lumIdx));
+            output[pos] = CHARS[charIdx];
+          }
+        }
       }
 
-      ctx.globalAlpha = 1;
-      ctx.shadowBlur = 0;
+      // Render to canvas
+      ctx.clearRect(0, 0, W, H);
 
-      angleY += 0.004;
-      time += 0.05;
-      animationId = requestAnimationFrame(draw);
+      const [r, g, b] = hsvToRgb(hue, 1, 1);
+      ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+      ctx.font = `${Math.min(cellW, cellH) * 0.85}px var(--font-geist-mono, monospace)`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const ch = output[x + cols * y];
+          if (ch !== " ") {
+            ctx.fillText(
+              ch,
+              x * cellW + cellW / 2,
+              y * cellH + cellH / 2
+            );
+          }
+        }
+      }
+
+      // Increment rotation angles
+      A += 0.03;
+      B += 0.007;
+      hue = (hue + 0.002) % 1;
+
+      animId = requestAnimationFrame(draw);
     }
 
     draw();
 
-    return () => {
-      cancelAnimationFrame(animationId);
-    };
+    return () => cancelAnimationFrame(animId);
   }, []);
 
   return (
