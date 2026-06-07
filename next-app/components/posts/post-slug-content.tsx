@@ -9,7 +9,7 @@ import { Calendar, Clock, ArrowLeft, Tag } from "lucide-react";
 import { apiFetchServer } from "@/lib/api-server";
 import { postMdxComponents } from "@/components/posts/post-mdx-components";
 import { TableOfContent } from "@/components/posts/table-of-content";
-import { SharePreviewModal } from "@/components/posts/share-preview-modal";
+import { SharePreviewSection } from "@/components/posts/share-preview-section";
 
 const inter = Inter({
   variable: "--font-post-body",
@@ -244,20 +244,22 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
                 </div>
               </>
             )}
-            <span className="hidden sm:block h-3 w-px bg-line" />
-            <SharePreviewModal
-              title={post.title}
-              description={post.description}
-              coverUrl={post.cover_url}
-              slug={post.slug}
-              categories={post.categories}
-            />
           </div>
         </header>
 
         {/* Content with magazine styling */}
         <div className="px-6 pb-12">
           <div className="drop-cap prose-magazine">{content}</div>
+        </div>
+
+        {/* Share Section */}
+        <div className="px-6">
+          <SharePreviewSection
+            title={post.title}
+            description={post.description}
+            coverUrl={post.cover_url}
+            slug={post.slug}
+          />
         </div>
 
         {/* Related Posts — journal references style */}

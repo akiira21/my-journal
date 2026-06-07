@@ -67,7 +67,7 @@ export function PostLightboxImage({
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="absolute top-5 right-5 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-line bg-background/80 text-foreground transition-colors hover:bg-muted"
+            className="absolute top-5 right-5 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-line bg-background/80 text-foreground transition-colors hover:bg-muted"
             aria-label="Close"
           >
             <X className="h-4.5 w-4.5" />

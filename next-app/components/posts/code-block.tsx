@@ -128,7 +128,7 @@ function CodeBlock({ children, className }: CodeBlockProps) {
         </div>
         <button
           onClick={copyToClipboard}
-          className="flex items-center gap-1.5 text-muted-foreground/50 transition-colors hover:text-foreground/70"
+          className="flex cursor-pointer items-center gap-1.5 text-muted-foreground/50 transition-colors hover:text-foreground/70"
           aria-label={hasCopied ? "Copied!" : "Copy code"}
         >
           {hasCopied ? (

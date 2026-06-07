@@ -591,7 +591,7 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setHeaderCollapsed((p) => !p)}
-              className="inline-flex items-center gap-1 rounded-md border border-line bg-background/60 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+              className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-line bg-background/60 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
               title={headerCollapsed ? "Expand header" : "Collapse header"}
             >
               {headerCollapsed ? (
@@ -610,7 +610,7 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
                 }
               }}
               disabled={isLoading || isStreaming || isLoadingHistory}
-              className="inline-flex items-center gap-1 rounded-md border border-line bg-background/60 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-40"
+              className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-line bg-background/60 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
               title="View conversation history"
             >
               <HistoryIcon className="size-3" />
@@ -619,7 +619,7 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
             <button
               onClick={handleNewSession}
               disabled={isStreaming}
-              className="inline-flex items-center gap-1 rounded-md border border-line bg-background/60 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-40"
+              className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-line bg-background/60 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
               title="Start a new conversation"
             >
               <PlusIcon className="size-3" />
@@ -638,7 +638,7 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
               <button
                 type="button"
                 onClick={() => setShowHistory(false)}
-                className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="cursor-pointer rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 title="Close"
               >
                 <XIcon className="size-3.5" />
@@ -654,7 +654,7 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
                   key={session.session_id}
                   type="button"
                   onClick={() => void loadSessionFromHistory(session.session_id)}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors border-b border-line/50 last:border-0"
+                  className="w-full cursor-pointer text-left px-3 py-2 text-sm hover:bg-muted transition-colors border-b border-line/50 last:border-0"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate font-medium text-foreground">
@@ -700,7 +700,7 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
                 <button
                   type="button"
                   onClick={() => setShowContextDetails((p) => !p)}
-                  className="flex w-full items-center justify-between gap-2"
+                  className="flex w-full cursor-pointer items-center justify-between gap-2"
                 >
                   <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
                     Using {latestContextSources.length} source{latestContextSources.length > 1 ? "s" : ""}
@@ -784,7 +784,7 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
                     type="button"
                     onMouseEnter={() => setMentionIndex(i)}
                     onClick={() => selectMention(post)}
-                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                    className={`w-full cursor-pointer text-left px-3 py-2 text-sm transition-colors ${
                       i === mentionIndex
                         ? "bg-muted text-foreground"
                         : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"

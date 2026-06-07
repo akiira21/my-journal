@@ -204,7 +204,7 @@ export function ContactSection() {
                 <button
                   key={service.id}
                   onMouseEnter={() => handleHover(service)}
-                  className={`relative py-4 pr-4 pl-4 text-left transition-colors ${
+                  className={`relative cursor-pointer py-4 pr-4 pl-4 text-left transition-colors ${
                     isActive ? theme.activeBg : "hover:bg-accent/10"
                   }`}
                 >
