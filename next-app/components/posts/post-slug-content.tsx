@@ -191,15 +191,6 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
 
         {/* Magazine Hero Header */}
         <header className="px-6 pb-7 pt-1">
-          {/* Category badge */}
-          {post.categories && post.categories.length > 0 && (
-            <div className="mb-4">
-              <span className="inline-flex items-center rounded-md border border-line bg-muted/60 px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                {post.categories[0]}
-              </span>
-            </div>
-          )}
-
           {/* Title — pixel font */}
           <h1
             className="text-balance text-[2rem] font-pixel leading-[1.1] tracking-tight text-foreground sm:text-[2.4rem]"
@@ -225,6 +216,14 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
               <Clock className="h-3.5 w-3.5" />
               <span className="font-mono">{post.read_time_minutes ?? 1} min read</span>
             </div>
+            {post.categories && post.categories.length > 0 && (
+              <>
+                <span className="hidden sm:block h-3 w-px bg-line" />
+                <span className="inline-flex items-center rounded-md border border-line bg-muted/60 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  {post.categories[0]}
+                </span>
+              </>
+            )}
             {post.tags && post.tags.length > 0 && (
               <>
                 <span className="hidden sm:block h-3 w-px bg-line" />
