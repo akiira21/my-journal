@@ -267,10 +267,15 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
   const [showContextDetails, setShowContextDetails] = useState(false);
 
   // Collapsible entire header on small screens
-  const [headerCollapsed, setHeaderCollapsed] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem("journal-assistant-header-collapsed") === "true";
-  });
+  const [headerCollapsed, setHeaderCollapsed] = useState(false);
+
+  // Load header collapsed state from localStorage after mount
+  useEffect(() => {
+    const stored = window.localStorage.getItem("journal-assistant-header-collapsed");
+    if (stored === "true") {
+      setHeaderCollapsed(true);
+    }
+  }, []);
 
   // Load post list for mentions
   useEffect(() => {
