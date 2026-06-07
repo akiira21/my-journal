@@ -137,17 +137,21 @@
     @apply overflow-x-hidden font-sans;
   }
 
-  /* Grain / noise overlay for both modes */
+  /* Grain / noise overlay — stronger in light mode */
   body::before {
     content: "";
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 9999;
-    opacity: 0.15;
+    opacity: 0.35;
     background-image: var(--noise-bg);
     background-repeat: repeat;
     background-size: 200px 200px;
+  }
+
+  .dark body::before {
+    opacity: 0.12;
   }
 }
 

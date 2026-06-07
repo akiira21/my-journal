@@ -102,14 +102,14 @@ function Callout({ type = "info", title, children }: CalloutProps) {
   const label = title ?? type.charAt(0).toUpperCase() + type.slice(1);
 
   return (
-    <div className={`my-6 border border-line border-l-4 ${styles.border} ${styles.bg} rounded-r-md`}>
-      <div className="flex items-center gap-2 px-4 py-2 border-b border-line/50 bg-background/50">
+    <div className={`my-8 border border-line border-l-4 ${styles.border} ${styles.bg} rounded-md`}>
+      <div className="flex items-center gap-2.5 px-4 py-2.5 border-b border-line/50 bg-background/50">
         <span className="text-muted-foreground">{styles.icon}</span>
         <span className="font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           {label}
         </span>
       </div>
-      <div className="px-4 text-sm leading-6 text-foreground/90">
+      <div className="px-4 py-4 text-sm leading-7 text-foreground/90">
         {children}
       </div>
     </div>

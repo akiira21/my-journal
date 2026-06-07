@@ -3,19 +3,12 @@ import { cache } from "react";
 import { compileMDX } from "next-mdx-remote/rsc";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import { Calendar, Clock, ArrowLeft, Tag } from "lucide-react";
 
 import { apiFetchServer } from "@/lib/api-server";
 import { postMdxComponents } from "@/components/posts/post-mdx-components";
 import { TableOfContent } from "@/components/posts/table-of-content";
-
-const playfair = Playfair_Display({
-  variable: "--font-post-heading",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
-});
 
 const inter = Inter({
   variable: "--font-post-body",
@@ -180,7 +173,7 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
   return (
     <>
       <article
-        className={`${playfair.variable} ${inter.variable} mx-auto w-full max-w-3xl`}
+        className={`${inter.variable} mx-auto w-full max-w-3xl`}
         style={{
           fontFamily: "var(--font-post-body), system-ui, sans-serif",
         } as React.CSSProperties}
@@ -198,21 +191,18 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
 
         {/* Magazine Hero Header */}
         <header className="px-6 pb-7 pt-1">
-          {/* Category as journal section label */}
+          {/* Category badge */}
           {post.categories && post.categories.length > 0 && (
             <div className="mb-4">
-              <span
-                className="inline-block border-b-2 border-primary/30 pb-1 font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-primary/70"
-              >
+              <span className="inline-flex items-center rounded-md border border-line bg-muted/60 px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 {post.categories[0]}
               </span>
             </div>
           )}
 
-          {/* Title — large, editorial */}
+          {/* Title — pixel font */}
           <h1
-            className="text-balance text-[2rem] font-bold leading-[1.1] tracking-tight text-foreground sm:text-[2.4rem]"
-            style={{ fontFamily: "var(--font-post-heading), Georgia, serif" }}
+            className="text-balance text-[2rem] font-pixel leading-[1.1] tracking-tight text-foreground sm:text-[2.4rem]"
           >
             {post.title}
           </h1>
