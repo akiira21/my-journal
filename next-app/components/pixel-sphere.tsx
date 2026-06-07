@@ -21,25 +21,25 @@ export function PixelSphere({ className }: PixelSphereProps) {
     canvas.width = W;
     canvas.height = H;
 
-    // Oblate ellipsoid: flattened at the poles so rotation is VISIBLE.
-    // Rx = Rz > Ry makes it look like a squashed ball.
-    const Rx = 26;
-    const Ry = 16;
-    const Rz = 26;
+    // Sphere
+    const SR = 20;
+    // Ring: flat annulus in XZ plane
+    const ringInner = 28;
+    const ringOuter = 40;
 
-    const K2 = 400;
-    const K1 = (H * K2 * 2) / (8 * ((Rx + Ry + Rz) / 3));
+    const K2 = 450;
+    const K1 = (H * K2 * 2) / (8 * ringOuter);
 
-    let A = 0; // rotation around X
-    let B = 0; // rotation around Y
+    let A = 0;
+    let B = 0;
     let animId: number;
 
-    // Camera: look from the side (slightly above equator)
-    const camTilt = -0.7;
+    // Camera tilt: diagonal side view
+    const camTilt = -0.75;
     const cosCam = Math.cos(camTilt);
     const sinCam = Math.sin(camTilt);
 
-    // Light fixed
+    // Light
     const lX = 0.5;
     const lY = -0.3;
     const lZ = -1.0;
@@ -48,46 +48,26 @@ export function PixelSphere({ className }: PixelSphereProps) {
     const lny = lY / lLen;
     const lnz = lZ / lLen;
 
-    const latCount = 14;
-    const lonCount = 24;
+    const thetaStep = 0.08;
+    const phiStep = 0.08;
 
-    // Build curves: latitudes and longitudes
-    const curves: { theta: number; phi: number }[][] = [];
+    type Dot = {
+      x: number;
+      y: number;
+      z: number; // ooz
+      brightness: number;
+      isBright: boolean;
+      size: number;
+    };
 
-    // Latitudes
-    for (let i = 1; i < latCount; i++) {
-      const theta = (i / latCount) * Math.PI;
-      const ring: { theta: number; phi: number }[] = [];
-      for (let j = 0; j <= lonCount; j++) {
-        ring.push({ theta, phi: (j / lonCount) * Math.PI * 2 });
-      }
-      curves.push(ring);
-    }
-
-    // Longitudes
-    for (let j = 0; j < lonCount; j++) {
-      const phi = (j / lonCount) * Math.PI * 2;
-      const arc: { theta: number; phi: number }[] = [];
-      for (let i = 0; i <= latCount; i++) {
-        arc.push({ theta: (i / latCount) * Math.PI, phi });
-      }
-      curves.push(arc);
-    }
-
-    function transformAndProject(
-      theta: number,
-      phi: number
+    function rotateAndProject(
+      sx: number,
+      sy: number,
+      sz: number,
+      nx: number,
+      ny: number,
+      nz: number
     ): { x: number; y: number; z: number; brightness: number } | null {
-      const sinT = Math.sin(theta);
-      const cosT = Math.cos(theta);
-      const sinP = Math.sin(phi);
-      const cosP = Math.cos(phi);
-
-      // Ellipsoid surface point
-      const sx = Rx * sinT * cosP;
-      const sy = Ry * cosT;
-      const sz = Rz * sinT * sinP;
-
       const sinA = Math.sin(A);
       const cosA = Math.cos(A);
       const sinB = Math.sin(B);
@@ -115,29 +95,18 @@ export function PixelSphere({ className }: PixelSphereProps) {
       const projX = W / 2 + K1 * ooz * x3;
       const projY = H / 2 - K1 * ooz * y3;
 
-      // Normal for ellipsoid: (x/Rx^2, y/Ry^2, z/Rz^2)
-      const nX = sinT * cosP / Rx;
-      const nY = cosT / Ry;
-      const nZ = sinT * sinP / Rz;
+      // Normal
+      const nry1 = ny * cosA - nz * sinA;
+      const nrz1 = ny * sinA + nz * cosA;
+      const nrx2 = nx * cosB + nrz1 * sinB;
+      const nry2 = nry1;
+      const nrz2 = -nx * sinB + nrz1 * cosB;
 
-      // Normalize
-      const nLen = Math.sqrt(nX * nX + nY * nY + nZ * nZ);
-      const nx0 = nX / nLen;
-      const ny0 = nY / nLen;
-      const nz0 = nZ / nLen;
+      const nry3 = nry2 * cosCam - nrz2 * sinCam;
+      const nrz3 = nry2 * sinCam + nrz2 * cosCam;
+      const nrx3 = nrx2;
 
-      // Rotate normal same way
-      const ny1 = ny0 * cosA - nz0 * sinA;
-      const nz1 = ny0 * sinA + nz0 * cosA;
-      const nx2 = nx0 * cosB + nz1 * sinB;
-      const ny2 = ny1;
-      const nz2 = -nx0 * sinB + nz1 * cosB;
-
-      const ny3 = ny2 * cosCam - nz2 * sinCam;
-      const nz3 = ny2 * sinCam + nz2 * cosCam;
-      const nx3 = nx2;
-
-      const L = nx3 * lnx + ny3 * lny + nz3 * lnz;
+      const L = nrx3 * lnx + nry3 * lny + nrz3 * lnz;
       const brightness = Math.max(0, Math.min(1, (L + 0.5) / 1.2));
 
       return { x: projX, y: projY, z: ooz, brightness };
@@ -147,40 +116,97 @@ export function PixelSphere({ className }: PixelSphereProps) {
       if (!ctx) return;
       ctx.clearRect(0, 0, W, H);
 
+      const dots: Dot[] = [];
+
+      // --- Build sphere dots ---
+      for (let theta = 0; theta <= Math.PI; theta += thetaStep) {
+        const sinT = Math.sin(theta);
+        const cosT = Math.cos(theta);
+
+        for (let phi = 0; phi < Math.PI * 2; phi += phiStep) {
+          const sinP = Math.sin(phi);
+          const cosP = Math.cos(phi);
+
+          const sx = SR * sinT * cosP;
+          const sy = SR * cosT;
+          const sz = SR * sinT * sinP;
+
+          // Normal
+          const nx = sinT * cosP;
+          const ny = cosT;
+          const nz = sinT * sinP;
+
+          const p = rotateAndProject(sx, sy, sz, nx, ny, nz);
+          if (!p || p.z < 0.002) continue;
+
+          dots.push({
+            x: p.x,
+            y: p.y,
+            z: p.z,
+            brightness: p.brightness,
+            isBright: p.brightness > 0.5,
+            size: 1.6,
+          });
+        }
+      }
+
+      // --- Build ring dots ---
+      const ringStepsR = 6;
+      const ringStepsTheta = 80;
+
+      for (let ri = 0; ri < ringStepsR; ri++) {
+        const r = ringInner + (ri / (ringStepsR - 1)) * (ringOuter - ringInner);
+        for (let ti = 0; ti < ringStepsTheta; ti++) {
+          const t = (ti / ringStepsTheta) * Math.PI * 2;
+
+          // Ring lies in XZ plane (y=0), flat disc
+          const sx = r * Math.cos(t);
+          const sy = 0;
+          const sz = r * Math.sin(t);
+
+          // Ring normal points up (0,1,0)
+          const nx = 0;
+          const ny = 1;
+          const nz = 0;
+
+          const p = rotateAndProject(sx, sy, sz, nx, ny, nz);
+          if (!p || p.z < 0.002) continue;
+
+          dots.push({
+            x: p.x,
+            y: p.y,
+            z: p.z,
+            brightness: p.brightness,
+            isBright: p.brightness > 0.4,
+            size: 2.0,
+          });
+        }
+      }
+
+      // Sort back-to-front
+      dots.sort((a, b) => a.z - b.z);
+
       const time = Date.now() * 0.001;
 
-      for (const curve of curves) {
-        const pts: { x: number; y: number; z: number; brightness: number }[] = [];
+      for (const p of dots) {
+        const glimmer =
+          Math.sin(time * 2 + p.x * 0.05 + p.y * 0.04) * 0.3 +
+          Math.sin(time * 1.5 - p.x * 0.03 + p.y * 0.06) * 0.2 +
+          0.55;
 
-        for (const p of curve) {
-          const r = transformAndProject(p.theta, p.phi);
-          if (!r || r.z < 0.003) continue;
-          pts.push(r);
+        const alpha = Math.min(1, Math.max(0.12, p.brightness * glimmer));
+
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = "#3b82f6";
+
+        if (p.isBright) {
+          ctx.shadowColor = "#60a5fa";
+          ctx.shadowBlur = 4;
+        } else {
+          ctx.shadowBlur = 0;
         }
 
-        if (pts.length < 2) continue;
-
-        for (const p of pts) {
-          const glimmer =
-            Math.sin(time * 2 + p.x * 0.05 + p.y * 0.04) * 0.3 +
-            Math.sin(time * 1.5 - p.x * 0.03 + p.y * 0.06) * 0.2 +
-            0.55;
-
-          const alpha = Math.min(1, Math.max(0.15, p.brightness * glimmer));
-          const size = 2.2;
-
-          ctx.globalAlpha = alpha;
-          ctx.fillStyle = "#3b82f6";
-
-          if (p.brightness > 0.55) {
-            ctx.shadowColor = "#60a5fa";
-            ctx.shadowBlur = 4;
-          } else {
-            ctx.shadowBlur = 0;
-          }
-
-          ctx.fillRect(p.x - size / 2, p.y - size / 2, size, size);
-        }
+        ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
       }
 
       ctx.globalAlpha = 1;
