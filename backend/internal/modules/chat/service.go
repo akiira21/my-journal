@@ -179,6 +179,14 @@ func (s *Service) PrepareChatContext(ctx context.Context, req ChatRequest) (*Cha
 		}
 	}
 
+	// 3. Fallback to previous context if nothing found (for conversation continuity)
+	if !isRelated && len(session.Messages) > 0 {
+		postContents = s.getRecentPostContexts(ctx, session.Messages)
+		if len(postContents) > 0 {
+			isRelated = true
+		}
+	}
+
 	contextText := s.buildContext(postContents)
 	isNewSession := len(session.Messages) == 0
 	systemPrompt := s.buildSystemPrompt(contextText, isRelated, isNewSession)
@@ -352,9 +360,31 @@ I don't have relevant blog posts for this topic. Let the user know politely and 
 
 %s
 
+=== CRITICAL RULES - YOU MUST FOLLOW THESE ===
+
+1. SCOPE RESTRICTION: You ONLY answer questions that are directly related to the blog post content provided above.
+
+2. OFF-TOPIC REFUSAL: You MUST refuse to answer ANY question that is NOT about the blog content, including but not limited to:
+   - General knowledge questions (e.g., "how to clean house", "what is the weather", "how to cook pasta")
+   - Personal advice unrelated to blog topics
+   - Questions about current events, politics, or news
+   - Math problems, riddles, or puzzles unrelated to blog content
+   - Requests to write code, emails, or content not related to blog posts
+
+3. CONVERSATION HISTORY DOES NOT EXPAND YOUR SCOPE: Even if the conversation history contains blog-related content from previous messages, you MUST NOT answer the current question if it is off-topic. Each question is evaluated independently against the blog content.
+
+4. NEVER USE GENERAL KNOWLEDGE: Do not answer questions using your training data or general knowledge. Only use information explicitly present in the blog posts provided above.
+
+5. HOW TO REFUSE: When refusing an off-topic question, respond politely and redirect:
+   "I'm here to help with topics from the blog! I can't answer questions about [topic], but feel free to ask about anything covered in the posts ~"
+
+6. FOLLOW-UP QUESTIONS: If the user asks a follow-up question that IS related to the blog content being discussed (e.g., "can you explain that further?", "what does X mean in this context?"), answer it using the blog content.
+
+=== END OF CRITICAL RULES ===
+
 Response Guidelines:
 - Answer questions based ONLY on the provided blog post content
-- Be helpful, informative, and approachable
+- Be helpful, informative, and approachable when the question is on-topic
 - If information isn't in the posts, say so honestly - never make things up
 - Keep responses focused and clear, but don't be afraid to add a bit of warmth
 - Mention blog post titles when referencing them
@@ -412,6 +442,51 @@ func (s *Service) buildContextualQuery(messages []Message, currentQuery string) 
 	parts = append(parts, currentQuery)
 
 	return strings.Join(parts, " ")
+}
+
+func (s *Service) getRecentPostContexts(ctx context.Context, messages []Message) []PostContent {
+	for i := len(messages) - 1; i >= 0; i-- {
+		if messages[i].Role == "user" {
+			prevEmbedding, err := s.openai.GenerateEmbedding(ctx, messages[i].Content)
+			if err != nil {
+				continue
+			}
+
+			results, err := s.postSvc.SearchHybrid(ctx, messages[i].Content, prevEmbedding, 3)
+			if err != nil {
+				continue
+			}
+
+			if len(results) > 0 {
+				var postContents []PostContent
+				for _, r := range results {
+					if len(postContents) >= 3 {
+						break
+					}
+					postDetail, content, err := s.postSvc.GetBySlug(ctx, r.Post.Slug)
+					if err != nil {
+						continue
+					}
+					postContents = append(postContents, PostContent{
+						Post: &post.PostSummary{
+							ID:          postDetail.ID,
+							Slug:        postDetail.Slug,
+							Title:       postDetail.Title,
+							Description: postDetail.Description,
+							Categories:  postDetail.Categories,
+							Tags:        postDetail.Tags,
+							Featured:    postDetail.Featured,
+							ViewCount:   postDetail.ViewCount,
+						},
+						Content: *content,
+						Score:   r.Score,
+					})
+				}
+				return postContents
+			}
+		}
+	}
+	return nil
 }
 
 
