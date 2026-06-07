@@ -96,6 +96,11 @@ function setStoredSources(sources: ChatSource[]) {
 /* ------------------------------------------------------------------ */
 
 function ChatMarkdownContent({ content }: { content: string }) {
+  // Unescape common LaTeX escape sequences that get double-escaped
+  const processedContent = content
+    .replace(/\\\\/g, "\\")
+    .replace(/\\\$/g, "$");
+
   return (
     <div className="max-w-none overflow-x-hidden wrap-break-word text-sm leading-7 text-foreground/95">
       <ReactMarkdown
@@ -197,7 +202,7 @@ function ChatMarkdownContent({ content }: { content: string }) {
           ),
         }}
       >
-        {content}
+        {processedContent}
       </ReactMarkdown>
     </div>
   );
