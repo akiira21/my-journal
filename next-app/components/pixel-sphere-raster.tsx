@@ -3,13 +3,198 @@
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
-export type PixelSphereProps = {
+export type PixelCubeProps = {
   className?: string;
 };
 
-const CHARS = ".,-~:;=!*#$@";
+const SYMBOLS = "$$**++--@@==;;::~~##..,,><";
 
-export function PixelSphereRaster({ className }: PixelSphereProps) {
+// Terminal-like grid (wider than tall for proper cube aspect)
+const NB_COLS = 120;
+const NB_ROWS = 44;
+
+// Cube vertices
+const cubeVertices: { x: number; y: number; z: number }[] = [
+  { x: -1, y: -1, z: -1 }, // 0
+  { x: -1, y: 1, z: -1 },  // 1
+  { x: 1, y: 1, z: -1 },   // 2
+  { x: 1, y: -1, z: -1 },  // 3
+  { x: 1, y: 1, z: 1 },    // 4
+  { x: 1, y: -1, z: 1 },   // 5
+  { x: -1, y: -1, z: 1 },  // 6
+  { x: -1, y: 1, z: 1 },   // 7
+];
+
+// Cube triangles (12 faces, 2 triangles each)
+const cubeTriangles: [number, number, number][] = [
+  // front
+  [0, 1, 2],
+  [0, 2, 3],
+  // right
+  [3, 2, 4],
+  [3, 4, 5],
+  // back
+  [5, 4, 7],
+  [5, 7, 6],
+  // left
+  [6, 7, 1],
+  [6, 1, 0],
+  // top
+  [6, 0, 3],
+  [6, 3, 5],
+  // bottom
+  [1, 7, 4],
+  [1, 4, 2],
+];
+
+type Vec3 = { x: number; y: number; z: number };
+type Vec2 = { x: number; y: number };
+
+function rotateX(v: Vec3, angle: number): Vec3 {
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  return { x: v.x, y: c * v.y - s * v.z, z: s * v.y + c * v.z };
+}
+
+function rotateY(v: Vec3, angle: number): Vec3 {
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  return { x: c * v.x + s * v.z, y: v.y, z: -s * v.x + c * v.z };
+}
+
+function rotateZ(v: Vec3, angle: number): Vec3 {
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  return { x: c * v.x - s * v.y, y: s * v.x + c * v.y, z: v.z };
+}
+
+function cross(a: Vec3, b: Vec3): Vec3 {
+  return {
+    x: a.y * b.z - a.z * b.y,
+    y: a.z * b.x - a.x * b.z,
+    z: a.x * b.y - a.y * b.x,
+  };
+}
+
+function dot(a: Vec3, b: Vec3): number {
+  return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+function sub(a: Vec3, b: Vec3): Vec3 {
+  return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
+}
+
+function project(v: Vec3, scale: number, cx: number, cy: number): Vec2 {
+  return {
+    x: Math.round(v.x / v.z + cx),
+    y: Math.round(v.y / v.z + cy),
+  };
+}
+
+function drawScanLine(
+  screen: string[][],
+  zbuf: number[][],
+  y: number,
+  x0: number,
+  x1: number,
+  symbol: string,
+  triZ: number
+) {
+  if (y < 0 || y >= NB_ROWS) return;
+  let left = Math.max(0, Math.min(x0, x1));
+  let right = Math.min(NB_COLS - 1, Math.max(x0, x1));
+
+  for (let x = left; x <= right; x++) {
+    if (triZ > zbuf[y][x]) {
+      zbuf[y][x] = triZ;
+      screen[y][x] = symbol;
+    }
+  }
+}
+
+function drawFlatTop(
+  screen: string[][],
+  zbuf: number[][],
+  t0: Vec2,
+  t1: Vec2,
+  b: Vec2,
+  symbol: string,
+  triZ: number
+) {
+  const xInc0 = (b.x - t0.x) / (b.y - t0.y);
+  const xInc1 = (b.x - t1.x) / (b.y - t1.y);
+
+  let xStart = t0.x;
+  let xEnd = t1.x;
+
+  const yStart = Math.round(t0.y);
+  const yEnd = Math.round(b.y);
+
+  for (let y = yStart; y <= yEnd; y++) {
+    drawScanLine(screen, zbuf, y, Math.round(xStart), Math.round(xEnd), symbol, triZ);
+    xStart += xInc0;
+    xEnd += xInc1;
+  }
+}
+
+function drawFlatBottom(
+  screen: string[][],
+  zbuf: number[][],
+  t: Vec2,
+  b0: Vec2,
+  b1: Vec2,
+  symbol: string,
+  triZ: number
+) {
+  const xDec0 = (t.x - b0.x) / (b0.y - t.y);
+  const xDec1 = (t.x - b1.x) / (b1.y - t.y);
+
+  let xStart = t.x;
+  let xEnd = t.x;
+
+  const yStart = Math.round(t.y);
+  const yEnd = Math.round(Math.max(b0.y, b1.y));
+
+  for (let y = yStart; y <= yEnd; y++) {
+    drawScanLine(screen, zbuf, y, Math.round(xStart), Math.round(xEnd), symbol, triZ);
+    xStart -= xDec0;
+    xEnd -= xDec1;
+  }
+}
+
+function drawTriangle(
+  screen: string[][],
+  zbuf: number[][],
+  v0: Vec2,
+  v1: Vec2,
+  v2: Vec2,
+  symbol: string,
+  triZ: number
+) {
+  // Sort by y ascending
+  const pts = [v0, v1, v2].sort((a, b) => a.y - b.y);
+  const a = pts[0];
+  const b = pts[1];
+  const c = pts[2];
+
+  if (Math.abs(c.y - b.y) < 0.5) {
+    drawFlatTop(screen, zbuf, a, b, c, symbol, triZ);
+    return;
+  }
+
+  if (Math.abs(b.y - a.y) < 0.5) {
+    drawFlatBottom(screen, zbuf, a, b, c, symbol, triZ);
+    return;
+  }
+
+  const midX = a.x + (c.x - a.x) * ((b.y - a.y) / (c.y - a.y));
+  const mid: Vec2 = { x: midX, y: b.y };
+
+  drawFlatBottom(screen, zbuf, a, b, mid, symbol, triZ);
+  drawFlatTop(screen, zbuf, b, mid, c, symbol, triZ);
+}
+
+export function PixelSphereRaster({ className }: PixelCubeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -18,116 +203,126 @@ export function PixelSphereRaster({ className }: PixelSphereProps) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const cols = 70;
-    const rows = 42;
-    const W = 420;
-    const H = 252;
+    // Canvas matches terminal aspect ratio but scaled up
+    const W = 600;
+    const H = 220;
     canvas.width = W;
     canvas.height = H;
 
-    const cellW = W / cols;
-    const cellH = H / rows;
+    const cellW = W / NB_COLS;
+    const cellH = H / NB_ROWS;
 
-    const R = 22;
-    const K2 = 250;
-    const K1 = (rows * K2 * 2) / (8 * R);
+    // Scale factors (bigger than Zig's 60 for bigger cube)
+    const SCALE = 90;
+    const SCALE_X = SCALE * 2.8; // terminal aspect ratio
+    const SCALE_Y = SCALE;
 
-    const output = new Array(cols * rows).fill(" ");
-    const zbuffer = new Array(cols * rows).fill(0);
+    // Camera / projection center
+    const CX = NB_COLS / 2;
+    const CY = NB_ROWS / 2;
+    const CAM_DIST = 8;
 
-    let A = 0;
-    let B = 0;
+    // Camera vector (looking down -z)
+    const camera: Vec3 = { x: 0, y: 0, z: 1 };
+
+    let rx = 0;
+    let ry = 0;
+    let rz = 0;
     let animId: number;
-
-    // Match the "Zig cube" feel: sparser steps
-    const thetaStep = 0.18;
-    const phiStep = 0.12;
 
     function draw() {
       if (!ctx) return;
-      output.fill(" ");
-      zbuffer.fill(0);
 
-      const sinA = Math.sin(A);
-      const cosA = Math.cos(A);
-      const sinB = Math.sin(B);
-      const cosB = Math.cos(B);
+      // Clear screen & z-buffer
+      const screen: string[][] = Array.from({ length: NB_ROWS }, () =>
+        Array(NB_COLS).fill(" ")
+      );
+      const zbuf: number[][] = Array.from({ length: NB_ROWS }, () =>
+        Array(NB_COLS).fill(-Infinity)
+      );
 
-      for (let theta = 0; theta < Math.PI; theta += thetaStep) {
-        const sinT = Math.sin(theta);
-        const cosT = Math.cos(theta);
+      // Transform all vertices
+      const transformed: Vec3[] = cubeVertices.map((v) => {
+        let p = rotateX(v, rx);
+        p = rotateY(p, ry);
+        p = rotateZ(p, rz);
+        // Push into screen
+        p.z += CAM_DIST;
+        // Scale
+        p.x *= SCALE_X;
+        p.y *= SCALE_Y;
+        return p;
+      });
 
-        for (let phi = 0; phi < Math.PI * 2; phi += phiStep) {
-          const sinP = Math.sin(phi);
-          const cosP = Math.cos(phi);
+      // Build visible triangles with avgZ
+      const visible: {
+        proj: Vec2[];
+        z: number;
+        symbol: string;
+      }[] = [];
 
-          // Sphere surface point
-          const sx = R * sinT * cosP;
-          const sy = R * cosT;
-          const sz = R * sinT * sinP;
+      for (let s = 0; s < cubeTriangles.length; s++) {
+        const tri = cubeTriangles[s];
+        const i0 = tri[0];
+        const i1 = tri[1];
+        const i2 = tri[2];
 
-          // Rotate around X by A
-          const y1 = sy * cosA - sz * sinA;
-          const z1 = sy * sinA + sz * cosA;
-          const x1 = sx;
+        const v0 = transformed[i0];
+        const v1 = transformed[i1];
+        const v2 = transformed[i2];
 
-          // Rotate around Y by B
-          const x = x1 * cosB + z1 * sinB;
-          const y = y1;
-          const z = -x1 * sinB + z1 * cosB + K2;
+        if (v0.z <= 0 || v1.z <= 0 || v2.z <= 0) continue;
 
-          const ooz = 1 / z;
+        // Back-face culling
+        const e0 = sub(v1, v0);
+        const e1 = sub(v2, v0);
+        const normal = cross(e0, e1);
 
-          const xp = Math.floor(cols / 2 + K1 * ooz * x);
-          const yp = Math.floor(rows / 2 - K1 * ooz * y);
+        if (dot(camera, normal) >= 0) continue;
 
-          if (xp < 0 || xp >= cols || yp < 0 || yp >= rows) continue;
+        // Project
+        const p0 = project(v0, SCALE, CX, CY);
+        const p1 = project(v1, SCALE, CX, CY);
+        const p2 = project(v2, SCALE, CX, CY);
 
-          const pos = xp + cols * yp;
+        // Average z for sorting
+        const avgZ = (v0.z + v1.z + v2.z) / 3;
+        const symbol = SYMBOLS[s % SYMBOLS.length];
 
-          if (ooz > zbuffer[pos]) {
-            zbuffer[pos] = ooz;
-
-            // Normal (unit sphere)
-            const ny1 = cosT * cosA - sinT * sinP * sinA;
-            const nz1 = cosT * sinA + sinT * sinP * cosA;
-            const nx1 = sinT * cosP;
-
-            const nx = nx1 * cosB + nz1 * sinB;
-            const ny = ny1;
-            const nz = -nx1 * sinB + nz1 * cosB;
-
-            // Light from upper-left-front
-            const L = nx * 0.3 + ny * 0.5 - nz * 0.8;
-
-            const lumIdx = Math.floor(L * 8);
-            const charIdx = Math.max(0, Math.min(CHARS.length - 1, lumIdx));
-            output[pos] = CHARS[charIdx];
-          }
-        }
+        visible.push({ proj: [p0, p1, p2], z: avgZ, symbol });
       }
 
+      // Painter's algorithm: draw back to front
+      visible.sort((a, b) => a.z - b.z);
+
+      for (const v of visible) {
+        drawTriangle(screen, zbuf, v.proj[0], v.proj[1], v.proj[2], v.symbol, v.z);
+      }
+
+      // Render to canvas
       ctx.clearRect(0, 0, W, H);
 
       const style = getComputedStyle(canvas!);
       const textColor = style.color || "currentColor";
 
       ctx.fillStyle = textColor;
-      ctx.font = `${cellH * 1.1}px var(--font-geist-pixel-circle, monospace)`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
+      ctx.font = `${cellH * 1.15}px var(--font-geist-pixel-circle, monospace)`;
 
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          const ch = output[x + cols * y];
+      for (let y = 0; y < NB_ROWS; y++) {
+        for (let x = 0; x < NB_COLS; x++) {
+          const ch = screen[y][x];
           if (ch !== " ") {
             ctx.fillText(ch, x * cellW + cellW / 2, y * cellH + cellH / 2);
           }
         }
       }
 
-      A += 0.025;
-      B += 0.018;
+      // Slow rotation
+      rx += 0.008;
+      ry += 0.008;
+      rz += 0.005;
 
       animId = requestAnimationFrame(draw);
     }
