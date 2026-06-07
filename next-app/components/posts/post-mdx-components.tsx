@@ -18,7 +18,7 @@ function OrderedList({ items, children }: OrderedListProps) {
     <ol className="my-5 ml-0 list-none space-y-2">
       {normalizedItems.length > 0
         ? normalizedItems.map((item, index) => (
-            <li key={`ordered-${index}-${String(item)}`} className="flex items-start gap-3 text-[0.95rem] leading-[1.75] text-foreground/75" style={{ fontFamily: "var(--font-open-sans), system-ui, sans-serif" }}>
+            <li key={`ordered-${index}-${String(item)}`} className="flex items-start gap-3 text-[0.95rem] leading-[1.75] text-foreground/75" style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}>
               <span
                 className="shrink-0 mt-0.5 w-5 h-5 flex items-center justify-center rounded-sm bg-muted font-mono text-[11px] font-medium text-muted-foreground"
               >
@@ -44,7 +44,7 @@ function UnorderedList({ items, children }: UnorderedListProps) {
     <ul className="my-5 ml-0 list-none space-y-2">
       {normalizedItems.length > 0
         ? normalizedItems.map((item, index) => (
-            <li key={`unordered-${index}-${String(item)}`} className="flex items-start gap-3 text-[0.95rem] leading-[1.75] text-foreground/75" style={{ fontFamily: "var(--font-open-sans), system-ui, sans-serif" }}>
+            <li key={`unordered-${index}-${String(item)}`} className="flex items-start gap-3 text-[0.95rem] leading-[1.75] text-foreground/75" style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}>
               <span className="flex-shrink-0 mt-[0.55rem] h-[5px] w-[5px] rounded-full bg-foreground/30" />
               <span>{item}</span>
             </li>
@@ -110,7 +110,7 @@ function Callout({ type = "info", title, children }: CalloutProps) {
           {label}
         </span>
       </div>
-      <div className="px-4 py-4 text-sm leading-7 text-foreground/90" style={{ fontFamily: "var(--font-open-sans), system-ui, sans-serif" }}>
+      <div className="px-4 py-4 text-sm leading-7 text-foreground/90" style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}>
         {children}
       </div>
     </div>
@@ -227,12 +227,12 @@ export const postMdxComponents = {
     );
   },
   p: ({ children }: { children: ReactNode }) => (
-    <p className="my-5 text-[0.95rem] leading-[1.85] text-foreground/80" style={{ fontFamily: "var(--font-open-sans), system-ui, sans-serif" }}>
+    <p className="my-5 text-[0.95rem] leading-[1.85] text-foreground/80" style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}>
       {children}
     </p>
   ),
   blockquote: ({ children }: { children: ReactNode }) => (
-    <blockquote className="pull-quote" style={{ fontFamily: "var(--font-open-sans), system-ui, sans-serif" }}>
+    <blockquote className="pull-quote" style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}>
       {children}
     </blockquote>
   ),
