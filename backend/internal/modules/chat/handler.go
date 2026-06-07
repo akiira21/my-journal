@@ -148,11 +148,13 @@ func (h *Handler) Chat(c *gin.Context) {
 		return
 	}
 
+	ipHash := hashIP(c.ClientIP())
+
 	response, err := h.service.Chat(c.Request.Context(), ChatRequest{
 		SessionID:      req.SessionID,
 		Message:        req.Message,
 		MentionedPosts: req.MentionedPosts,
-	})
+	}, ipHash)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to process message"})
 		return
@@ -172,11 +174,13 @@ func (h *Handler) ChatStream(c *gin.Context) {
 		return
 	}
 
+	ipHash := hashIP(c.ClientIP())
+
 	stream, chatCtx, err := h.service.ChatStream(c.Request.Context(), ChatRequest{
 		SessionID:      req.SessionID,
 		Message:        req.Message,
 		MentionedPosts: req.MentionedPosts,
-	})
+	}, ipHash)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to start stream"})
 		return

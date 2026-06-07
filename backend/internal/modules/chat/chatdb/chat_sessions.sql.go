@@ -62,6 +62,9 @@ const listChatSessionsByIP = `-- name: ListChatSessionsByIP :many
 SELECT id, session_id, ip_hash, messages, created_at, last_message_at
 FROM chat_sessions
 WHERE ip_hash = $1
+  AND messages IS NOT NULL
+  AND messages != '[]'::jsonb
+  AND messages != 'null'::jsonb
 ORDER BY last_message_at DESC NULLS LAST, created_at DESC
 LIMIT $2
 `

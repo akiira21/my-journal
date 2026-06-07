@@ -96,10 +96,13 @@ func (s *Service) GetHistoryByIP(ctx context.Context, ipHash string) ([]ChatSess
 	return s.repo.GetSessionsByIPHash(ctx, ipHash, 20)
 }
 
-func (s *Service) PrepareChatContext(ctx context.Context, req ChatRequest) (*ChatContext, error) {
+func (s *Service) PrepareChatContext(ctx context.Context, req ChatRequest, ipHash *string) (*ChatContext, error) {
 	session, err := s.repo.GetSession(ctx, req.SessionID)
 	if err != nil {
-		return nil, fmt.Errorf("session not found: %w", err)
+		session, err = s.repo.CreateSession(ctx, req.SessionID, ipHash)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create session: %w", err)
+		}
 	}
 
 	enrichedQuery := s.buildContextualQuery(session.Messages, req.Message)
@@ -202,8 +205,8 @@ func (s *Service) PrepareChatContext(ctx context.Context, req ChatRequest) (*Cha
 	}, nil
 }
 
-func (s *Service) Chat(ctx context.Context, req ChatRequest) (*ChatResponse, error) {
-	chatCtx, err := s.PrepareChatContext(ctx, req)
+func (s *Service) Chat(ctx context.Context, req ChatRequest, ipHash *string) (*ChatResponse, error) {
+	chatCtx, err := s.PrepareChatContext(ctx, req, ipHash)
 	if err != nil {
 		return nil, err
 	}
@@ -275,8 +278,8 @@ What would you like to explore?`, s.assistantName, query)
 I'm here to help with topics from the blog. Try asking about something covered in the published posts, or browse the posts page to see what's available ~`, query)
 }
 
-func (s *Service) ChatStream(ctx context.Context, req ChatRequest) (<-chan openai.StreamChunk, *ChatContext, error) {
-	chatCtx, err := s.PrepareChatContext(ctx, req)
+func (s *Service) ChatStream(ctx context.Context, req ChatRequest, ipHash *string) (<-chan openai.StreamChunk, *ChatContext, error) {
+	chatCtx, err := s.PrepareChatContext(ctx, req, ipHash)
 	if err != nil {
 		return nil, nil, err
 	}

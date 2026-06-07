@@ -406,37 +406,19 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
     });
   };
 
-  const handleNewSession = async () => {
+  const handleNewSession = () => {
     if (isStreaming || isLoading) return;
 
-    setIsLoading(true);
     setError(null);
     setShowHistory(false);
 
-    try {
-      window.localStorage.removeItem(SESSION_STORAGE_KEY);
-      window.localStorage.removeItem(SOURCES_STORAGE_KEY);
+    window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    window.localStorage.removeItem(SOURCES_STORAGE_KEY);
 
-      // Always generate a new UUID so backend creates a fresh session
-      const newSessionId = crypto.randomUUID();
-      const session = await apiFetch<ChatSessionResponse>("/chat/sessions", {
-        method: "POST",
-        data: { session_id: newSessionId },
-      });
-
-      const nextSessionId = session.session_id;
-      setSessionId(nextSessionId);
-      window.localStorage.setItem(SESSION_STORAGE_KEY, nextSessionId);
-      setMessages([]);
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Failed to start a new session.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    const newSessionId = crypto.randomUUID();
+    setSessionId(newSessionId);
+    window.localStorage.setItem(SESSION_STORAGE_KEY, newSessionId);
+    setMessages([]);
   };
 
   const loadHistory = async () => {
@@ -622,8 +604,8 @@ export function AssistantChatClient({ assistantName }: AssistantChatClientProps)
               <span className="hidden sm:inline">History</span>
             </button>
             <button
-              onClick={() => void handleNewSession()}
-              disabled={isLoading || isStreaming}
+              onClick={handleNewSession}
+              disabled={isStreaming}
               className="inline-flex items-center gap-1 rounded-md border border-line bg-background/60 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-40"
               title="Start a new conversation"
             >
