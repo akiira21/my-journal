@@ -75,7 +75,7 @@ export function PostItem({ post, shouldPreloadImage }: PostItemProps) {
       </div>
 
       <div className="flex flex-col gap-1 p-2">
-        <h3 className="line-clamp-2 text-lg leading-snug font-medium text-balance transition-colors group-hover:text-foreground">
+        <h3 className="line-clamp-2 text-lg leading-snug font-pixel text-balance transition-colors group-hover:text-foreground">
           {post.title}
         </h3>
 
