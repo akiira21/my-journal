@@ -11,6 +11,7 @@ import {
   BookOpenTextIcon,
   Loader2,
   FileTextIcon,
+  Wand2Icon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -19,6 +20,8 @@ import instagramIcon from "@/assets/icons/icons8-instagram-96.png";
 import { personalConfig } from "@/lib/personal-data";
 import { apiFetch } from "@/lib/api";
 import type { PostSummary, PostsPageResponse } from "@/lib/blog-types";
+import { getAllSkillMeta } from "@/lib/skills";
+import type { SkillMeta } from "@/lib/skills/types";
 import {
   Command,
   CommandDialog,
@@ -51,6 +54,12 @@ const MENU_LINKS: CommandLinkItem[] = [
     href: "/posts",
     icon: <BookOpenTextIcon />,
     shortcut: "GP",
+  },
+  {
+    title: "Skills",
+    href: "/skills",
+    icon: <Wand2Icon />,
+    shortcut: "GS",
   },
   {
     title: "Assistant",
@@ -105,6 +114,8 @@ export function CommandMenu() {
   const [posts, setPosts] = useState<PostSummary[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoadedPosts, setHasLoadedPosts] = useState(false);
+
+  const skills = useMemo(() => getAllSkillMeta(), []);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -180,6 +191,14 @@ export function CommandMenu() {
       icon: <BookOpenTextIcon />,
     }));
   }, [posts]);
+
+  const skillLinks = useMemo<CommandLinkItem[]>(() => {
+    return skills.map((skill) => ({
+      title: skill.title,
+      href: `/skills/${skill.slug}`,
+      icon: <Wand2Icon />,
+    }));
+  }, [skills]);
 
   const searchLinks = useMemo<CommandLinkItem[]>(() => {
     return searchResults.map((post) => ({
@@ -312,27 +331,49 @@ export function CommandMenu() {
                     </CommandItem>
                   ))}
                 </CommandGroup>
-              </>
-            )}
 
-            {isSearchActive && (
-              <CommandGroup heading={`Search Results (${searchResults.length})`}>
-                {isSearching ? (
-                  <CommandItem disabled>
-                    <Loader2 className="size-4 animate-spin" />
-                    Searching...
-                  </CommandItem>
-                ) : searchResults.length === 0 ? (
-                  <CommandItem disabled>No posts found.</CommandItem>
-                ) : (
-                  searchLinks.map((item) => (
+                <CommandGroup heading={`Skills (${skills.length})`}>
+                  {skillLinks.map((item) => (
                     <CommandItem key={item.href} onSelect={() => onOpenLink(item.href)}>
                       {item.icon}
                       {item.title}
                     </CommandItem>
-                  ))
-                )}
-              </CommandGroup>
+                  ))}
+                </CommandGroup>
+              </>
+            )}
+
+            {isSearchActive && (
+              <>
+                <CommandGroup heading={`Post Search (${searchResults.length})`}>
+                  {isSearching ? (
+                    <CommandItem disabled>
+                      <Loader2 className="size-4 animate-spin" />
+                      Searching...
+                    </CommandItem>
+                  ) : searchResults.length === 0 ? (
+                    <CommandItem disabled>No posts found.</CommandItem>
+                  ) : (
+                    searchLinks.map((item) => (
+                      <CommandItem key={item.href} onSelect={() => onOpenLink(item.href)}>
+                        {item.icon}
+                        {item.title}
+                      </CommandItem>
+                    ))
+                  )}
+                </CommandGroup>
+
+                <CommandGroup heading={`Skills (${skillLinks.filter((s) => s.title.toLowerCase().includes(searchQuery.toLowerCase())).length})`}>
+                  {skillLinks
+                    .filter((s) => s.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map((item) => (
+                      <CommandItem key={item.href} onSelect={() => onOpenLink(item.href)}>
+                        {item.icon}
+                        {item.title}
+                      </CommandItem>
+                    ))}
+                </CommandGroup>
+              </>
             )}
 
             {!isSearchActive && (

@@ -181,10 +181,29 @@ function AnimatedTerminal({ commands, color }: { commands: typeof services[0]["c
 export function ContactSection() {
   const { about } = personalConfig;
   const [active, setActive] = useState(services[0]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
-  const handleHover = useCallback((service: typeof services[0]) => {
+  const handleHover = useCallback((service: typeof services[0], index: number) => {
     setActive(service);
+    setActiveIndex(index);
+    setIsAutoPlaying(false);
   }, []);
+
+  // Auto-play timer: cycles through services every 4 seconds
+  useEffect(() => {
+    if (!isAutoPlaying) return;
+
+    const timer = setInterval(() => {
+      setActiveIndex((prev) => {
+        const next = (prev + 1) % services.length;
+        setActive(services[next]);
+        return next;
+      });
+    }, 4000);
+
+    return () => clearInterval(timer);
+  }, [isAutoPlaying]);
 
   return (
     <Panel>
@@ -196,14 +215,14 @@ export function ContactSection() {
         <div className="flex flex-col gap-6 lg:flex-row">
           {/* ── Left: Service list (single column) ── */}
           <div className="flex shrink-0 flex-col divide-y divide-line lg:w-52">
-            {services.map((service) => {
+            {services.map((service, index) => {
               const theme = colorMap[service.color];
               const isActive = active.id === service.id;
 
               return (
                 <button
                   key={service.id}
-                  onMouseEnter={() => handleHover(service)}
+                  onMouseEnter={() => handleHover(service, index)}
                   className={`relative cursor-pointer py-4 pr-4 pl-4 text-left transition-colors ${
                     isActive ? theme.activeBg : "hover:bg-accent/10"
                   }`}

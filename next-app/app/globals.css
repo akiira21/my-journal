@@ -165,6 +165,11 @@
     border-color: var(--line);
   }
 
+  .tab-4 {
+    tab-size: 4;
+    -moz-tab-size: 4;
+  }
+
   .screen-line-top {
     @apply relative;
   }

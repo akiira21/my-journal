@@ -1,14 +1,24 @@
+"use client";
+
 import { HeartIcon, RssIcon } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 import { personalConfig } from "@/lib/personal-data";
+import { cn } from "@/lib/utils";
 
 export function Footer() {
+  const pathname = usePathname();
   const { about, repo } = personalConfig;
   const currentYear = new Date().getFullYear();
 
+  const isSkillsSlug = pathname.startsWith("/skills/") && pathname !== "/skills/";
+
   return (
     <footer className="relative z-10 border-t border-line/70 bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="mx-auto w-full max-w-3xl border-l border-r border-line/70 px-4 py-5 sm:px-6">
+      <div className={cn(
+        "mx-auto w-full border-l border-r border-line/70 px-4 py-5 sm:px-6",
+        isSkillsSlug ? "max-w-[1400px]" : "max-w-3xl"
+      )}>
         <p className="text-center font-mono text-xs text-muted-foreground">
           Inspired by ncdai and his design language.
         </p>

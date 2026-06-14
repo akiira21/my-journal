@@ -4,6 +4,12 @@ import { Panel, PanelContent, PanelHeader, PanelTitle } from "@/components/home/
 
 const changelog = [
   {
+    date: "Jun 2026",
+    title: "Agent Skills & Interactive Components",
+    description: "A dedicated /skills page showcasing reusable components with live Sandpack previews, code syntax highlighting, and a monochrome canvas. First skill: animated shimmer button with hover states and custom alert dialog.",
+    tag: "feat",
+  },
+  {
     date: "May 2026",
     title: "Hybrid Search & Chat History",
     description: "BM25 + vector RRF fusion for better retrieval. Persistent chat sessions with IP-based reuse and history dropdown.",
