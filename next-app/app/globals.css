@@ -143,11 +143,12 @@
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 9999;
+    z-index: 50;
     opacity: 0.35;
     background-image: var(--noise-bg);
     background-repeat: repeat;
     background-size: 200px 200px;
+    will-change: opacity;
   }
 
   .dark body::before {

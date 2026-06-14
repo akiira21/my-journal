@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 export type DonutProps = {
@@ -11,20 +11,22 @@ const CHARS = ".,-~:;=!*#$@";
 
 export function PixelGlobe({ className }: DonutProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isVisibleRef = useRef(true);
+  const animIdRef = useRef<number>(0);
+  const rotationRef = useRef({ A: 0, B: 0 });
 
-  useEffect(() => {
+  const draw = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !isVisibleRef.current) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Lower resolution = bigger cells, sparser look
     const cols = 36;
     const rows = 36;
     const W = 360;
     const H = 360;
-    canvas.width = W;
-    canvas.height = H;
+    if (canvas.width !== W) canvas.width = W;
+    if (canvas.height !== H) canvas.height = H;
 
     const cellW = W / cols;
     const cellH = H / rows;
@@ -37,19 +39,15 @@ export function PixelGlobe({ className }: DonutProps) {
     const output = new Array(cols * rows).fill(" ");
     const zbuffer = new Array(cols * rows).fill(0);
 
-    let A = 0;
-    let B = 0;
-    let animId: number;
-
-    // Much bigger steps = way fewer chars
     const thetaStep = 0.22;
     const phiStep = 0.14;
 
-    function draw() {
-      if (!ctx) return;
+    function frame() {
+      if (!ctx || !isVisibleRef.current) return;
       output.fill(" ");
       zbuffer.fill(0);
 
+      const { A, B } = rotationRef.current;
       const cosA = Math.cos(A);
       const sinA = Math.sin(A);
       const cosB = Math.cos(B);
@@ -100,12 +98,10 @@ export function PixelGlobe({ className }: DonutProps) {
 
       ctx.clearRect(0, 0, W, H);
 
-      // Read theme from CSS for adaptive rendering
       const style = getComputedStyle(canvas!);
       const textColor = style.color || "currentColor";
       const isDark = document.documentElement.classList.contains("dark");
 
-      // Subtle background disc so shape reads in both modes
       ctx.save();
       ctx.beginPath();
       ctx.arc(W / 2, H / 2, K1 * 0.55, 0, Math.PI * 2);
@@ -131,10 +127,8 @@ export function PixelGlobe({ className }: DonutProps) {
 
             ctx.globalAlpha = alpha;
             ctx.fillStyle = textColor;
-            // Glow only in dark mode; in light mode it's too muddy
             ctx.shadowColor = textColor;
             ctx.shadowBlur = isDark && brightness > 0.6 ? 4 : 0;
-            // Bigger font for clearer pixel look
             ctx.font = `${Math.min(cellW, cellH) * 1.2}px var(--font-geist-pixel-circle, monospace)`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
@@ -146,16 +140,42 @@ export function PixelGlobe({ className }: DonutProps) {
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
 
-      A += 0.03;
-      B += 0.007;
+      rotationRef.current.A += 0.03;
+      rotationRef.current.B += 0.007;
 
-      animId = requestAnimationFrame(draw);
+      animIdRef.current = requestAnimationFrame(frame);
     }
 
+    frame();
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        const wasVisible = isVisibleRef.current;
+        isVisibleRef.current = entry.isIntersecting;
+
+        if (entry.isIntersecting && !wasVisible) {
+          draw();
+        } else if (!entry.isIntersecting) {
+          cancelAnimationFrame(animIdRef.current);
+        }
+      },
+      { threshold: 0.01 }
+    );
+
+    observer.observe(canvas);
     draw();
 
-    return () => cancelAnimationFrame(animId);
-  }, []);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(animIdRef.current);
+    };
+  }, [draw]);
 
   return (
     <canvas
@@ -164,7 +184,7 @@ export function PixelGlobe({ className }: DonutProps) {
         "w-full h-72 sm:h-80 md:h-96",
         className
       )}
-      style={{ imageRendering: "pixelated" }}
+      style={{ imageRendering: "pixelated", contain: "strict" }}
     />
   );
 }

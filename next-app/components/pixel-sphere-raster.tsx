@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 export type PixelCubeProps = {
@@ -101,8 +101,8 @@ function drawScanLine(
   triZ: number
 ) {
   if (y < 0 || y >= NB_ROWS) return;
-  let left = Math.max(0, Math.min(x0, x1));
-  let right = Math.min(NB_COLS - 1, Math.max(x0, x1));
+  const left = Math.max(0, Math.min(x0, x1));
+  const right = Math.min(NB_COLS - 1, Math.max(x0, x1));
 
   for (let x = left; x <= right; x++) {
     if (triZ > zbuf[y][x]) {
@@ -196,44 +196,40 @@ function drawTriangle(
 
 export function PixelSphereRaster({ className }: PixelCubeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isVisibleRef = useRef(true);
+  const animIdRef = useRef<number>(0);
 
-  useEffect(() => {
+  const draw = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !isVisibleRef.current) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Canvas matches terminal aspect ratio but scaled up
     const W = 600;
     const H = 220;
-    canvas.width = W;
-    canvas.height = H;
+    if (canvas.width !== W) canvas.width = W;
+    if (canvas.height !== H) canvas.height = H;
 
     const cellW = W / NB_COLS;
     const cellH = H / NB_ROWS;
 
-    // Scale factors (bigger than Zig's 60 for bigger cube)
     const SCALE = 90;
-    const SCALE_X = SCALE * 2.8; // terminal aspect ratio
+    const SCALE_X = SCALE * 2.8;
     const SCALE_Y = SCALE;
 
-    // Camera / projection center
     const CX = NB_COLS / 2;
     const CY = NB_ROWS / 2;
     const CAM_DIST = 8;
 
-    // Camera vector (looking down -z)
     const camera: Vec3 = { x: 0, y: 0, z: 1 };
 
     let rx = 0;
     let ry = 0;
     let rz = 0;
-    let animId: number;
 
-    function draw() {
-      if (!ctx) return;
+    function frame() {
+      if (!ctx || !isVisibleRef.current) return;
 
-      // Clear screen & z-buffer
       const screen: string[][] = Array.from({ length: NB_ROWS }, () =>
         Array(NB_COLS).fill(" ")
       );
@@ -241,20 +237,16 @@ export function PixelSphereRaster({ className }: PixelCubeProps) {
         Array(NB_COLS).fill(-Infinity)
       );
 
-      // Transform all vertices
       const transformed: Vec3[] = cubeVertices.map((v) => {
         let p = rotateX(v, rx);
         p = rotateY(p, ry);
         p = rotateZ(p, rz);
-        // Push into screen
         p.z += CAM_DIST;
-        // Scale
         p.x *= SCALE_X;
         p.y *= SCALE_Y;
         return p;
       });
 
-      // Build visible triangles with avgZ
       const visible: {
         proj: Vec2[];
         z: number;
@@ -273,33 +265,28 @@ export function PixelSphereRaster({ className }: PixelCubeProps) {
 
         if (v0.z <= 0 || v1.z <= 0 || v2.z <= 0) continue;
 
-        // Back-face culling
         const e0 = sub(v1, v0);
         const e1 = sub(v2, v0);
         const normal = cross(e0, e1);
 
         if (dot(camera, normal) >= 0) continue;
 
-        // Project
         const p0 = project(v0, SCALE, CX, CY);
         const p1 = project(v1, SCALE, CX, CY);
         const p2 = project(v2, SCALE, CX, CY);
 
-        // Average z for sorting
         const avgZ = (v0.z + v1.z + v2.z) / 3;
         const symbol = SYMBOLS[s % SYMBOLS.length];
 
         visible.push({ proj: [p0, p1, p2], z: avgZ, symbol });
       }
 
-      // Painter's algorithm: draw back to front
       visible.sort((a, b) => a.z - b.z);
 
       for (const v of visible) {
         drawTriangle(screen, zbuf, v.proj[0], v.proj[1], v.proj[2], v.symbol, v.z);
       }
 
-      // Render to canvas
       ctx.clearRect(0, 0, W, H);
 
       const style = getComputedStyle(canvas!);
@@ -319,18 +306,43 @@ export function PixelSphereRaster({ className }: PixelCubeProps) {
         }
       }
 
-      // Slow rotation
       rx += 0.008;
       ry += 0.008;
       rz += 0.005;
 
-      animId = requestAnimationFrame(draw);
+      animIdRef.current = requestAnimationFrame(frame);
     }
 
+    frame();
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        const wasVisible = isVisibleRef.current;
+        isVisibleRef.current = entry.isIntersecting;
+
+        if (entry.isIntersecting && !wasVisible) {
+          draw();
+        } else if (!entry.isIntersecting) {
+          cancelAnimationFrame(animIdRef.current);
+        }
+      },
+      { threshold: 0.01 }
+    );
+
+    observer.observe(canvas);
     draw();
 
-    return () => cancelAnimationFrame(animId);
-  }, []);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(animIdRef.current);
+    };
+  }, [draw]);
 
   return (
     <canvas
@@ -339,7 +351,7 @@ export function PixelSphereRaster({ className }: PixelCubeProps) {
         "w-full h-72 sm:h-80 md:h-96",
         className
       )}
-      style={{ imageRendering: "pixelated" }}
+      style={{ imageRendering: "pixelated", contain: "strict" }}
     />
   );
 }

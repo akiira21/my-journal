@@ -4,12 +4,6 @@ import { Panel, PanelContent, PanelHeader, PanelTitle } from "@/components/home/
 
 const changelog = [
   {
-    date: "Jun 2026",
-    title: "LaTeX Rendering in AI Chat",
-    description: "Assistant responses now render mathematical equations beautifully using KaTeX.",
-    tag: "feat",
-  },
-  {
     date: "May 2026",
     title: "Hybrid Search & Chat History",
     description: "BM25 + vector RRF fusion for better retrieval. Persistent chat sessions with IP-based reuse and history dropdown.",

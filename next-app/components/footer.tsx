@@ -7,7 +7,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-line/70 bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
+    <footer className="relative z-10 border-t border-line/70 bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="mx-auto w-full max-w-3xl border-l border-r border-line/70 px-4 py-5 sm:px-6">
         <p className="text-center font-mono text-xs text-muted-foreground">
           Inspired by ncdai and his design language.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 export type PixelSphereProps = {
@@ -9,37 +9,32 @@ export type PixelSphereProps = {
 
 export function PixelSphere({ className }: PixelSphereProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isVisibleRef = useRef(true);
+  const animIdRef = useRef<number>(0);
+  const rotationRef = useRef({ A: 0, B: 0 });
 
-  useEffect(() => {
+  const draw = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !isVisibleRef.current) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const W = 320;
     const H = 320;
-    canvas.width = W;
-    canvas.height = H;
+    if (canvas.width !== W) canvas.width = W;
+    if (canvas.height !== H) canvas.height = H;
 
-    // Sphere
     const SR = 20;
-    // Ring: flat annulus in XZ plane
     const ringInner = 28;
     const ringOuter = 40;
 
     const K2 = 450;
     const K1 = (H * K2 * 2) / (8 * ringOuter);
 
-    let A = 0;
-    let B = 0;
-    let animId: number;
-
-    // Camera tilt: diagonal side view
     const camTilt = -0.75;
     const cosCam = Math.cos(camTilt);
     const sinCam = Math.sin(camTilt);
 
-    // Light
     const lX = 0.5;
     const lY = -0.3;
     const lZ = -1.0;
@@ -54,7 +49,7 @@ export function PixelSphere({ className }: PixelSphereProps) {
     type Dot = {
       x: number;
       y: number;
-      z: number; // ooz
+      z: number;
       brightness: number;
       isBright: boolean;
       size: number;
@@ -66,24 +61,23 @@ export function PixelSphere({ className }: PixelSphereProps) {
       sz: number,
       nx: number,
       ny: number,
-      nz: number
+      nz: number,
+      A: number,
+      B: number
     ): { x: number; y: number; z: number; brightness: number } | null {
       const sinA = Math.sin(A);
       const cosA = Math.cos(A);
       const sinB = Math.sin(B);
       const cosB = Math.cos(B);
 
-      // Rx(A)
       const y1 = sy * cosA - sz * sinA;
       const z1 = sy * sinA + sz * cosA;
       const x1 = sx;
 
-      // Ry(B)
       const x2 = x1 * cosB + z1 * sinB;
       const y2 = y1;
       const z2 = -x1 * sinB + z1 * cosB;
 
-      // Camera tilt
       const y3 = y2 * cosCam - z2 * sinCam;
       const z3 = y2 * sinCam + z2 * cosCam;
       const x3 = x2;
@@ -95,7 +89,6 @@ export function PixelSphere({ className }: PixelSphereProps) {
       const projX = W / 2 + K1 * ooz * x3;
       const projY = H / 2 - K1 * ooz * y3;
 
-      // Normal
       const nry1 = ny * cosA - nz * sinA;
       const nrz1 = ny * sinA + nz * cosA;
       const nrx2 = nx * cosB + nrz1 * sinB;
@@ -112,13 +105,13 @@ export function PixelSphere({ className }: PixelSphereProps) {
       return { x: projX, y: projY, z: ooz, brightness };
     }
 
-    function draw() {
-      if (!ctx) return;
+    function frame() {
+      if (!ctx || !isVisibleRef.current) return;
       ctx.clearRect(0, 0, W, H);
 
+      const { A, B } = rotationRef.current;
       const dots: Dot[] = [];
 
-      // --- Build sphere dots ---
       for (let theta = 0; theta <= Math.PI; theta += thetaStep) {
         const sinT = Math.sin(theta);
         const cosT = Math.cos(theta);
@@ -131,12 +124,11 @@ export function PixelSphere({ className }: PixelSphereProps) {
           const sy = SR * cosT;
           const sz = SR * sinT * sinP;
 
-          // Normal
           const nx = sinT * cosP;
           const ny = cosT;
           const nz = sinT * sinP;
 
-          const p = rotateAndProject(sx, sy, sz, nx, ny, nz);
+          const p = rotateAndProject(sx, sy, sz, nx, ny, nz, A, B);
           if (!p || p.z < 0.002) continue;
 
           dots.push({
@@ -150,7 +142,6 @@ export function PixelSphere({ className }: PixelSphereProps) {
         }
       }
 
-      // --- Build ring dots ---
       const ringStepsR = 6;
       const ringStepsTheta = 80;
 
@@ -159,17 +150,15 @@ export function PixelSphere({ className }: PixelSphereProps) {
         for (let ti = 0; ti < ringStepsTheta; ti++) {
           const t = (ti / ringStepsTheta) * Math.PI * 2;
 
-          // Ring lies in XZ plane (y=0), flat disc
           const sx = r * Math.cos(t);
           const sy = 0;
           const sz = r * Math.sin(t);
 
-          // Ring normal points up (0,1,0)
           const nx = 0;
           const ny = 1;
           const nz = 0;
 
-          const p = rotateAndProject(sx, sy, sz, nx, ny, nz);
+          const p = rotateAndProject(sx, sy, sz, nx, ny, nz, A, B);
           if (!p || p.z < 0.002) continue;
 
           dots.push({
@@ -183,7 +172,6 @@ export function PixelSphere({ className }: PixelSphereProps) {
         }
       }
 
-      // Sort back-to-front
       dots.sort((a, b) => a.z - b.z);
 
       const time = Date.now() * 0.001;
@@ -212,16 +200,42 @@ export function PixelSphere({ className }: PixelSphereProps) {
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
 
-      A += 0.025;
-      B += 0.018;
+      rotationRef.current.A += 0.025;
+      rotationRef.current.B += 0.018;
 
-      animId = requestAnimationFrame(draw);
+      animIdRef.current = requestAnimationFrame(frame);
     }
 
+    frame();
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        const wasVisible = isVisibleRef.current;
+        isVisibleRef.current = entry.isIntersecting;
+
+        if (entry.isIntersecting && !wasVisible) {
+          draw();
+        } else if (!entry.isIntersecting) {
+          cancelAnimationFrame(animIdRef.current);
+        }
+      },
+      { threshold: 0.01 }
+    );
+
+    observer.observe(canvas);
     draw();
 
-    return () => cancelAnimationFrame(animId);
-  }, []);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(animIdRef.current);
+    };
+  }, [draw]);
 
   return (
     <canvas
@@ -230,7 +244,7 @@ export function PixelSphere({ className }: PixelSphereProps) {
         "w-full h-72 sm:h-80 md:h-96",
         className
       )}
-      style={{ imageRendering: "pixelated" }}
+      style={{ imageRendering: "pixelated", contain: "strict" }}
     />
   );
 }
