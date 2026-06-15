@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Open_Sans } from "next/font/google";
 import { GeistPixelSquare, GeistPixelCircle } from 'geist/font/pixel';
+import Script from "next/script";
 
 import "./globals.css";
 import "katex/dist/katex.min.css";
@@ -87,6 +88,7 @@ export default function RootLayout({
           </TooltipProvider>
         </ThemeProvider>
       </body>
+      <script defer src="https://analytics.arunspace.xyz/script.js" data-website-id="50222562-9ffb-4edd-a9b8-9a12cc2b6a4b"></script>
     </html>
   );
 }
