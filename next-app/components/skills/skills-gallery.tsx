@@ -40,7 +40,7 @@ function DifficultyBadge({ level }: { level: string }) {
 function SkillCard({ skill }: { skill: SkillMeta }) {
   return (
     <Link
-      href={`/skills/${skill.slug}`}
+      href={`/craft/${skill.slug}`}
       className="group flex flex-col p-4 transition-colors hover:bg-muted/30"
     >
       <div className="flex items-start justify-between gap-3">
@@ -109,7 +109,7 @@ export function SkillsPageContent({ skills, categories }: SkillsPageContentProps
             <SearchIcon className="h-4 w-4 text-muted-foreground" />
           </InputGroupAddon>
           <InputGroupInput
-            placeholder="Search skills..."
+            placeholder="Search craft..."
             value={query}
             className="font-mono text-sm"
             onChange={(event) => setQuery(event.target.value)}
@@ -173,7 +173,7 @@ export function SkillsPageContent({ skills, categories }: SkillsPageContentProps
       {/* Results count */}
       <div className="border-b border-line px-3 py-1.5">
         <span className="font-mono text-[10px] text-muted-foreground">
-          {filteredSkills.length} {filteredSkills.length === 1 ? "skill" : "skills"}
+          {filteredSkills.length} {filteredSkills.length === 1 ? "item" : "items"}
           {activeCategory && ` in ${activeCategory}`}
         </span>
       </div>
@@ -183,7 +183,7 @@ export function SkillsPageContent({ skills, categories }: SkillsPageContentProps
         {filteredSkills.length === 0 ? (
           <div className="col-span-full p-8 text-center">
             <p className="font-mono text-sm text-muted-foreground">
-              No skills found.
+              No craft found.
             </p>
           </div>
         ) : (

@@ -10,7 +10,7 @@ export default function RootPagesLayout({
     <div className="flex min-h-dvh flex-col bg-background pt-12 text-foreground">
       <MainNavbar />
 
-      <main className="mx-auto flex w-full max-w-3xl flex-1 border-l border-r border-line/70 pb-14 sm:pb-16">
+      <main className="mx-auto flex w-full flex-1 border-x border-line pb-14 sm:pb-16 overflow-visible">
         {children}
       </main>
 

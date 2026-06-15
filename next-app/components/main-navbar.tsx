@@ -83,14 +83,14 @@ export function MainNavbar() {
     (item) => item.href !== "/#about"
   );
 
-  const isSkillsSlug = pathname.startsWith("/skills/") && pathname !== "/skills/";
+  const isCraftSlug = pathname.startsWith("/craft/") && pathname !== "/craft/";
 
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-40 bg-background">
         <div className={cn(
           "screen-line-bottom mx-auto flex h-12 w-full items-center border-x border-line px-3 sm:px-4",
-          isSkillsSlug ? "max-w-[1400px]" : "max-w-3xl"
+          isCraftSlug ? "max-w-[1400px]" : "max-w-3xl"
         )}>
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 pr-2">

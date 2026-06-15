@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAllSkillSlugs } from "@/lib/skills";
-import { getSkillBySlug, getRelatedSkills } from "@/lib/skills/server";
+import { getSkillBySlug, getRelatedSkills, compileSkillContent } from "@/lib/skills/server";
 import { SkillDetailPage } from "@/components/skills/skill-detail-page";
 
 export async function generateStaticParams() {
@@ -17,16 +17,16 @@ export async function generateMetadata({
   const { slug } = await params;
   const skill = getSkillBySlug(slug);
   if (!skill) {
-    return { title: "Skill Not Found" };
+    return { title: "Craft Not Found" };
   }
 
   return {
-    title: `${skill.meta.title} — Skill`,
+    title: `${skill.meta.title} — Craft`,
     description: skill.meta.description,
   };
 }
 
-export default async function SkillSlugPage({
+export default async function CraftSlugPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -39,6 +39,9 @@ export default async function SkillSlugPage({
   }
 
   const related = getRelatedSkills(slug);
+  const compiledContent = skill.content
+    ? await compileSkillContent(skill.content)
+    : null;
 
   return (
     <div className="w-full max-w-[1400px] mx-auto overflow-visible">
@@ -47,6 +50,7 @@ export default async function SkillSlugPage({
         prompt={skill.prompt}
         sourceCode={skill.sourceCode}
         related={related}
+        compiledContent={compiledContent}
       />
     </div>
   );

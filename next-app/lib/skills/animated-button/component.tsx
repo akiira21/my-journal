@@ -47,8 +47,8 @@ export default function AnimatedButton({
          padding: `${s.py} ${s.px}`,
           fontSize: s.text,
           borderRadius: r,
-          background: "linear-gradient(90deg, #e5e5e5, #f5f5f5, #ffffff, #d4d4d4, #e5e5e5)",
-          backgroundSize: "300% 100%",
+          background: "linear-gradient(90deg, #a3a3a3, #d4d4d4, #ffffff, #e5e5e5, #a3a3a3)",
+          backgroundSize: "400% 100%",
           animationName: "shimmer",
           animationDuration: duration,
           animationTimingFunction: "linear",
@@ -63,7 +63,7 @@ export default function AnimatedButton({
           className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 hover:opacity-100"
           style={{
             background:
-              "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.6) 45%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0.6) 55%, transparent 60%)",
+              "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.75) 45%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.75) 55%, transparent 60%)",
             backgroundSize: "200% 100%",
             animationName: "shine",
             animationDuration: duration,
@@ -72,22 +72,22 @@ export default function AnimatedButton({
           }}
         />
         <span className="relative z-10">Get Started</span>
-
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-              @keyframes shimmer {
-                0% { background-position: 0% 50%; }
-                100% { background-position: 300% 50%; }
-              }
-              @keyframes shine {
-                0% { background-position: 200% 0%; }
-                100% { background-position: -200% 0%; }
-              }
-            `,
-          }}
-        />
       </button>
+
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes shimmer {
+              0% { background-position: 0% 50%; }
+              100% { background-position: 400% 50%; }
+            }
+            @keyframes shine {
+              0% { background-position: 200% 0%; }
+              100% { background-position: -200% 0%; }
+            }
+          `,
+        }}
+      />
     </div>
   );
 }

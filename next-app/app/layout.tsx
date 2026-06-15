@@ -81,6 +81,9 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, openSans.variable, GeistPixelSquare.variable, GeistPixelCircle.variable, "font-sans")}
     >
+      <head>
+        <script defer src="https://analytics.arunspace.xyz/script.js" data-website-id="50222562-9ffb-4edd-a9b8-9a12cc2b6a4b"></script>
+      </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider defaultTheme="system" enableSystem>
           <TooltipProvider>
@@ -88,7 +91,6 @@ export default function RootLayout({
           </TooltipProvider>
         </ThemeProvider>
       </body>
-      <script defer src="https://analytics.arunspace.xyz/script.js" data-website-id="50222562-9ffb-4edd-a9b8-9a12cc2b6a4b"></script>
     </html>
   );
 }

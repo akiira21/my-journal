@@ -4,7 +4,7 @@
   "avatar": "https://avatars.githubusercontent.com/u/135523348?v=4",
   "navigation": [
     { "label": "Posts", "href": "/posts" },
-    { "label": "Skills", "href": "/skills" },
+    { "label": "Craft", "href": "/craft" },
     { "label": "Assistant", "href": "/assistant" },
     { "label": "About", "href": "/#about" }
   ],

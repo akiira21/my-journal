@@ -11,13 +11,13 @@ export function Footer() {
   const { about, repo } = personalConfig;
   const currentYear = new Date().getFullYear();
 
-  const isSkillsSlug = pathname.startsWith("/skills/") && pathname !== "/skills/";
+  const isCraftSlug = pathname.startsWith("/craft/") && pathname !== "/craft/";
 
   return (
     <footer className="relative z-10 border-t border-line/70 bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className={cn(
         "mx-auto w-full border-l border-r border-line/70 px-4 py-5 sm:px-6",
-        isSkillsSlug ? "max-w-[1400px]" : "max-w-3xl"
+        isCraftSlug ? "max-w-[1400px]" : "max-w-3xl"
       )}>
         <p className="text-center font-mono text-xs text-muted-foreground">
           Inspired by ncdai and his design language.

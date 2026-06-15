@@ -56,8 +56,8 @@ const MENU_LINKS: CommandLinkItem[] = [
     shortcut: "GP",
   },
   {
-    title: "Skills",
-    href: "/skills",
+    title: "Craft",
+    href: "/craft",
     icon: <Wand2Icon />,
     shortcut: "GS",
   },
@@ -195,7 +195,7 @@ export function CommandMenu() {
   const skillLinks = useMemo<CommandLinkItem[]>(() => {
     return skills.map((skill) => ({
       title: skill.title,
-      href: `/skills/${skill.slug}`,
+      href: `/craft/${skill.slug}`,
       icon: <Wand2Icon />,
     }));
   }, [skills]);
@@ -332,7 +332,7 @@ export function CommandMenu() {
                   ))}
                 </CommandGroup>
 
-                <CommandGroup heading={`Skills (${skills.length})`}>
+                <CommandGroup heading={`Craft (${skills.length})`}>
                   {skillLinks.map((item) => (
                     <CommandItem key={item.href} onSelect={() => onOpenLink(item.href)}>
                       {item.icon}
@@ -363,7 +363,7 @@ export function CommandMenu() {
                   )}
                 </CommandGroup>
 
-                <CommandGroup heading={`Skills (${skillLinks.filter((s) => s.title.toLowerCase().includes(searchQuery.toLowerCase())).length})`}>
+                <CommandGroup heading={`Craft (${skillLinks.filter((s) => s.title.toLowerCase().includes(searchQuery.toLowerCase())).length})`}>
                   {skillLinks
                     .filter((s) => s.title.toLowerCase().includes(searchQuery.toLowerCase()))
                     .map((item) => (

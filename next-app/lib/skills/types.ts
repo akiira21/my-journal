@@ -32,6 +32,7 @@ export type SkillModule = {
   component: React.ComponentType<Record<string, unknown>>;
   prompt: string;
   sourceCode: string;
+  content: string;
 };
 
 export type SkillPlaygroundValues = Record<string, string | number | boolean>;

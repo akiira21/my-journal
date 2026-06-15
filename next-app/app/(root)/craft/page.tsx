@@ -3,18 +3,18 @@ import { Suspense } from "react";
 import { getAllSkillMeta, categories } from "@/lib/skills";
 import { SkillsPageContent } from "@/components/skills/skills-gallery";
 
-const title = "Skills";
-const description = "A collection of UI design patterns, component blueprints, and LLM prompts for building beautiful interfaces.";
+const title = "Craft";
+const description = "A curated collection of UI design patterns, component blueprints, and LLM prompts for building beautiful interfaces.";
 
 export const metadata: Metadata = {
   title,
   description,
   alternates: {
-    canonical: "/skills",
+    canonical: "/craft",
   },
 };
 
-export default function SkillsPage() {
+export default function CraftPage() {
   const skills = getAllSkillMeta();
 
   return (

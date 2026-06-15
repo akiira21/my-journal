@@ -42,7 +42,7 @@ export function SkillSearchInput({ value, onChange }: SkillSearchInputProps) {
   return (
     <InputGroup className="h-10 rounded-none border-x-0 border-y-0 bg-transparent shadow-none">
       <InputGroupInput
-        placeholder="Search skills..."
+        placeholder="Search craft..."
         value={query}
         className="font-mono text-sm"
         onChange={(event) => setQuery(event.target.value)}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import {
   Copy,
   Check,
@@ -70,11 +71,13 @@ export function SkillDetailPage({
   prompt,
   sourceCode,
   related,
+  compiledContent,
 }: {
   meta: SkillMeta;
   prompt: string;
   sourceCode: string;
   related: SkillMeta[];
+  compiledContent: ReactNode | null;
 }) {
   const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
   const [promptExpanded, setPromptExpanded] = useState(false);
@@ -134,9 +137,9 @@ body { background: #ffffff; }
         {/* Header */}
         <div className="border-b border-line px-5 py-4">
           <div className="mb-3">
-            <Link href="/skills" className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground">
+            <Link href="/craft" className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground">
               <ArrowLeft className="h-3 w-3" />
-              Skills
+              Craft
             </Link>
           </div>
           <div className="space-y-2">
@@ -160,21 +163,13 @@ body { background: #ffffff; }
           {/* Skill Explanation */}
           <div className="space-y-3">
             <h2 className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">How it works</h2>
-            <div className="space-y-2 text-sm text-muted-foreground leading-relaxed">
-              {meta.slug === "animated-button" && (
-                <>
-                  <p>
-                    <strong className="text-foreground">The shimmer effect</strong> works by animating a gradient background across the button. The gradient is stretched to 300% width and continuously shifted, creating an illusion of light moving across polished metal.
-                  </p>
-                  <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
-                    <li><strong>Silver gradient</strong> — cycles through <code className="text-xs bg-muted/60 px-1 rounded">#e5e5e5 → #ffffff → #d4d4d4</code></li>
-                    <li><strong>Shine overlay</strong> — a diagonal white stripe sweeps on hover, mimicking light catching a brushed surface</li>
-                    <li><strong>Micro-interactions</strong> — lift on hover, press on active, giving immediate tactile feedback</li>
-                  </ul>
-                  <p>
-                    Unlike neon gradients, this <strong className="text-foreground">monochrome palette</strong> stays professional. It draws attention through motion, not color — making it ideal for primary CTAs in serious interfaces.
-                  </p>
-                </>
+            <div className="space-y-2">
+              {compiledContent ? (
+                compiledContent
+              ) : (
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  No detailed explanation available for this craft.
+                </p>
               )}
             </div>
           </div>
@@ -203,10 +198,10 @@ body { background: #ffffff; }
           {/* Related Skills */}
           {related.length > 0 && (
             <div className="space-y-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Related Skills</span>
+              <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Related Craft</span>
               <div className="space-y-1">
                 {related.map((skill) => (
-                  <Link key={skill.slug} href={`/skills/${skill.slug}`} className="group flex items-center justify-between rounded-lg border border-line bg-background p-2.5 transition-colors hover:bg-muted/30">
+                  <Link key={skill.slug} href={`/craft/${skill.slug}`} className="group flex items-center justify-between rounded-lg border border-line bg-background p-2.5 transition-colors hover:bg-muted/30">
                     <div className="space-y-0.5">
                       <span className="block text-sm font-pixel text-foreground transition-colors group-hover:text-primary">{skill.title}</span>
                       <span className="block text-[10px] text-muted-foreground">{skill.category}</span>
