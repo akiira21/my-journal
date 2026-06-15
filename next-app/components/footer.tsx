@@ -3,6 +3,7 @@
 import { HeartIcon, RssIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 
+import { SiteFooterInteractiveLogotype } from "@/components/home/footer-logotype";
 import { personalConfig } from "@/lib/personal-data";
 import { cn } from "@/lib/utils";
 
@@ -78,6 +79,9 @@ export function Footer() {
           © {currentYear} {personalConfig.copyrightName}
         </p>
       </div>
+
+      {/* Full-width pixel logotype — outside container */}
+      <SiteFooterInteractiveLogotype />
     </footer>
   );
 }

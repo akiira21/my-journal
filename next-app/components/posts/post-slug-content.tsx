@@ -152,7 +152,7 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
 
   if (!post || !post.content) {
     return (
-      <section className="mx-auto w-full max-w-3xl px-5 pt-12 pb-12">
+      <section className="mx-auto w-full max-w-3xl px-5 pt-12 pb-12 border-x border-line">
         <div className="rounded-xl border border-line bg-muted/10 px-6 py-10 text-center">
           <h1 className="text-xl font-pixel tracking-tight text-foreground">Post not available</h1>
           <p className="mt-2 text-sm text-muted-foreground">{loadError ?? "Post content is missing."}</p>
@@ -175,7 +175,7 @@ export async function PostSlugContent({ slug }: PostSlugContentProps) {
   return (
     <>
       <article
-        className={`${inter.variable} mx-auto w-full max-w-3xl`}
+        className={`${inter.variable} mx-auto w-full max-w-3xl border-x border-line`}
         style={{
           fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
         } as React.CSSProperties}
